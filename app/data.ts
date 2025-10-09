@@ -1,104 +1,173 @@
-type Project = {
-  name: string
-  description: string
-  link: string
-  video: string
-  id: string
-}
+// app/data.ts
 
-type WorkExperience = {
-  company: string
-  title: string
-  start: string
-  end: string
-  link: string
-  id: string
-}
+/* ========= Types ========= */
 
-type BlogPost = {
-  title: string
-  description: string
-  link: string
-  uid: string
-}
+export type ProjectMedia =
+  | { kind: "image"; src: string; alt?: string; durationMs?: number }
+  | { kind: "video"; src: string }
+  | { kind: "vimeo"; src: string }; // ex: https://player.vimeo.com/video/XXXX
 
-type SocialLink = {
-  label: string
-  link: string
-}
+export type Project = {
+  slug: string;            // id lisible (sert aux routes /projects/[slug])
+  title: string;
+  year: number;
+  link?: string;           // URL page projet si besoin
+  description?: string;
+  media: ProjectMedia[];   // premier média = celui utilisé sur la Home
+  featured?: boolean;      // afficher sur la Home
+  featuredOrder?: number;  // ordre manuel (petit -> grand)
+};
+
+export type WorkExperience = {
+  company: string;
+  title: string;
+  start: string;
+  end: string;
+  link?: string;
+  id: string;
+};
+
+export type SocialLink = {
+  label: string;
+  link: string;
+};
+
+/* ========= Données projets =========
+   (mets tes vrais slugs/URLs ici ; j’ai repris ceux utilisés dans la page projects-pen.html + 1 Vimeo)
+*/
 
 export const PROJECTS: Project[] = [
   {
-    name: 'Motion Primitives Pro',
-    description:
-      'Advanced components and templates to craft beautiful websites.',
-    link: 'https://pro.motion-primitives.com/',
-    video:
-      'https://res.cloudinary.com/read-cv/video/upload/t_v_b/v1/1/profileItems/W2azTw5BVbMXfj7F53G92hMVIn32/newProfileItem/d898be8a-7037-4c71-af0c-8997239b050d.mp4?_a=DATAdtAAZAA0',
-    id: 'project1',
+    slug: "sova-cpagrave",
+    title: "SOVA — C Pa Grave",
+    year: 2025,
+    featured: true,
+    featuredOrder: 1,
+    media: [
+      // Player Vimeo plein écran
+      { kind: "vimeo", src: "https://player.vimeo.com/video/1064426220?h=aa04927136" },
+    ],
   },
   {
-    name: 'Motion Primitives',
-    description: 'UI kit to make beautiful, animated interfaces.',
-    link: 'https://motion-primitives.com/',
-    video:
-      'https://res.cloudinary.com/read-cv/video/upload/t_v_b/v1/1/profileItems/W2azTw5BVbMXfj7F53G92hMVIn32/XSfIvT7BUWbPRXhrbLed/ee6871c9-8400-49d2-8be9-e32675eabf7e.mp4?_a=DATAdtAAZAA0',
-    id: 'project2',
+    slug: "echo-discs",
+    title: "Echo Discs",
+    year: 2025,
+    featured: true,
+    featuredOrder: 2,
+    media: [
+      { kind: "image", src: "https://cdn.cosmos.so/7b5340f5-b4dc-4c08-8495-c507fa81480b?format=jpeg", alt: "Echo Discs", durationMs: 10000 },
+    ],
   },
-]
+  {
+    slug: "neon-handscape",
+    title: "Neon Handscape",
+    year: 2025,
+    featured: true,
+    featuredOrder: 3,
+    media: [
+      { kind: "image", src: "https://cdn.cosmos.so/2f49a117-05e7-4ae9-9e95-b9917f970adb?format=jpeg", alt: "Neon Handscape", durationMs: 10000 },
+    ],
+  },
+  {
+    slug: "solar-bloom",
+    title: "Solar Bloom",
+    year: 2025,
+    media: [
+      { kind: "image", src: "https://cdn.cosmos.so/47caf8a0-f456-41c5-98ea-6d0476315731?format=jpeg", alt: "Solar Bloom", durationMs: 10000 },
+    ],
+  },
+  {
+    slug: "chromatic-loopscape",
+    title: "Chromatic Loopscape",
+    year: 2024,
+    media: [
+      { kind: "image", src: "https://cdn.cosmos.so/0f164449-f65e-4584-9d62-a9b3e1f4a90a?format=jpeg", alt: "Chromatic Loopscape", durationMs: 10000 },
+    ],
+  },
+  {
+    slug: "nova-pulse",
+    title: "Nova Pulse",
+    year: 2024,
+    media: [
+      { kind: "image", src: "https://cdn.cosmos.so/f733585a-081e-48e7-a30e-e636446f2168?format=jpeg", alt: "Nova Pulse", durationMs: 10000 },
+    ],
+  },
+  {
+    slug: "sonic-horizon",
+    title: "Sonic Horizon",
+    year: 2023,
+    media: [
+      { kind: "image", src: "https://cdn.cosmos.so/f99f8445-6a19-4a9a-9de3-ac382acc1a3f?format=jpeg", alt: "Sonic Horizon", durationMs: 10000 },
+    ],
+  },
+];
 
-// src/data/reel.ts
-export const REEL = [
-  { type: "video", src: "/reel/clip-01.mp4" },
-  { type: "image", src: "/reel/frame-02.jpg", alt: "Still 02", durationMs: 10000 },
-  { type: "image", src: "/reel/frame-03.jpg", alt: "Still 03", durationMs: 10000 },
-] as const;
+/* ========= Sélection Home (featured) ========= */
 
+export function getFeaturedForHome(limit = 6): Project[] {
+  return PROJECTS
+    .filter(p => p.featured)
+    .sort(
+      (a, b) =>
+        (a.featuredOrder ?? 999) - (b.featuredOrder ?? 999) ||
+        b.year - a.year
+    )
+    .slice(0, limit);
+}
+
+/* Option pratique : slides déjà mappés pour le FullBleedPlayer */
+export type HeroSlide =
+  | { type: "image"; src: string; alt?: string; durationMs?: number }
+  | { type: "video"; src: string }
+  | { type: "vimeo"; src: string };
+
+export function featuredSlidesForHero(limit = 6): HeroSlide[] {
+  const toSlide = (m: ProjectMedia): HeroSlide => {
+    if (m.kind === "image") return { type: "image", src: m.src, alt: m.alt, durationMs: m.durationMs };
+    if (m.kind === "video") return { type: "video", src: m.src };
+    return { type: "vimeo", src: m.src };
+  };
+  return getFeaturedForHome(limit)
+    .map(p => p.media[0])
+    .filter(Boolean)
+    .map(toSlide);
+}
+
+/* ========= Expériences ========= */
 
 export const WORK_EXPERIENCE: WorkExperience[] = [
   {
-    company: 'Reglazed Studio',
-    title: 'CEO',
-    start: '2024',
-    end: 'Present',
-    link: 'https://ibelick.com',
-    id: 'work1',
+    company: "antn.studio",
+    title: "CEO",
+    start: "2019",
+    end: "Present",
+    link: "https://antn.studio",
+    id: "work-antn-ceo",
   },
   {
-    company: 'Freelance',
-    title: 'Design Engineer',
-    start: '2022',
-    end: '2024',
-    link: 'https://ibelick.com',
-    id: 'work2',
+    company: "Freelance @ Jellysmack",
+    title: "Edit Supervisor",
+    start: "2022",
+    end: "2023",
+    link: "",
+    id: "work-jellysmack-edit-supervisor",
   },
   {
-    company: 'Freelance',
-    title: 'Front-end Developer',
-    start: '2017',
-    end: 'Present',
-    link: 'https://ibelick.com',
-    id: 'work3',
+    company: "Freelance",
+    title: "International Project Manager",
+    start: "2023",
+    end: "2025",
+    link: "",
+    id: "work-intl-pm",
   },
-]
+];
+
+/* ========= Socials & Email ========= */
 
 export const SOCIAL_LINKS: SocialLink[] = [
-  {
-    label: 'Github',
-    link: 'https://github.com/ibelick',
-  },
-  {
-    label: 'Twitter',
-    link: 'https://twitter.com/ibelick',
-  },
-  {
-    label: 'LinkedIn',
-    link: 'https://www.linkedin.com/in/ibelick',
-  },
-  {
-    label: 'Instagram',
-    link: 'https://www.instagram.com/ibelick',
-  },
-]
+  { label: "Instagram", link: "https://www.instagram.com/antnstudio/" },
+  { label: "X / Twitter", link: "https://x.com/antnstudio" },
+  { label: "LinkedIn", link: "https://www.linkedin.com/in/antnstudio/" },
+];
 
-export const EMAIL = 'anthony@antn.studio'
+export const EMAIL = "anthony@antn.studio";
