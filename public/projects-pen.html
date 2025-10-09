@@ -101,18 +101,44 @@
     .chev{width:8px;height:8px;border-right:2px solid #e9e9e9;border-bottom:2px solid #e9e9e9;transform:rotate(45deg); transition:transform .2s ease; margin-left:.2rem;}
     .legacy-year-menu.open .chev{ transform:rotate(-135deg); }
 
-    .legacy-years-panel{
-      position:absolute; left:0; top:2.6rem; z-index:10001;
-      display:flex; flex-direction:column; gap:.35rem;
-      padding:.45rem .4rem .55rem .4rem;
-      max-height:0; overflow:hidden; transition:max-height .35s ease;
-    }
-    .legacy-year-menu.open .legacy-years-panel{ max-height:50vh; }
-    .legacy-years-panel::before{
-      content:""; position:absolute; inset:-.2rem -1rem -.6rem -1rem; border-radius:8px;
-      backdrop-filter: blur(6px); -webkit-backdrop-filter: blur(6px);
-      background: rgba(0,0,0,.06); pointer-events:none; z-index:-1;
-    }
+    /* Panneau années : fermé = aucune empreinte visuelle */
+.legacy-years-panel{
+  position:absolute; left:0; top:2.6rem; z-index:10001;
+  display:flex; flex-direction:column; gap:.35rem;
+  overflow:hidden;
+
+  /* état fermé */
+  max-height:0;
+  padding:0;                 /* ← enlève le petit bout qui restait */
+  opacity:0;
+  transform:translateY(-4px);
+  pointer-events:none;
+  transition:
+    max-height .35s ease,
+    padding .2s ease,
+    opacity .2s ease,
+    transform .2s ease;
+}
+
+/* état ouvert */
+.legacy-year-menu.open .legacy-years-panel{
+  max-height:50vh;
+  padding:.45rem .4rem .55rem .4rem;
+  opacity:1;
+  transform:none;
+  pointer-events:auto;
+}
+
+/* flou uniquement quand ouvert */
+.legacy-years-panel::before{
+  content:""; position:absolute; inset:-.2rem -1rem -.6rem -1rem; border-radius:8px;
+  backdrop-filter: blur(6px); -webkit-backdrop-filter: blur(6px);
+  background: rgba(0,0,0,.06); z-index:-1;
+  opacity:0;                                 /* ← caché fermé */
+  transition: opacity .2s ease;
+}
+.legacy-year-menu.open .legacy-years-panel::before{ opacity:1; }
+
 
     .years{ display:flex; flex-direction:column; gap:.35rem; }
     .year-btn{
