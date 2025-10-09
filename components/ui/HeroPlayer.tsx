@@ -3,14 +3,15 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 
 type Item = {
-  type: "image" | "video";
+  type: "image" | "video" | "embed"; // ← ajout embed (Vimeo / iframe)
   src: string;
   alt?: string;
-  /** Optionnel: durée d'affichage si image (ms). Par défaut 10000 */
+  /** Optionnel: durée d'affichage si image/embed (ms). Par défaut 10000 (image) / 15000 (embed) */
   durationMs?: number;
 };
 
-const IMAGE_DEFAULT = 10_000; // 10s
+const IMAGE_DEFAULT = 10_000; // 10s (images)
+const EMBED_DEFAULT = 15_000; // 15s (iframe / Vimeo simulé)
 const GAP = 10;               // écart entre lignes (px)
 const LINE_W = 28;            // largeur lignes inactives
 const LINE_W_ACTIVE = 84;     // largeur ligne active
@@ -48,8 +49,8 @@ export default function HeroPlayer({ items }: { items: Item[] }) {
     [slides.length]
   );
 
-  // Gestion des images (progression par RAF)
-  const startImageTimer = useCallback(
+  // Gestion timer (images + embed/iframe)
+  const startTimedProgress = useCallback(
     (durationMs: number) => {
       clearRAF();
       imgDuration.current = durationMs;
@@ -81,7 +82,13 @@ export default function HeroPlayer({ items }: { items: Item[] }) {
     const current = slides[index];
     if (!current) return;
 
-    // Si vidéo
+    // EMBED (ex: Vimeo) → on simule la durée
+    if (current.type === "embed") {
+      startTimedProgress(current.durationMs ?? EMBED_DEFAULT);
+      return () => clearRAF();
+    }
+
+    // VIDÉO
     if (current.type === "video") {
       const v = videoRef.current;
       if (!v) return;
@@ -108,13 +115,12 @@ export default function HeroPlayer({ items }: { items: Item[] }) {
       };
     }
 
-    // Si image
-    startImageTimer(current.durationMs ?? IMAGE_DEFAULT);
-
+    // IMAGE
+    startTimedProgress(current.durationMs ?? IMAGE_DEFAULT);
     return () => clearRAF();
-  }, [index, slides, go, startImageTimer, paused]);
+  }, [index, slides, go, startTimedProgress, paused]);
 
-  // Pause/reprise (vidéo + image)
+  // Pause/reprise (vidéo uniquement ; image/embed gérés par RAF)
   useEffect(() => {
     const v = videoRef.current;
     if (!v) return;
@@ -124,11 +130,10 @@ export default function HeroPlayer({ items }: { items: Item[] }) {
     else v.play().catch(() => {});
   }, [paused, index, slides]);
 
-  // Scroll step-by-step + throttle 1s (et smooth via nos transitions CSS)
+  // Scroll step-by-step + throttle 1s (smooth via transitions)
   useEffect(() => {
     const onWheel = (e: WheelEvent) => {
-      // on gère nous-mêmes -> empêche le scroll natif
-      e.preventDefault();
+      e.preventDefault(); // on gère nous-mêmes le step
       if (scrollLocked.current) return;
       const dir = Math.sign(e.deltaY);
       if (!dir) return;
@@ -188,14 +193,16 @@ export default function HeroPlayer({ items }: { items: Item[] }) {
               aria-hidden={!visible}
             >
               <WhiteFrame>
-                {item.type === "image" ? (
+                {item.type === "image" && (
                   <img
                     src={item.src}
                     alt={item.alt ?? ""}
                     className="block max-h-[84svh] max-w-[88vw] object-contain bg-black select-none"
                     draggable={false}
                   />
-                ) : (
+                )}
+
+                {item.type === "video" && (
                   <video
                     ref={visible ? videoRef : undefined}
                     src={item.src}
@@ -204,6 +211,19 @@ export default function HeroPlayer({ items }: { items: Item[] }) {
                     playsInline
                     autoPlay
                     controls={true}
+                  />
+                )}
+
+                {item.type === "embed" && (
+                  <iframe
+                    src={item.src}
+                    title={item.alt ?? "Embedded player"}
+                    allow="autoplay; fullscreen; picture-in-picture; clipboard-write; encrypted-media; web-share"
+                    referrerPolicy="strict-origin-when-cross-origin"
+                    className="block aspect-video max-h-[84svh] max-w-[88vw] bg-black"
+                    width="3840"
+                    height="2160"
+                    frameBorder={0}
                   />
                 )}
               </WhiteFrame>
@@ -215,7 +235,7 @@ export default function HeroPlayer({ items }: { items: Item[] }) {
       {/* Overlay léger pour la lisibilité */}
       <div className="absolute inset-0 pointer-events-none bg-gradient-to-b from-black/25 via-black/10 to-black/40" />
 
-      {/* Indicateurs : petites lignes à droite */}
+      {/* Indicateurs : petites lignes à droite (hit-area large + hover visible) */}
       <div
         className="pointer-events-auto absolute right-6 top-1/2 -translate-y-1/2 flex flex-col items-end"
         style={{ gap: GAP }}
@@ -223,27 +243,31 @@ export default function HeroPlayer({ items }: { items: Item[] }) {
         {slides.map((_, i) => {
           const active = i === index;
           const w = active ? LINE_W_ACTIVE : LINE_W;
-          const bg = active ? "bg-white/30" : "bg-white/18";
 
           return (
             <button
               key={i}
               onClick={() => go(i)}
-              className={`
-                relative origin-right transition
-                hover:scale-x-[1.35] focus:scale-x-[1.35] active:scale-x-[1.2]
-                outline-none
-              `}
               aria-label={`Aller à l’élément ${i + 1}`}
-              style={{ width: w, height: LINE_H }}
+              aria-pressed={active}
+              className="group relative cursor-pointer select-none"
+              style={{ padding: "8px 10px" }} // zone cliquable accrue
             >
-              {/* ligne de fond */}
-              <span className={`absolute inset-0 ${bg} rounded-[1px]`} />
-              {/* remplissage si active */}
+              {/* ligne de fond (devient blanche + grossit en hover) */}
+              <span
+                className={[
+                  "block rounded-[1px] origin-right transform transition-all duration-200 ease-out",
+                  active ? "bg-white/80" : "bg-white/20 group-hover:bg-white",
+                  "group-hover:scale-x-110 group-hover:scale-y-150", // longueur + épaisseur
+                ].join(" ")}
+                style={{ width: w, height: LINE_H }}
+              />
+
+              {/* remplissage si active (barre de progression) */}
               {active && (
                 <span
-                  className="absolute left-0 top-0 h-full bg-white/90 rounded-[1px] transition-[width] ease-linear"
-                  style={{ width: `${Math.max(0, Math.min(1, progress)) * 100}%` }}
+                  className="absolute left-[10px] top-1/2 -translate-y-1/2 h-[2px] bg-white rounded-[1px] transition-[width] ease-linear"
+                  style={{ width: `${Math.max(0, Math.min(1, progress)) * w}px` }}
                 />
               )}
             </button>
