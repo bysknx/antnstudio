@@ -27,21 +27,36 @@
       --page-vignette-strong-color: rgba(0,0,0,.92);
       --page-vignette-extreme-size: 36px;
       --page-vignette-extreme-color: rgba(0,0,0,1);
-
-      /* On fige la matrice : valeurs stables */
-      --mx: 50%;
-      --my: 50%;
     }
+
     *{margin:0;padding:0;box-sizing:border-box;user-select:none}
+
+    /* =======================
+       Fond : matrice de points FIXE
+       (proche de l’ancienne DA)
+    ======================= */
     body{
       font-family:"PP Neue Montreal",system-ui,-apple-system,Segoe UI,Roboto,sans-serif;
-      background: transparent;   /* on voit la matrice du site */
       color:#fff;
       overflow:hidden;
       position:relative;
+
+      /* Vars “look” de la matrice */
+      --m-bg: #0a0a0a;                 /* fond quasi noir */
+      --m-color: rgba(255,255,255,.07);/* points très discrets */
+      --m-size: 1px;                   /* taille du point */
+      --m-space: 22px;                 /* espacement */
+
+      /* pattern à la CodePen, figé */
+      background:
+        linear-gradient(90deg, var(--m-bg) calc(var(--m-space) - var(--m-size)), transparent 1%) center / var(--m-space) var(--m-space),
+        linear-gradient(var(--m-bg) calc(var(--m-space) - var(--m-size)), transparent 1%) center / var(--m-space) var(--m-space),
+        var(--m-color);
+      background-attachment: fixed;    /* ne bouge pas au drag */
+      background-color: var(--m-bg);   /* fallback solide */
     }
 
-    /* Grain adouci */
+    /* Grain adouci (reste par-dessus la matrice) */
     body::before{
       content:"";position:fixed;inset:-50%;
       background:url("https://assets.iceable.com/img/noise-transparent.png") repeat 0 0/300px 300px;
@@ -57,15 +72,6 @@
       60%{transform:translate(3%,0)}70%{transform:translate(0,3%)}
       80%{transform:translate(-3%,0)}90%{transform:translate(2%,2%)}
       100%{transform:translate(1%,0)}
-    }
-
-    /* Voile qui adoucit la matrice (sans gêner le drag) */
-    .matrix-softener{
-      position:fixed; inset:0; z-index:0;
-      pointer-events:none;
-      backdrop-filter: blur(2.4px);
-      -webkit-backdrop-filter: blur(2.4px);
-      background: rgba(0,0,0,.20);
     }
 
     a{position:relative;color:var(--color-text);text-decoration:none;font-weight:700;font-size:var(--font-size-base)}
@@ -108,7 +114,6 @@
       z-index:10001;
     }
     .years-section.open .years-panel{ max-height:50vh; }
-
     .years-panel::before{
       content:""; position:absolute; inset:-.2rem -1rem -.6rem -1rem;
       backdrop-filter: blur(6px); -webkit-backdrop-filter: blur(6px);
@@ -173,9 +178,6 @@
   </style>
 </head>
 <body>
-  <!-- Voile flou qui adoucit la matrice de points derrière -->
-  <div class="matrix-softener" aria-hidden="true"></div>
-
   <!-- ===== HEADER ===== -->
   <div class="header">
     <div class="years-section legacy-year-menu" id="yearsSection">
@@ -530,20 +532,6 @@
       document.documentElement.setAttribute("data-year-controlled", "true");
       setActiveYear(value === "all" ? "All" : String(value));
       openYears();
-    });
-
-    /* === Verrou matrice : non réactive (même sur la nav) === */
-    // 1) Force des valeurs stables au cas où un script global tenterait de les changer
-    document.documentElement.style.setProperty('--mx','50%');
-    document.documentElement.style.setProperty('--my','50%');
-    // 2) Coupe la propagation des mouvements depuis le header/nav
-    ['pointermove','mousemove','touchmove'].forEach(evt=>{
-      document.addEventListener(evt, (e)=>{
-        if (e.target && e.target.closest('.header')) {
-          e.stopPropagation();
-          e.stopImmediatePropagation();
-        }
-      }, true); // capture: on intercepte avant les écouteurs globaux
     });
 
     // init
