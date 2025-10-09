@@ -30,14 +30,20 @@
     *{margin:0;padding:0;box-sizing:border-box;user-select:none}
     body{
       font-family:"PP Neue Montreal",system-ui,-apple-system,Segoe UI,Roboto,sans-serif;
-      background:#000;color:#fff;overflow:hidden;position:relative
+      background: transparent;                /* ← fond transparent pour voir la matrice */
+      color:#fff;
+      overflow:hidden;
+      position:relative;
     }
 
-    /* Grain (https corrigé) */
+    /* Grain (adouci) */
     body::before{
       content:"";position:fixed;inset:-50%;
       background:url("https://assets.iceable.com/img/noise-transparent.png") repeat 0 0/300px 300px;
-      animation:noise .3s steps(5) infinite;opacity:.9;pointer-events:none;z-index:100
+      animation:noise .3s steps(5) infinite;
+      opacity:.35;                             /* ← moins présent pour laisser respirer */
+      pointer-events:none;
+      z-index:100;
     }
     @keyframes noise{
       0%{transform:translate(0,0)}10%{transform:translate(-2%,-3%)}
@@ -46,6 +52,17 @@
       60%{transform:translate(3%,0)}70%{transform:translate(0,3%)}
       80%{transform:translate(-3%,0)}90%{transform:translate(2%,2%)}
       100%{transform:translate(1%,0)}
+    }
+
+    /* Voile flou au-dessus de la matrice, sous le contenu */
+    .matrix-softener{
+      position:fixed;
+      inset:0;
+      z-index:0;                               /* ← en dessous du contenu */
+      pointer-events:none;                      /* ← ne bloque rien */
+      backdrop-filter: blur(1.4px);
+      -webkit-backdrop-filter: blur(1.4px);
+      background: rgba(0,0,0,.18);             /* léger assombrissement */
     }
 
     a{position:relative;color:var(--color-text);text-decoration:none;font-weight:700;font-size:var(--font-size-base)}
@@ -81,7 +98,7 @@
     .info-section{grid-column:9 / span 4;text-align:right;font-family:"TheGoodMonolith",monospace}
 
     /* ============ Canvas/grid ============ */
-    .container{position:relative;width:100vw;height:100vh;overflow:hidden;cursor:grab}
+    .container{position:relative;width:100vw;height:100vh;overflow:hidden;cursor:grab; z-index:1;} /* ← au-dessus du flou */
     .canvas{position:absolute;will-change:transform}
 
     .item{position:absolute;overflow:hidden;background:#000;cursor:pointer;border-radius:var(--border-radius)}
@@ -117,6 +134,9 @@
   </style>
 </head>
 <body>
+  <!-- Voile flou qui adoucit la matrice de points derrière -->
+  <div class="matrix-softener" aria-hidden="true"></div>
+
   <!-- ===== HEADER ===== -->
   <div class="header">
     <div class="years-section legacy-year-menu">
