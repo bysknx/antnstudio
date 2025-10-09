@@ -26,7 +26,7 @@
       --page-vignette-extreme-size: 36px;
       --page-vignette-extreme-color: rgba(0,0,0,1);
 
-      /* Matrice fixe */
+      /* Matrice fixe (fond) */
       --m-bg: #0b0b0b;
       --m-dot-color: rgba(255,255,255,.08);
       --m-dot-size: 1.1px;
@@ -76,51 +76,39 @@
     .header{top:0}
     .footer{bottom:0}
 
-    /* On neutralise toute “bulle” de la nav globale */
+    /* On neutralise les styles “bulle” de la nav globale côté header uniquement */
     .header, .header *{
-      background: transparent !important;
-      box-shadow: none !important;
-      backdrop-filter: none !important;
-      -webkit-backdrop-filter: none !important;
-      border: 0 !important;
+      background: transparent;
+      box-shadow: none;
+      backdrop-filter: none;
+      -webkit-backdrop-filter: none;
+      border: 0;
     }
 
-    /* Masque proactif de l’ancien menu (si injecté) */
-    .legacy-year-menu,
-    .years-popover,
-    .years-menu,
-    .nav-years,
-    [data-ui="years-popover"],
-    [data-component="years-menu"]{
-      display:none !important;
-    }
-
-    /* === YEARS dropdown — version légère/floutée === */
-    .years-section{grid-column:1 / span 4; position:relative;}
-    .years-toggle{
+    /* === YEARS (menu de base, stylé dropdown flouté) === */
+    .legacy-year-menu{grid-column:1 / span 4; position:relative;}
+    .legacy-years-toggle{
       display:inline-flex; align-items:center; gap:.55rem;
       font-weight:800; font-size:13px; letter-spacing:.06em; text-transform:uppercase;
       color:#e9e9e9; cursor:pointer; padding:.4rem .6rem .4rem .2rem;
       border-radius:999px; user-select:none; position:relative;
     }
-    .years-toggle::before{
+    .legacy-years-toggle::before{
       content:""; width:6px; height:6px; border-radius:50%;
-      background:#e9e9e9; opacity:.9; display:inline-block;
-      animation: blink 2.4s ease-in-out infinite;
+      background:#e9e9e9; opacity:.9; display:inline-block; animation: blink 2.4s ease-in-out infinite;
     }
     @keyframes blink{0%,90%,100%{opacity:.9}45%{opacity:.3}}
-
     .chev{width:8px;height:8px;border-right:2px solid #e9e9e9;border-bottom:2px solid #e9e9e9;transform:rotate(45deg); transition:transform .2s ease; margin-left:.2rem;}
-    .years-section.open .chev{ transform:rotate(-135deg); }
+    .legacy-year-menu.open .chev{ transform:rotate(-135deg); }
 
-    .years-panel{
+    .legacy-years-panel{
       position:absolute; left:0; top:2.6rem; z-index:10001;
       display:flex; flex-direction:column; gap:.35rem;
       padding:.45rem .4rem .55rem .4rem;
       max-height:0; overflow:hidden; transition:max-height .35s ease;
     }
-    .years-section.open .years-panel{ max-height:50vh; }
-    .years-panel::before{
+    .legacy-year-menu.open .legacy-years-panel{ max-height:50vh; }
+    .legacy-years-panel::before{
       content:""; position:absolute; inset:-.2rem -1rem -.6rem -1rem; border-radius:8px;
       backdrop-filter: blur(6px); -webkit-backdrop-filter: blur(6px);
       background: rgba(0,0,0,.06); pointer-events:none; z-index:-1;
@@ -134,7 +122,6 @@
     }
     .year-btn:hover{ color:#fff; background:rgba(255,255,255,0.05);}
     .year-btn[aria-pressed="true"]{ color:#fff; background:rgba(255,255,255,0.08);}
-
     .years-close{
       all:unset; cursor:pointer; align-self:flex-start; margin-top:.25rem;
       color:#ddd; font-weight:800; font-size:10px; letter-spacing:.14em; text-transform:uppercase;
@@ -160,11 +147,9 @@
     .item-name{font-size:12px;text-transform:uppercase;letter-spacing:-.03em;margin-bottom:2px;overflow:hidden;height:16px}
     .item-number{font:400 10px/1 "TheGoodMonolith",monospace;color:#888;overflow:hidden;height:14px}
 
-    /* Zoom */
     .expanded-item{position:fixed;z-index:10000;top:50%;left:50%;transform:translate(-50%,-50%);background:#000;overflow:hidden;cursor:pointer;border-radius:var(--border-radius)}
     .expanded-item img{width:100%;height:100%;object-fit:cover;pointer-events:none}
 
-    /* Overlay + vignette page */
     .overlay{position:fixed;inset:0;background:#000;pointer-events:none;opacity:0;z-index:9999}
     .overlay.active{pointer-events:auto}
     .page-vignette-container{position:fixed;inset:0;pointer-events:none;z-index:9998}
@@ -172,7 +157,6 @@
     .page-vignette-strong{position:absolute;inset:0;box-shadow:inset 0 0 var(--page-vignette-strong-size) var(--page-vignette-strong-color)}
     .page-vignette-extreme{position:absolute;inset:0;box-shadow:inset 0 0 var(--page-vignette-extreme-size) var(--page-vignette-extreme-color)}
 
-    /* Titre central */
     .project-title{position:absolute;inset:0;display:grid;place-items:center;pointer-events:none;z-index:10002}
     .project-title p{position:relative;height:42px}
     .project-title p .word{display:inline-block;font-size:36px;letter-spacing:-.03em;text-transform:uppercase}
@@ -183,14 +167,15 @@
 <body>
   <!-- ===== HEADER ===== -->
   <div class="header">
-    <div class="years-section" id="yearsSection">
-      <div class="years-toggle" id="yearsToggle" role="button" aria-expanded="false" aria-controls="yearsPanel">
+    <!-- Menu de base uniquement -->
+    <div class="legacy-year-menu" id="legacyYears">
+      <div class="legacy-years-toggle" id="legacyYearsToggle" role="button" aria-expanded="false" aria-controls="legacyYearsPanel">
         <span>+ YEARS</span>
         <span class="chev" aria-hidden="true"></span>
       </div>
-      <div class="years-panel" id="yearsPanel">
+      <div class="legacy-years-panel" id="legacyYearsPanel">
         <div class="years" id="years"></div>
-        <button class="years-close" id="yearsClose">Close</button>
+        <button class="years-close" id="legacyYearsClose">Close</button>
       </div>
     </div>
   </div>
@@ -253,40 +238,13 @@
     const canvas = document.getElementById("canvas");
     const overlay = document.getElementById("overlay");
     const projectTitleElement = document.querySelector(".project-title p");
-    const yearsEl = document.getElementById("years");
-    const yearsSection = document.getElementById("yearsSection");
-    const yearsToggle = document.getElementById("yearsToggle");
-    const yearsClose  = document.getElementById("yearsClose");
+
+    const yearsWrap   = document.getElementById("legacyYears");
+    const yearsToggle = document.getElementById("legacyYearsToggle");
+    const yearsClose  = document.getElementById("legacyYearsClose");
+    const yearsEl     = document.getElementById("years");
+
     const socialsEl = document.getElementById("socials");
-
-    /* 1) SUPPRIMER l'ancien menu "liquid glass" si le thème global l'injecte */
-    function removeLegacyYearsUI(){
-      const candidates = document.querySelectorAll(
-        '.legacy-year-menu, .years-popover, .years-menu, .nav-years, [data-ui="years-popover"], [data-component="years-menu"]'
-      );
-      candidates.forEach(n => n.remove());
-
-      // Heuristique : éléments contenant un titre "YEARS" + boutons d'années, hors notre #yearsSection
-      const allContainers = Array.from(document.body.querySelectorAll('*'))
-        .filter(el => el !== yearsSection && !yearsSection.contains(el));
-      allContainers.forEach(el => {
-        try{
-          const txt = (el.textContent || '').trim();
-          if(!txt) return;
-          const hasTitle = /\bYEARS\b/i.test(txt);
-          const hasButtons = /\bAll\b/i.test(txt) && /\b20\d{2}\b/.test(txt);
-          const looksLikePanel = getComputedStyle(el).position === 'fixed' || getComputedStyle(el).backdropFilter !== 'none';
-          if(hasTitle && hasButtons && looksLikePanel){
-            // remonte à un conteneur raisonnable (évite d'effacer le body)
-            const root = el.closest('div,section,nav,aside,[role="dialog"]') || el;
-            if(root && !yearsSection.contains(root)) root.remove();
-          }
-        }catch(e){}
-      });
-    }
-    // Appel au chargement + après un petit délai (au cas où la nav l’injecte async)
-    removeLegacyYearsUI();
-    setTimeout(removeLegacyYearsUI, 300);
 
     /* Socials */
     SOCIALS.forEach(s => {
@@ -296,7 +254,7 @@
       socialsEl.appendChild(a);
     });
 
-    /* Années */
+    /* Années (menu de base) */
     const uniqueYears = Array.from(new Set(PROJECTS.map(p => p.year))).sort((a,b)=>b-a);
     const qpYear = new URLSearchParams(location.search).get("year");
     let activeYear = qpYear ? (qpYear === "all" ? "All" : String(qpYear)) : "All";
@@ -326,18 +284,17 @@
       updateYearButtons();
     }
 
-    /* 2) MENU: fermé par défaut */
     function openYears(){
-      yearsSection.classList.add("open");
+      yearsWrap.classList.add("open");
       yearsToggle.setAttribute("aria-expanded","true");
     }
     function closeYears(){
-      yearsSection.classList.remove("open");
+      yearsWrap.classList.remove("open");
       yearsToggle.setAttribute("aria-expanded","false");
     }
     yearsToggle.addEventListener("click", ()=>{
-      yearsSection.classList.toggle("open");
-      yearsToggle.setAttribute("aria-expanded", yearsSection.classList.contains("open"));
+      yearsWrap.classList.toggle("open");
+      yearsToggle.setAttribute("aria-expanded", yearsWrap.classList.contains("open"));
     });
     yearsClose.addEventListener("click", closeYears);
 
@@ -532,19 +489,19 @@
       updateVisibleItems();
     }
 
-    /* Pilotage parent (facultatif) */
+    /* Pilotage parent éventuel */
     window.addEventListener("message", (evt) => {
       const data = evt && evt.data;
       if (!data || data.type !== "SET_YEAR") return;
       const value = data.value;
       document.documentElement.setAttribute("data-year-controlled", "true");
       setActiveYear(value === "all" ? "All" : String(value));
-      // On ne force plus l'ouverture auto ici.
+      openYears();
     });
 
-    /* Init: menu fermé + rendu */
-    closeYears();
+    /* Init (menu fermé par défaut) */
     renderYears();
+    closeYears();
     setActiveYear(activeYear);
     updateVisibleItems();
     animate();
