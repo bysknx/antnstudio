@@ -28,7 +28,7 @@
       --page-vignette-extreme-size: 36px;
       --page-vignette-extreme-color: rgba(0,0,0,1);
 
-      /* On fige la matrice : centre par défaut, pas d'update JS */
+      /* On fige la matrice : valeurs stables */
       --mx: 50%;
       --my: 50%;
     }
@@ -46,7 +46,7 @@
       content:"";position:fixed;inset:-50%;
       background:url("https://assets.iceable.com/img/noise-transparent.png") repeat 0 0/300px 300px;
       animation:noise .3s steps(5) infinite;
-      opacity:.24;                 /* un peu moins présent */
+      opacity:.24;
       pointer-events:none;
       z-index:100;
     }
@@ -65,7 +65,7 @@
       pointer-events:none;
       backdrop-filter: blur(2.4px);
       -webkit-backdrop-filter: blur(2.4px);
-      background: rgba(0,0,0,.20); /* un chouïa plus discret */
+      background: rgba(0,0,0,.20);
     }
 
     a{position:relative;color:var(--color-text);text-decoration:none;font-weight:700;font-size:var(--font-size-base)}
@@ -137,7 +137,7 @@
     .info-section{grid-column:9 / span 4;text-align:right;font-family:"TheGoodMonolith",monospace}
 
     /* ============ Canvas/grid ============ */
-    .container{position:relative;width:100vw;height:100vh;overflow:hidden;cursor:grab; z-index:1;} /* au-dessus du flou */
+    .container{position:relative;width:100vw;height:100vh;overflow:hidden;cursor:grab; z-index:1;}
     .canvas{position:absolute;will-change:transform}
 
     .item{position:absolute;overflow:hidden;background:#000;cursor:pointer;border-radius:var(--border-radius)}
@@ -532,7 +532,19 @@
       openYears();
     });
 
-    /* NOTE: AUCUNE mise à jour de --mx/--my ici → matrice non réactive sur cette page */
+    /* === Verrou matrice : non réactive (même sur la nav) === */
+    // 1) Force des valeurs stables au cas où un script global tenterait de les changer
+    document.documentElement.style.setProperty('--mx','50%');
+    document.documentElement.style.setProperty('--my','50%');
+    // 2) Coupe la propagation des mouvements depuis le header/nav
+    ['pointermove','mousemove','touchmove'].forEach(evt=>{
+      document.addEventListener(evt, (e)=>{
+        if (e.target && e.target.closest('.header')) {
+          e.stopPropagation();
+          e.stopImmediatePropagation();
+        }
+      }, true); // capture: on intercepte avant les écouteurs globaux
+    });
 
     // init
     renderYears();
