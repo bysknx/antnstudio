@@ -534,15 +534,31 @@
 
     /* Pilotage parent */
     window.addEventListener("message", (evt) => {
-      const data = evt && evt.data;
-      if (!data || !data.type) return;
-
-      if (data.type === "SET_YEAR") {
-        const value = data.value;
-        document.documentElement.setAttribute("data-year-controlled", "true");
-        setActiveYear(value === "all" ? "All" : String(value));
-        openYears();
-      }
+if (data.type === "SET_STATUS") {
+  console.log("[projects] API status:", data.value);
+  // Optionnel: petit indicateur en bas à droite
+  let badge = document.getElementById("apiStatusBadge");
+  if (!badge) {
+    badge = document.createElement("div");
+    badge.id = "apiStatusBadge";
+    Object.assign(badge.style, {
+      position: "fixed",
+      right: "10px",
+      bottom: "10px",
+      font: "600 11px/1.4 system-ui, -apple-system, Segoe UI, Roboto, sans-serif",
+      color: "#bbb",
+      background: "rgba(0,0,0,.35)",
+      padding: "6px 8px",
+      borderRadius: "8px",
+      zIndex: 10050,
+      pointerEvents: "none",
+    });
+    document.body.appendChild(badge);
+  }
+  const ok = data.value?.ok;
+  const count = data.value?.count ?? 0;
+  badge.textContent = ok ? `Vimeo OK • ${count} items` : `Vimeo KO`;
+}
 
       // NEW: réception des projets envoyés par Next (évite le FALLBACK)
       if (data.type === "SET_PROJECTS") {
