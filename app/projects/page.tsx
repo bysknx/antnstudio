@@ -1,41 +1,40 @@
 // app/projects/page.tsx
 "use client";
 
-import { useEffect, useMemo, useRef, useState } from "react";
-import YearsMenu from "@/components/YearsMenu";
+import { useRef, useEffect } from "react";
+import { useSearchParams } from "next/navigation";
 
 export default function ProjectsPage() {
-  const [year, setYear] = useState<number | "all">("all");
-  const years = useMemo(() => [2025, 2024, 2023], []);
   const iframeRef = useRef<HTMLIFrameElement>(null);
+  const search = useSearchParams();
+  const year = search.get("year"); // "all" | "2025" | etc. | null
 
-  const send = (value: number | "all") => {
-    iframeRef.current?.contentWindow?.postMessage(
-      { type: "SET_YEAR", value },
-      "*" // même origine, ok
-    );
-  };
-
-  // à chaque changement d’année on notifie l’iframe
+  // Optionnel : on renvoie l'état initial à l'iframe une fois chargée,
+  // au cas où tu arrives avec ?year= dans l'URL.
   useEffect(() => {
-    send(year);
+    if (!year) return;
+    iframeRef.current?.contentWindow?.postMessage(
+      { type: "SET_YEAR", value: year === "all" ? "all" : year },
+      "*"
+    );
   }, [year]);
+
+  const src = `/projects-pen.html${year ? `?year=${encodeURIComponent(year)}` : ""}`;
 
   return (
     <main className="relative min-h-[100svh]">
-      <div className="pointer-events-none absolute left-4 top-4 z-30">
-        <div className="pointer-events-auto">
-          <YearsMenu years={years} active={year} onSelect={setYear} label="+Years" />
-        </div>
-      </div>
-
       <iframe
         ref={iframeRef}
-        src="/projects-pen.html"
+        src={src}
         className="h-[100svh] w-full border-0"
         title="Projects Grid"
-        // s’assure que l’iframe reçoit l’état initial après chargement
-        onLoad={() => send(year)}
+        onLoad={() => {
+          if (!year) return;
+          iframeRef.current?.contentWindow?.postMessage(
+            { type: "SET_YEAR", value: year === "all" ? "all" : year },
+            "*"
+          );
+        }}
       />
     </main>
   );
