@@ -1,11 +1,23 @@
-// app/projects/page.tsx
 "use client";
 
-import { useEffect, useRef, Suspense } from "react";
+import { useEffect, useRef, useState, Suspense } from "react";
 import { useSearchParams } from "next/navigation";
 
+type VimeoItem = {
+  id: string;
+  title?: string;
+  name?: string;
+  thumbnail?: string;
+  picture?: string;
+  thumb?: string;
+  link?: string;
+  embed?: string;
+  year?: number;
+  createdAt?: string;
+  created_time?: string;
+};
+
 export default function ProjectsPage() {
-  // Rien d'autre ici : on met la logique qui lit les params dans un enfant
   return (
     <main className="relative min-h-[100svh]">
       <Suspense fallback={null}>
@@ -18,19 +30,50 @@ export default function ProjectsPage() {
 function ProjectsIframe() {
   const iframeRef = useRef<HTMLIFrameElement>(null);
   const search = useSearchParams();
-  const year = search.get("year"); // "all" | "2025" | etc. | null
+  const year = search.get("year");
+  const [projects, setProjects] = useState<VimeoItem[] | null>(null);
+  const [iframeReady, setIframeReady] = useState(false);
 
-  // Construit l'URL de l'iframe (permet deep-linking /projects?year=2025)
   const src = `/projects-pen.html${year ? `?year=${encodeURIComponent(year)}` : ""}`;
 
-  // Envoie l’état initial à l’iframe quand elle est prête
   useEffect(() => {
-    if (!year) return;
-    iframeRef.current?.contentWindow?.postMessage(
-      { type: "SET_YEAR", value: year === "all" ? "all" : year },
-      "*"
-    );
-  }, [year]);
+    let stop = false;
+    (async () => {
+      try {
+        const res = await fetch("/api/vimeo?debug=1", { cache: "no-store" });
+        const json = await res.json();
+        const items = Array.isArray(json?.items) ? json.items : [];
+        if (!stop) {
+          setProjects(items);
+          post({ type: "SET_STATUS", value: { ok: json?.ok, count: items.length } });
+        }
+      } catch {
+        if (!stop) {
+          setProjects([]);
+          post({ type: "SET_STATUS", value: { ok: false, count: 0 } });
+        }
+      }
+    })();
+    return () => {
+      stop = true;
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  const post = (msg: any) => {
+    iframeRef.current?.contentWindow?.postMessage(msg, "*");
+  };
+
+  useEffect(() => {
+    if (!iframeReady || !year) return;
+    post({ type: "SET_YEAR", value: year === "all" ? "all" : year });
+  }, [year, iframeReady]);
+
+  useEffect(() => {
+    if (!iframeReady || !projects) return;
+    post({ type: "SET_PROJECTS", value: projects });
+    if (year) post({ type: "SET_YEAR", value: year === "all" ? "all" : year });
+  }, [projects, iframeReady]); // year renvoyé ici si présent
 
   return (
     <iframe
@@ -39,11 +82,9 @@ function ProjectsIframe() {
       className="h-[100svh] w-full border-0"
       title="Projects Grid"
       onLoad={() => {
-        if (!year) return;
-        iframeRef.current?.contentWindow?.postMessage(
-          { type: "SET_YEAR", value: year === "all" ? "all" : year },
-          "*"
-        );
+        setIframeReady(true);
+        if (projects) post({ type: "SET_PROJECTS", value: projects });
+        if (year) post({ type: "SET_YEAR", value: year === "all" ? "all" : year });
       }}
     />
   );
