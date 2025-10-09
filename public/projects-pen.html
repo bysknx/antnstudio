@@ -28,14 +28,14 @@
       --page-vignette-extreme-size: 36px;
       --page-vignette-extreme-color: rgba(0,0,0,1);
 
-      /* vars de suivi souris pour la matrice (si utilisée par le parent) */
+      /* On fige la matrice : centre par défaut, pas d'update JS */
       --mx: 50%;
       --my: 50%;
     }
     *{margin:0;padding:0;box-sizing:border-box;user-select:none}
     body{
       font-family:"PP Neue Montreal",system-ui,-apple-system,Segoe UI,Roboto,sans-serif;
-      background: transparent;           /* ← on voit la matrice */
+      background: transparent;   /* on voit la matrice du site */
       color:#fff;
       overflow:hidden;
       position:relative;
@@ -46,7 +46,7 @@
       content:"";position:fixed;inset:-50%;
       background:url("https://assets.iceable.com/img/noise-transparent.png") repeat 0 0/300px 300px;
       animation:noise .3s steps(5) infinite;
-      opacity:.28;                        /* ↓ visibilité */
+      opacity:.24;                 /* un peu moins présent */
       pointer-events:none;
       z-index:100;
     }
@@ -59,13 +59,13 @@
       100%{transform:translate(1%,0)}
     }
 
-    /* Voile qui floute légèrement la matrice (sans gêner le drag) */
+    /* Voile qui adoucit la matrice (sans gêner le drag) */
     .matrix-softener{
       position:fixed; inset:0; z-index:0;
       pointer-events:none;
-      backdrop-filter: blur(2.2px);        /* ↑ flou discret */
-      -webkit-backdrop-filter: blur(2.2px);
-      background: rgba(0,0,0,.22);         /* léger voile sombre */
+      backdrop-filter: blur(2.4px);
+      -webkit-backdrop-filter: blur(2.4px);
+      background: rgba(0,0,0,.20); /* un chouïa plus discret */
     }
 
     a{position:relative;color:var(--color-text);text-decoration:none;font-weight:700;font-size:var(--font-size-base)}
@@ -96,7 +96,7 @@
     }
     .years-toggle .dot{width:6px;height:6px;background:#e5e5e5;border-radius:50%;}
     .years-toggle .chev{width:8px;height:8px;border-right:2px solid #e5e5e5;border-bottom:2px solid #e5e5e5;transform:rotate(45deg); transition:transform .2s ease;}
-    .years-section.open .years-toggle .chev{ transform:rotate(-135deg); } /* ↑ indique l'état */
+    .years-section.open .years-toggle .chev{ transform:rotate(-135deg); }
 
     /* Panneau années : pas de box UI, juste un flou d’arrière-plan sur la zone */
     .years-panel{
@@ -105,11 +105,10 @@
       padding:.4rem .4rem .6rem .4rem;
       max-height:0; overflow:hidden;
       transition:max-height .35s ease;
-      z-index:10001; /* au-dessus du header */
+      z-index:10001;
     }
-    .years-section.open .years-panel{ max-height:50vh; } /* slide down */
+    .years-section.open .years-panel{ max-height:50vh; }
 
-    /* fond flou derrière la zone prise par les années */
     .years-panel::before{
       content:""; position:absolute; inset:-.2rem -1rem -.6rem -1rem;
       backdrop-filter: blur(6px); -webkit-backdrop-filter: blur(6px);
@@ -180,20 +179,18 @@
   <!-- ===== HEADER ===== -->
   <div class="header">
     <div class="years-section legacy-year-menu" id="yearsSection">
-      <!-- Toggle cliquable avec chevron -->
       <div class="years-toggle" id="yearsToggle">
         <span class="dot"></span>
         <span>+ YEARS</span>
         <span class="chev"></span>
       </div>
 
-      <!-- Dropdown années (sans “boîte”, juste flou derrière) -->
+      <!-- Dropdown années -->
       <div class="years-panel" id="yearsPanel">
         <div class="years" id="years"></div>
         <button class="years-close" id="yearsClose">Close</button>
       </div>
     </div>
-    <!-- (le reste du header vide) -->
   </div>
 
   <!-- ===== FOOTER ===== -->
@@ -532,22 +529,10 @@
       const value = data.value;
       document.documentElement.setAttribute("data-year-controlled", "true");
       setActiveYear(value === "all" ? "All" : String(value));
-      openYears(); // si le parent change l’année, on peut afficher le menu
+      openYears();
     });
 
-    /* ===== Matrice: suivi souris global =====
-       Met à jour --mx / --my pour n'importe où sur la page
-    */
-    function updateMouseVars(x,y){
-      const px = (x / innerWidth) * 100;
-      const py = (y / innerHeight) * 100;
-      document.documentElement.style.setProperty('--mx', px.toFixed(2) + '%');
-      document.documentElement.style.setProperty('--my', py.toFixed(2) + '%');
-    }
-    window.addEventListener('pointermove', (e)=>{ updateMouseVars(e.clientX, e.clientY); }, {passive:true});
-    window.addEventListener('touchmove', (e)=>{
-      if(e.touches && e.touches[0]) updateMouseVars(e.touches[0].clientX, e.touches[0].clientY);
-    }, {passive:true});
+    /* NOTE: AUCUNE mise à jour de --mx/--my ici → matrice non réactive sur cette page */
 
     // init
     renderYears();
