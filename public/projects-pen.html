@@ -5,12 +5,10 @@
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Projects — antn.studio</title>
 
-  <!-- Fonts -->
   <link href="https://fonts.cdnfonts.com/css/thegoodmonolith" rel="stylesheet" />
   <link href="https://fonts.cdnfonts.com/css/pp-neue-montreal" rel="stylesheet" />
 
   <style>
-    /* ============ Base ============ */
     :root{
       --spacing-base: 1rem;
       --color-text: #fff;
@@ -20,50 +18,40 @@
       --vignette-size: 0px;
       --hover-scale: 1.05;
 
-      /* Page vignette */
+      /* Vignette page */
       --page-vignette-size: 180px;
       --page-vignette-color: rgba(0,0,0,.85);
       --page-vignette-strong-size: 90px;
       --page-vignette-strong-color: rgba(0,0,0,.92);
       --page-vignette-extreme-size: 36px;
       --page-vignette-extreme-color: rgba(0,0,0,1);
+
+      /* Matrice fixe (proche de ta DA) */
+      --m-bg: #0b0b0b;                      /* fond quasi noir */
+      --m-dot-color: rgba(255,255,255,.08); /* intensité des points */
+      --m-dot-size: 1.1px;                  /* rayon du point */
+      --m-dot-space: 22px;                  /* espacement */
     }
 
     *{margin:0;padding:0;box-sizing:border-box;user-select:none}
 
-    /* =======================
-       Fond : matrice de points FIXE
-       (proche de l’ancienne DA)
-    ======================= */
+    /* ===== Fond : matrice de points FIXE ===== */
     body{
       font-family:"PP Neue Montreal",system-ui,-apple-system,Segoe UI,Roboto,sans-serif;
-      color:#fff;
-      overflow:hidden;
-      position:relative;
-
-      /* Vars “look” de la matrice */
-      --m-bg: #0a0a0a;                 /* fond quasi noir */
-      --m-color: rgba(255,255,255,.07);/* points très discrets */
-      --m-size: 1px;                   /* taille du point */
-      --m-space: 22px;                 /* espacement */
-
-      /* pattern à la CodePen, figé */
-      background:
-        linear-gradient(90deg, var(--m-bg) calc(var(--m-space) - var(--m-size)), transparent 1%) center / var(--m-space) var(--m-space),
-        linear-gradient(var(--m-bg) calc(var(--m-space) - var(--m-size)), transparent 1%) center / var(--m-space) var(--m-space),
-        var(--m-color);
-      background-attachment: fixed;    /* ne bouge pas au drag */
-      background-color: var(--m-bg);   /* fallback solide */
+      color:#fff; overflow:hidden; position:relative;
+      background-color: var(--m-bg);
+      background-image:
+        radial-gradient(circle, var(--m-dot-color) var(--m-dot-size), transparent calc(var(--m-dot-size) + 0.01px));
+      background-size: var(--m-dot-space) var(--m-dot-space);
+      background-position: 0 0;
+      background-attachment: fixed; /* ne bouge pas avec le drag */
     }
 
-    /* Grain adouci (reste par-dessus la matrice) */
+    /* Grain léger au-dessus des points */
     body::before{
-      content:"";position:fixed;inset:-50%;
+      content:""; position:fixed; inset:-50%;
       background:url("https://assets.iceable.com/img/noise-transparent.png") repeat 0 0/300px 300px;
-      animation:noise .3s steps(5) infinite;
-      opacity:.24;
-      pointer-events:none;
-      z-index:100;
+      animation:noise .3s steps(5) infinite; opacity:.22; pointer-events:none; z-index:100;
     }
     @keyframes noise{
       0%{transform:translate(0,0)}10%{transform:translate(-2%,-3%)}
@@ -80,59 +68,72 @@
     a:hover::after{width:100%}
     p{font-size:14px;font-weight:600;letter-spacing:-.01em}
 
-    /* ============ Header / Footer ============ */
+    /* ===== Header / Footer ===== */
     .header,.footer{
-      position:absolute;left:0;width:100vw;padding:1.2rem;z-index:10000;
-      display:grid;grid-template-columns:repeat(12,1fr);column-gap:var(--spacing-base)
+      position:absolute; left:0; width:100vw; padding:1.2rem; z-index:10000;
+      display:grid; grid-template-columns:repeat(12,1fr); column-gap:var(--spacing-base)
     }
     .header{top:0}
     .footer{bottom:0}
 
-    /* Masquer le menu legacy si piloté par le parent */
-    html[data-year-controlled="true"] .legacy-year-menu { display: none !important; }
+    /* ⚠️ On neutralise tout style “boîte / bulle” hérité de la nav globale */
+    .header, .header *{
+      background: transparent !important;
+      box-shadow: none !important;
+      backdrop-filter: none !important;
+      -webkit-backdrop-filter: none !important;
+      border: 0 !important;
+    }
 
-    /* === Bloc années (dropdown) === */
+    /* === YEARS dropdown (clair qu’on peut cliquer) === */
     .years-section{grid-column:1 / span 4; position:relative;}
     .years-toggle{
-      display:inline-flex; align-items:center; gap:.5rem;
-      font-weight:700; font-size:14px; color:#e5e5e5;
-      cursor:pointer; letter-spacing:-.01em; padding:.35rem .6rem .35rem .4rem;
-      border-radius:999px; transition:opacity .2s ease, transform .2s ease;
-      user-select:none;
+      display:inline-flex; align-items:center; gap:.55rem;
+      font-weight:800; font-size:13px; letter-spacing:.06em; text-transform:uppercase;
+      color:#e9e9e9; cursor:pointer; padding:.4rem .6rem .4rem .2rem;
+      border-radius:999px; user-select:none; position:relative;
     }
-    .years-toggle .dot{width:6px;height:6px;background:#e5e5e5;border-radius:50%;}
-    .years-toggle .chev{width:8px;height:8px;border-right:2px solid #e5e5e5;border-bottom:2px solid #e5e5e5;transform:rotate(45deg); transition:transform .2s ease;}
-    .years-section.open .years-toggle .chev{ transform:rotate(-135deg); }
+    /* petit “pulse” discret pour signaler l’action */
+    .years-toggle::before{
+      content:""; width:6px; height:6px; border-radius:50%;
+      background:#e9e9e9; opacity:.9; display:inline-block; transform:scale(1);
+      animation: blink 2.4s ease-in-out infinite;
+    }
+    @keyframes blink{0%,90%,100%{opacity:.9}45%{opacity:.3}}
 
-    /* Panneau années : pas de box UI, juste un flou d’arrière-plan sur la zone */
+    /* chevron */
+    .chev{width:8px;height:8px;border-right:2px solid #e9e9e9;border-bottom:2px solid #e9e9e9;transform:rotate(45deg); transition:transform .2s ease; margin-left:.2rem;}
+    .years-section.open .chev{ transform:rotate(-135deg); }
+
+    /* Panneau années : déroulant, sans “carte”, juste flou local */
     .years-panel{
-      position:absolute; left:0; top:2.4rem;
+      position:absolute; left:0; top:2.6rem; z-index:10001;
       display:flex; flex-direction:column; gap:.35rem;
-      padding:.4rem .4rem .6rem .4rem;
-      max-height:0; overflow:hidden;
-      transition:max-height .35s ease;
-      z-index:10001;
+      padding:.45rem .4rem .55rem .4rem;
+      max-height:0; overflow:hidden; transition:max-height .35s ease;
     }
     .years-section.open .years-panel{ max-height:50vh; }
+
+    /* flou de l’emprise (pas de vrai fond) */
     .years-panel::before{
-      content:""; position:absolute; inset:-.2rem -1rem -.6rem -1rem;
+      content:""; position:absolute; inset:-.2rem -1rem -.6rem -1rem; border-radius:8px;
       backdrop-filter: blur(6px); -webkit-backdrop-filter: blur(6px);
-      background: rgba(0,0,0,.08);
-      pointer-events:none; z-index:-1; border-radius:8px;
+      background: rgba(0,0,0,.06); pointer-events:none; z-index:-1;
     }
 
     .years{ display:flex; flex-direction:column; gap:.35rem; }
     .year-btn{
-      all:unset; cursor:pointer; color:#aaa; font-weight:700; letter-spacing:-.01em;
-      padding:.2rem .5rem; border-radius:6px; transition:color .2s ease, background .2s ease;
+      all:unset; cursor:pointer; color:#bcbcbc; font-weight:700; letter-spacing:-.01em;
+      padding:.22rem .55rem; border-radius:6px; transition:color .2s ease, background .2s ease;
+      display:block;
     }
     .year-btn:hover{ color:#fff; background:rgba(255,255,255,0.05);}
     .year-btn[aria-pressed="true"]{ color:#fff; background:rgba(255,255,255,0.08);}
 
     .years-close{
-      all:unset; cursor:pointer; align-self:flex-start;
-      color:#ddd; font-weight:700; font-size:12px; letter-spacing:.08em; text-transform:uppercase;
-      opacity:.8; padding:.2rem .5rem; margin-top:.2rem;
+      all:unset; cursor:pointer; align-self:flex-start; margin-top:.25rem;
+      color:#ddd; font-weight:800; font-size:10px; letter-spacing:.14em; text-transform:uppercase;
+      opacity:.8; padding:.2rem .5rem;
     }
     .years-close:hover{ opacity:1; }
 
@@ -141,7 +142,7 @@
     .links-section{grid-column:5 / span 4;display:flex;justify-content:center;gap:1rem}
     .info-section{grid-column:9 / span 4;text-align:right;font-family:"TheGoodMonolith",monospace}
 
-    /* ============ Canvas/grid ============ */
+    /* ===== Canvas / grid ===== */
     .container{position:relative;width:100vw;height:100vh;overflow:hidden;cursor:grab; z-index:1;}
     .canvas{position:absolute;will-change:transform}
 
@@ -173,21 +174,17 @@
     .project-title p{position:relative;height:42px}
     .project-title p .word{display:inline-block;font-size:36px;letter-spacing:-.03em;text-transform:uppercase}
 
-    /* Social links style au footer */
     .links-section a{font-weight:700;font-size:13px}
   </style>
 </head>
 <body>
   <!-- ===== HEADER ===== -->
   <div class="header">
-    <div class="years-section legacy-year-menu" id="yearsSection">
-      <div class="years-toggle" id="yearsToggle">
-        <span class="dot"></span>
+    <div class="years-section" id="yearsSection">
+      <div class="years-toggle" id="yearsToggle" role="button" aria-expanded="false" aria-controls="yearsPanel">
         <span>+ YEARS</span>
-        <span class="chev"></span>
+        <span class="chev" aria-hidden="true"></span>
       </div>
-
-      <!-- Dropdown années -->
       <div class="years-panel" id="yearsPanel">
         <div class="years" id="years"></div>
         <button class="years-close" id="yearsClose">Close</button>
@@ -208,17 +205,14 @@
     <div class="overlay" id="overlay"></div>
   </div>
 
-  <!-- Titre projet au centre -->
   <div class="project-title"><p></p></div>
 
-  <!-- Vignette page -->
   <div class="page-vignette-container">
     <div class="page-vignette"></div>
     <div class="page-vignette-strong"></div>
     <div class="page-vignette-extreme"></div>
   </div>
 
-  <!-- Libs -->
   <script src="https://cdn.jsdelivr.net/npm/gsap@3.12.5/dist/gsap.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/gsap@3.12.5/dist/CustomEase.min.js"></script>
   <script src="https://unpkg.com/split-type"></script>
@@ -229,9 +223,7 @@
     gsap.registerPlugin(CustomEase);
     CustomEase.create("hop","0.9,0,0.1,1");
 
-    /* =========================
-       1) CONTENU ÉDITABLE
-    ========================= */
+    /* ===== Contenu ===== */
     const PROJECTS = [
       { title: "Echo Discs", year: 2025, image: "https://cdn.cosmos.so/7b5340f5-b4dc-4c08-8495-c507fa81480b?format=jpeg" },
       { title: "Neon Handscape", year: 2025, image: "https://cdn.cosmos.so/2f49a117-05e7-4ae9-9e95-b9917f970adb?format=jpeg" },
@@ -247,27 +239,13 @@
       { label: "LinkedIn", href: "https://www.linkedin.com/in/antnstudio/" },
     ];
 
-    /* =========================
-       2) PARAMÈTRES
-    ========================= */
     const settings = {
-      baseWidth: 400,
-      smallHeight: 330,
-      largeHeight: 500,
-      itemGap: 65,
-      hoverScale: 1.05,
-      expandedScale: 0.4,
-      dragEase: 0.075,
-      momentumFactor: 200,
-      bufferZone: 3,
-      zoomDuration: 0.6,
-      overlayOpacity: 0.9,
-      overlayEaseDuration: 0.8
+      baseWidth: 400, smallHeight: 330, largeHeight: 500, itemGap: 65,
+      hoverScale: 1.05, expandedScale: 0.4, dragEase: 0.075, momentumFactor: 200,
+      bufferZone: 3, zoomDuration: 0.6, overlayOpacity: 0.9, overlayEaseDuration: 0.8
     };
 
-    /* =========================
-       3) ÉTAT / DOM
-    ========================= */
+    /* ===== DOM ===== */
     const container = document.querySelector(".container");
     const canvas = document.getElementById("canvas");
     const overlay = document.getElementById("overlay");
@@ -278,7 +256,7 @@
     const yearsClose  = document.getElementById("yearsClose");
     const socialsEl = document.getElementById("socials");
 
-    // Rendu socials (centré en bas)
+    /* Socials */
     SOCIALS.forEach(s => {
       const a = document.createElement("a");
       a.href = s.href; a.target = "_blank"; a.rel = "noreferrer";
@@ -286,18 +264,14 @@
       socialsEl.appendChild(a);
     });
 
-    // Années disponibles (desc)
+    /* Années */
     const uniqueYears = Array.from(new Set(PROJECTS.map(p => p.year))).sort((a,b)=>b-a);
-
-    // State année (support ?year=YYYY sinon "All")
     const qpYear = new URLSearchParams(location.search).get("year");
     let activeYear = qpYear ? (qpYear === "all" ? "All" : String(qpYear)) : "All";
 
-    /* ===== Années (dropdown) ===== */
     function renderYears(){
       yearsEl.innerHTML = "";
-      const allBtn = makeYearBtn("All");
-      yearsEl.appendChild(allBtn);
+      yearsEl.appendChild(makeYearBtn("All"));
       uniqueYears.forEach(y => yearsEl.appendChild(makeYearBtn(String(y))));
       updateYearButtons();
     }
@@ -319,36 +293,40 @@
       resetAndRebuild();
       updateYearButtons();
     }
-    function openYears(){ yearsSection.classList.add("open"); }
-    function closeYears(){ yearsSection.classList.remove("open"); }
+
+    function openYears(){
+      yearsSection.classList.add("open");
+      yearsToggle.setAttribute("aria-expanded","true");
+    }
+    function closeYears(){
+      yearsSection.classList.remove("open");
+      yearsToggle.setAttribute("aria-expanded","false");
+    }
     yearsToggle.addEventListener("click", ()=>{
       yearsSection.classList.toggle("open");
+      yearsToggle.setAttribute("aria-expanded", yearsSection.classList.contains("open"));
     });
     yearsClose.addEventListener("click", closeYears);
 
-    // Liste selon filtre
     function currentList(){
       if(activeYear==="All") return PROJECTS;
       const y = parseInt(activeYear,10);
       return PROJECTS.filter(p => p.year === y);
     }
 
-    // Variables de grille
+    /* ===== Grille ===== */
     const itemSizes = [
       { width: settings.baseWidth, height: settings.smallHeight },
       { width: settings.baseWidth, height: settings.largeHeight }
     ];
-    let itemGap = settings.itemGap, columns = 4;
     const cellWidth = settings.baseWidth + settings.itemGap;
     const cellHeight = Math.max(settings.smallHeight, settings.largeHeight) + settings.itemGap;
+    let columns = 4;
 
     let isDragging=false,startX,startY,targetX=0,targetY=0,currentX=0,currentY=0,dragVX=0,dragVY=0,lastDrag=0;
     let mouseHasMoved=false,visibleItems=new Set(),lastUpdate=0,lastX=0,lastY=0;
-    let isExpanded=false,activeItem=null,activeItemId=null,canDrag=true,expandedItem=null,overlayAnim=null,titleSplit=null;
+    let isExpanded=false,activeItem=null,activeItemId=null,canDrag=true,overlayAnim=null,titleSplit=null;
 
-    /* =========================
-       4) UTILS UI
-    ========================= */
     function setAndAnimateTitle(title){
       if(titleSplit) titleSplit.revert();
       projectTitleElement.textContent = title;
@@ -370,9 +348,6 @@
     function getItemId(col,row){ return `${col},${row}`; }
     function getItemPos(col,row){ return { x: col*cellWidth, y: row*cellHeight }; }
 
-    /* =========================
-       5) BUILD / UPDATE
-    ========================= */
     function updateVisibleItems(){
       const list = currentList();
       const itemCount = list.length || 1;
@@ -437,7 +412,6 @@
 
     function expandItem(item, proj){
       isExpanded=true; activeItem=item; activeItemId=item.id; canDrag=false; container.style.cursor="auto";
-
       setAndAnimateTitle(proj.title);
 
       const rect = item.getBoundingClientRect();
@@ -519,12 +493,13 @@
     addEventListener("resize",()=>{ if(isExpanded&&window.__expandedItem&&activeItem){ const w=parseInt(activeItem.dataset.width,10), h=parseInt(activeItem.dataset.height,10); const targetW=innerWidth*settings.expandedScale, targetH=targetW*(h/w); gsap.to(window.__expandedItem,{width:targetW,height:targetH,duration:.3,ease:"power2.out"}); } else { updateVisibleItems(); } });
 
     function resetAndRebuild(){
-      visibleItems.forEach(id=>{ const el=document.getElementById(id); if(el&&el.parentNode===canvas) canvas.removeChild(el); }); visibleItems.clear();
+      const ids=[...visibleItems]; ids.forEach(id=>{ const el=document.getElementById(id); if(el&&el.parentNode===canvas) canvas.removeChild(el); });
+      visibleItems.clear();
       currentX=currentY=targetX=targetY=lastX=lastY=0; canvas.style.transform="translate(0,0)";
       updateVisibleItems();
     }
 
-    /* ===== Pilotage par le parent (Next) ===== */
+    /* Pilotage parent (facultatif) */
     window.addEventListener("message", (evt) => {
       const data = evt && evt.data;
       if (!data || data.type !== "SET_YEAR") return;
@@ -534,7 +509,7 @@
       openYears();
     });
 
-    // init
+    /* Init */
     renderYears();
     setActiveYear(activeYear);
     updateVisibleItems();
