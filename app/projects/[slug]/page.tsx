@@ -68,4 +68,20 @@ export default async function ProjectPage({
             />
           </div>
         ) : thumb ? (
-          <img src=
+          <img src={thumb} alt={title} className="w-full h-auto object-cover" />
+        ) : null}
+      </div>
+
+      {vimeoUrl && vimeoUrl !== "#" ? (
+        <a
+          href={vimeoUrl}
+          target="_blank"
+          rel="noreferrer"
+          className="mt-6 inline-block text-sm underline text-zinc-300 hover:text-zinc-100"
+        >
+          Open on Vimeo
+        </a>
+      ) : null}
+    </main>
+  );
+}
