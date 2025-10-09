@@ -1,16 +1,29 @@
 // app/projects/page.tsx
 "use client";
 
-import { useRef, useEffect } from "react";
+import { useEffect, useRef, Suspense } from "react";
 import { useSearchParams } from "next/navigation";
 
 export default function ProjectsPage() {
+  // Rien d'autre ici : on met la logique qui lit les params dans un enfant
+  return (
+    <main className="relative min-h-[100svh]">
+      <Suspense fallback={null}>
+        <ProjectsIframe />
+      </Suspense>
+    </main>
+  );
+}
+
+function ProjectsIframe() {
   const iframeRef = useRef<HTMLIFrameElement>(null);
   const search = useSearchParams();
   const year = search.get("year"); // "all" | "2025" | etc. | null
 
-  // Optionnel : on renvoie l'état initial à l'iframe une fois chargée,
-  // au cas où tu arrives avec ?year= dans l'URL.
+  // Construit l'URL de l'iframe (permet deep-linking /projects?year=2025)
+  const src = `/projects-pen.html${year ? `?year=${encodeURIComponent(year)}` : ""}`;
+
+  // Envoie l’état initial à l’iframe quand elle est prête
   useEffect(() => {
     if (!year) return;
     iframeRef.current?.contentWindow?.postMessage(
@@ -19,23 +32,19 @@ export default function ProjectsPage() {
     );
   }, [year]);
 
-  const src = `/projects-pen.html${year ? `?year=${encodeURIComponent(year)}` : ""}`;
-
   return (
-    <main className="relative min-h-[100svh]">
-      <iframe
-        ref={iframeRef}
-        src={src}
-        className="h-[100svh] w-full border-0"
-        title="Projects Grid"
-        onLoad={() => {
-          if (!year) return;
-          iframeRef.current?.contentWindow?.postMessage(
-            { type: "SET_YEAR", value: year === "all" ? "all" : year },
-            "*"
-          );
-        }}
-      />
-    </main>
+    <iframe
+      ref={iframeRef}
+      src={src}
+      className="h-[100svh] w-full border-0"
+      title="Projects Grid"
+      onLoad={() => {
+        if (!year) return;
+        iframeRef.current?.contentWindow?.postMessage(
+          { type: "SET_YEAR", value: year === "all" ? "all" : year },
+          "*"
+        );
+      }}
+    />
   );
 }
