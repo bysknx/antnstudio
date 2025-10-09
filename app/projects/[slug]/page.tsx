@@ -14,36 +14,37 @@ function slugify(input: string) {
 }
 
 async function getProjects() {
-  // fetch interne vers notre Route Handler
-  const res = await fetch(`${process.env.NEXT_PUBLIC_BASE_URL ?? ""}/api/vimeo`, {
-    // en local/SSR, une URL relative marche aussi:
-    // fetch("/api/vimeo", { cache: "no-store" })
-    cache: "no-store",
-  }).catch(() => null);
+  // Route Handler interne — en SSR une URL relative marche aussi
+  const base = process.env.NEXT_PUBLIC_BASE_URL ?? "";
+  const url = `${base}/api/vimeo`.replace(/\/{2,}/g, "/").replace(":/", "://");
 
+  const res = await fetch(url, { cache: "no-store" }).catch(() => null);
   if (!res || !res.ok) return { items: [] as any[] };
   return res.json();
 }
 
-export default async function ProjectPage({
-  params,
-}: {
-  params: { slug: string };
-}) {
+// ⚠️ Next 15: params est une Promise
+type PageProps = { params: Promise<{ slug: string }> };
+
+export default async function ProjectPage({ params }: PageProps) {
+  const { slug } = await params;
+
   const data = await getProjects();
-  const items: any[] = Array.isArray(data?.items) ? data.items : [];
+  const items: any[] = Array.isArray((data as any)?.items) ? (data as any).items : [];
 
-  // on match soit par slug(title) soit par id
+  // match par slug(title) OU par id
   const project =
-    items.find((p) => slugify(p.title || p.name || "") === params.slug) ||
-    items.find((p) => p.id === params.slug);
+    items.find((p) => slugify(p.title || p.name || "") === slug) ||
+    items.find((p) => String(p.id) === slug);
 
-  if (!project) return notFound();
+  if (!project) notFound();
 
-  const title = project.title || project.name || "Untitled";
-  const thumb = project.thumbnail || "";
-  const year = project.year || new Date(project.createdAt || Date.now()).getFullYear();
-  const vimeoUrl = project.vimeoUrl || project.link || "#";
+  const title: string = project.title || project.name || "Untitled";
+  const thumb: string | undefined = project.thumbnail || project.picture || project.thumb || "";
+  const year: number =
+    project.year ||
+    new Date(project.createdAt || project.created_time || Date.now()).getFullYear();
+  const vimeoUrl: string = project.vimeoUrl || project.link || "#";
 
   return (
     <main className="container mx-auto px-6 py-16">
@@ -62,26 +63,52 @@ export default async function ProjectPage({
           <div className="relative w-full pb-[56.25%]">
             <iframe
               className="absolute inset-0 h-full w-full"
-              src={project.embed}
+              src={project.embed as string}
+              title={title}
               allow="autoplay; fullscreen; picture-in-picture; clipboard-write; encrypted-media; web-share"
               referrerPolicy="strict-origin-when-cross-origin"
             />
           </div>
         ) : thumb ? (
-          <img src={thumb} alt={title} className="w-full h-auto object-cover" />
-        ) : null}
+          <img
+            src={String(thumb)}
+            alt={title}
+            className="w-full h-auto"
+            loading="eager"
+          />
+        ) : (
+          <div className="aspect-video grid place-items-center text-zinc-500">
+            <a
+              href={vimeoUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="underline hover:text-zinc-300"
+            >
+              View on Vimeo
+            </a>
+          </div>
+        )}
       </div>
 
-      {vimeoUrl && vimeoUrl !== "#" ? (
-        <a
-          href={vimeoUrl}
-          target="_blank"
-          rel="noreferrer"
-          className="mt-6 inline-block text-sm underline text-zinc-300 hover:text-zinc-100"
-        >
-          Open on Vimeo
-        </a>
-      ) : null}
+      {/* liens / meta */}
+      <div className="mt-6 flex items-center gap-4 text-sm text-zinc-400">
+        {vimeoUrl && vimeoUrl !== "#" && (
+          <a
+            href={vimeoUrl}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="underline hover:text-zinc-200"
+          >
+            Open on Vimeo
+          </a>
+        )}
+      </div>
     </main>
   );
 }
+
+// (Optionnel) si tu as un generateMetadata, pense à await params aussi :
+// export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
+//   const { slug } = await params;
+//   return { title: `Project — ${slug}` };
+// }
