@@ -1,97 +1,106 @@
 // lib/vimeo.ts
-import { parseVimeoTitle, slugify } from "./parseVimeoTitle";
+const API = "https://api.vimeo.com";
 
-const VIMEO_API = "https://api.vimeo.com";
-
-export type VimeoItem = {
-  id: string;
-  name: string;      // titre
-  link: string;      // url publique
-  player_embed_url?: string; // parfois fourni
-  pictures?: { sizes?: { link: string; width: number; height: number }[] };
-  duration?: number;
-  created_time?: string;
+type FetchOpts = {
+  folderId?: string | undefined;
+  perPage?: number; // max à récupérer (cap coté client)
 };
 
-export type ProjectFromVimeo = {
-  id: string;
-  name: string;          // original vimeo title
-  year?: number;
-  client?: string;
-  title?: string;
-  type?: string;
-  slug: string;
-  vimeoId: string;
-  vimeoUrl: string;
-  embedUrl: string;      // iframe URL (player.vimeo.com/video/…)
-  thumbnail: string | null;
-  duration: number | null;
-  createdAt: string;
-  featured?: boolean;
-  featuredOrder?: number;
+type VimeoRaw = {
+  uri?: string;                 // ex: "/videos/123456789"
+  name?: string;                // titre
+  link?: string;                // page publique
+  created_time?: string;        // ISO
+  release_time?: string;        // ISO
+  duration?: number;            // en secondes
+  pictures?: {
+    sizes?: Array<{ width: number; height: number; link: string }>;
+    base_link?: string;
+  };
 };
 
-function buildEmbedUrl(id: string) {
-  // Autoplay + mute + no controls, ajustable
-  return `https://player.vimeo.com/video/${id}?autoplay=1&muted=1&playsinline=1&controls=0&pip=1&autopause=0&badge=0`;
-}
-
-export async function fetchVimeoWorks(opts?: {
-  folderId?: string;
-  perPage?: number;
-}): Promise<ProjectFromVimeo[]> {
+export async function fetchVimeoWorks({ folderId, perPage = 200 }: FetchOpts) {
   const token = process.env.VIMEO_TOKEN;
-  if (!token) throw new Error("VIMEO_TOKEN is missing");
+  if (!token) throw new Error("Missing VIMEO_TOKEN");
 
-  const perPage = opts?.perPage ?? 100;
-  const endpoint = opts?.folderId
-    ? `${VIMEO_API}/me/projects/${opts.folderId}/videos?per_page=${perPage}&sort=date&direction=desc`
-    : `${VIMEO_API}/me/videos?per_page=${perPage}&sort=date&direction=desc`;
+  // endpoint: dossier (projects) ou vidéos du compte
+  const basePath = folderId
+    ? `/me/projects/${folderId}/videos`
+    : `/me/videos`;
 
-  const res = await fetch(endpoint, {
-    headers: { Authorization: `Bearer ${token}` },
-    // Sur Vercel Edge/Node 18+, pas besoin d'agent spécifique
-    cache: "no-store",
-  });
-  if (!res.ok) {
-    const text = await res.text();
-    throw new Error(`Vimeo API error: ${res.status} ${text}`);
+  const fields = [
+    "uri",
+    "name",
+    "link",
+    "created_time",
+    "release_time",
+    "duration",
+    "pictures.sizes",
+    "pictures.base_link",
+  ].join(",");
+
+  const headers: Record<string, string> = {
+    Authorization: `bearer ${token}`,
+    Accept: "application/vnd.vimeo.*+json;version=3.4",
+    "Content-Type": "application/json",
+  };
+
+  const items: VimeoRaw[] = [];
+  let url = new URL(`${API}${basePath}`);
+  url.searchParams.set("per_page", "100");            // pagination 100 par page
+  url.searchParams.set("sort", "date");
+  url.searchParams.set("direction", "desc");
+  url.searchParams.set("fields", fields);
+
+  while (true) {
+    const res = await fetch(url.toString(), { headers, cache: "no-store" });
+    if (!res.ok) {
+      const msg = await res.text().catch(() => res.statusText);
+      throw new Error(`Vimeo ${res.status}: ${msg}`);
+    }
+    const json = await res.json();
+    const pageData: VimeoRaw[] = Array.isArray(json?.data) ? json.data : [];
+    items.push(...pageData);
+
+    if (items.length >= perPage) break;
+
+    // pagination
+    const next = json?.paging?.next as string | undefined;
+    if (!next) break;
+    url = new URL(next);
   }
 
-  const data = await res.json();
-  const items: VimeoItem[] = data.data || [];
+  // mapping propre → notre contrat côté app
+  return items.slice(0, perPage).map((p) => {
+    const id =
+      p?.uri?.split?.("/")?.pop?.() ??
+      ""; // ex: "/videos/123" → "123"
 
-  return items.map((v) => {
-    // id pur = le dernier segment de v.uri (ex: /videos/123456789)
-    const vimeoId = (v as any).uri?.split("/").pop() || "";
+    const created = p?.created_time || p?.release_time || null;
+    const createdAt = created ? new Date(created).toISOString() : null;
+    const year = created ? new Date(created).getFullYear() : undefined;
 
-    const parsed = parseVimeoTitle(v.name);
-    const safeTitle = parsed.title || v.name;
-    const slug = slugify(`${parsed.year || ""}-${safeTitle}`);
+    // prend la plus grande image disponible (ou base_link)
+    const fromSizes =
+      p?.pictures?.sizes && p.pictures.sizes.length
+        ? p.pictures.sizes[p.pictures.sizes.length - 1]?.link
+        : undefined;
+    const thumbnail = fromSizes || p?.pictures?.base_link || "";
 
-    const thumb =
-      v.pictures?.sizes?.sort((a, b) => (b.width ?? 0) - (a.width ?? 0))[0]
-        ?.link || null;
-
-    const featured =
-      typeof parsed.featuredOrder === "number" && parsed.featuredOrder > 0;
+    const embed =
+      id && /^\d+$/.test(id)
+        ? `https://player.vimeo.com/video/${id}?autoplay=0&muted=1&playsinline=1`
+        : undefined;
 
     return {
-      id: `vimeo-${vimeoId}`,
-      name: v.name,
-      year: parsed.year,
-      client: parsed.client,
-      title: parsed.title,
-      type: parsed.type,
-      slug,
-      vimeoId,
-      vimeoUrl: v.link,
-      embedUrl: buildEmbedUrl(vimeoId),
-      thumbnail: thumb,
-      duration: typeof v.duration === "number" ? v.duration : null,
-      createdAt: v.created_time || "",
-      featured,
-      featuredOrder: parsed.featuredOrder,
+      id,
+      title: p?.name ?? "Untitled",
+      link: p?.link ?? "",
+      createdAt,
+      year,
+      duration: p?.duration,
+      thumbnail,
+      embed,
     };
   });
 }
