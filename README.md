@@ -1,3 +1,3 @@
 ## About
 
-antn.studio by anthony.
+antn.studio by anthony
