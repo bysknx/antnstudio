@@ -1,9 +1,27 @@
 import { ContactForm } from "@/components/ContactForm";
 
+/* === Petit helper pour mots “réactifs” au hover (souligné fluide + léger glow) === */
+function HoverWord({ children }: { children: React.ReactNode }) {
+  return (
+    <span className="group relative inline-block cursor-default transition-transform duration-200 hover:-translate-y-[1px]">
+      <span className="relative z-10">{children}</span>
+      <span
+        aria-hidden
+        className="pointer-events-none absolute left-0 right-0 -bottom-0.5 h-[1.5px] origin-left scale-x-0 bg-white/80 transition-transform duration-200 ease-out group-hover:scale-x-100"
+      />
+      <span
+        aria-hidden
+        className="pointer-events-none absolute inset-x-0 -bottom-1 h-2 rounded-full bg-white/10 opacity-0 blur-[2px] transition-opacity duration-200 group-hover:opacity-100"
+      />
+    </span>
+  );
+}
+
+/* === Tes vraies expériences === */
 const EXPERIENCES = [
-  { title: "CEO", company: "Reglazed Studio", dates: "2024 – Présent", type: "" },
-  { title: "Design Engineer", company: "Freelance", dates: "2022 – 2024", type: "" },
-  { title: "Front-end Developer", company: "Freelance", dates: "2017 – Présent", type: "" },
+  { title: "CEO", company: "antn.studio", dates: "2019 – Present", type: "" },
+  { title: "Edit Supervisor", company: "Freelance @ Jellysmack", dates: "2022 – 2023", type: "" },
+  { title: "International Project Manager", company: "Freelance", dates: "2023 – 2025", type: "" },
 ];
 
 export default function ContactPage() {
@@ -20,9 +38,19 @@ export default function ContactPage() {
         <section className="w-full lg:w-1/2 space-y-6 text-left">
           <div>
             <h2 className="text-2xl font-semibold text-zinc-100 mb-3">About</h2>
-            <p className="text-[15px] leading-relaxed text-zinc-400 max-w-lg">
-              Interfaces minimalistes, rapides et bien produites. Direction artistique claire,
-              exécution propre. Basé en France. Dispo en remote.
+
+            <p className="text-[15px] leading-relaxed text-zinc-300/90 max-w-xl">
+              <strong className="font-semibold">« antn.studio »</strong> founded by Anthony, an independent director and
+              project lead from <HoverWord>Paris</HoverWord>. Blending <HoverWord>precision</HoverWord> with{" "}
+              <HoverWord>emotion</HoverWord>, the studio crafts <HoverWord>cinematic visuals</HoverWord>,{" "}
+              <HoverWord>brand films</HoverWord>, and <HoverWord>digital experiences</HoverWord> with a strong{" "}
+              <HoverWord>narrative core</HoverWord>. Each project is shaped with <HoverWord>technical mastery</HoverWord>,
+              and driven by a search for <HoverWord>authenticity</HoverWord> and <HoverWord>impact</HoverWord>.
+            </p>
+
+            <p className="mt-3 text-[15px] leading-relaxed text-zinc-300/90 max-w-xl">
+              <HoverWord>Sensory</HoverWord>, <HoverWord>intentional</HoverWord>, <HoverWord>timeless</HoverWord> — antn.studio
+              turns ideas into <HoverWord>living imagery</HoverWord>.
             </p>
           </div>
 
@@ -48,10 +76,13 @@ export default function ContactPage() {
 
       {/* ===== EXPÉRIENCES ===== */}
       <section className="mt-24">
-        <h3 className="sr-only">Expériences</h3>
+        <h3 className="sr-only">Experiences</h3>
         <ul className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 place-items-center">
           {EXPERIENCES.map((exp) => (
-            <li key={`${exp.company}-${exp.title}`} className="glass-panel rounded-2xl p-4 w-full max-w-sm">
+            <li
+              key={`${exp.company}-${exp.title}`}
+              className="glass-panel rounded-2xl p-4 w-full max-w-sm"
+            >
               <div className="mb-1 flex items-center justify-between text-xs text-zinc-400">
                 <span>{exp.company}</span>
                 <span>{exp.dates}</span>
