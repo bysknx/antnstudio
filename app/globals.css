@@ -1,0 +1,233 @@
+/* ================================
+   Tailwind v4 core + plugins
+================================ */
+@import "tailwindcss";
+@plugin "@tailwindcss/typography";
+
+/* Variant utilitaire: .dark à la racine */
+@custom-variant dark (&:is(.dark *));
+
+/* =================================
+   Compat Tailwind v4 : border-color
+================================== */
+@layer base {
+  * ,
+  ::after,
+  ::before,
+  ::backdrop,
+  ::file-selector-button {
+    border-color: var(--color-gray-200, currentColor);
+  }
+}
+
+/* ======================
+   Design tokens (root)
+====================== */
+:root {
+  /* Couleurs pour code highlighting (ne touche pas à l'UI) */
+  --sh-class: #7aa2f7;
+  --sh-sign: #89ddff;
+  --sh-string: #9ece6a;
+  --sh-keyword: #bb9af7;
+  --sh-comment: #565f89;
+  --sh-jsxliterals: #7aa2f7;
+  --sh-property: #73daca;
+  --sh-entity: #e0af68;
+}
+
+/* ==========================
+   Base sûre (fallback dark)
+========================== */
+@layer base {
+  html,
+  body {
+    background-color: #0a0a0b;
+    color: #e5e7eb;
+  }
+
+  h1,
+  h2,
+  h3 {
+    line-height: 1.15;
+  }
+  h1 {
+    margin: 0 0 1rem;
+  }
+  h2,
+  h3 {
+    margin: 0 0 0.75rem;
+  }
+
+  /* Fond & texte via Tailwind (override propre) */
+  body {
+    @apply bg-zinc-950 text-zinc-200;
+  }
+
+  /* Wrapper page (z-index / flow) */
+  .page {
+    position: relative;
+  }
+}
+
+/* ===========================
+   Overlays d’ambiance (UI)
+=========================== */
+@layer base {
+  /* Subtil bruit “papier” */
+  .grain {
+    position: absolute;
+    inset: 0;
+    background-image: radial-gradient(
+      rgba(255, 255, 255, 0.025) 0.6px,
+      transparent 0.6px
+    );
+    background-size: 2px 2px;
+    opacity: 0.18;
+    mix-blend-mode: soft-light;
+    pointer-events: none;
+  }
+
+  /* Lignes CRT très légères */
+  .scanlines {
+    position: absolute;
+    inset: 0;
+    background: repeating-linear-gradient(
+      to bottom,
+      rgba(255, 255, 255, 0.04) 0 1px,
+      transparent 1px 3px
+    );
+    opacity: 0.07;
+    mix-blend-mode: soft-light;
+    pointer-events: none;
+  }
+
+  /* Vignette & lueur douce */
+  .vignette {
+    position: absolute;
+    inset: 0;
+    background:
+      radial-gradient(
+        600px 400px at 70% 15%,
+        rgba(255, 255, 255, 0.06),
+        transparent 60%
+      ),
+      radial-gradient(
+        1200px 800px at 50% 120%,
+        rgba(0, 0, 0, 0.35),
+        transparent 60%
+      );
+    opacity: 1;
+    pointer-events: none;
+  }
+}
+
+/* =======================
+   Layout helpers (utils)
+======================= */
+@layer utilities {
+  .shell {
+    padding-left: clamp(16px, 4vw, 32px);
+    padding-right: clamp(16px, 4vw, 32px);
+    max-width: 1200px;
+    margin-inline: auto;
+    width: 100%;
+  }
+  .shell-lg {
+    max-width: 1400px;
+  }
+
+  .stack-24 > * + * { margin-top: 6rem; }
+  .stack-16 > * + * { margin-top: 4rem; }
+  .stack-12 > * + * { margin-top: 3rem; }
+}
+
+/* ===================
+   ASCII Loader UI
+=================== */
+@layer components {
+  .ascii-frame {
+    display: grid;
+    gap: 0.5rem;
+    padding: 1.25rem 1.5rem;
+    border-radius: 10px;
+    background: rgba(12, 12, 12, 0.75);
+    border: 1px solid rgba(255, 255, 255, 0.06);
+    box-shadow:
+      0 0 0 1px rgba(255, 255, 255, 0.03) inset,
+      0 20px 80px rgba(0, 0, 0, 0.5);
+  }
+
+  .ascii-block {
+    margin: 0;
+    font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, "Courier New", monospace;
+    font-size: clamp(10px, 1.3vw, 14px);
+    line-height: 1.15;
+    letter-spacing: 0.5px;
+    color: #e5e7eb;
+    text-shadow: 0 0 2px rgba(255, 255, 255, 0.25);
+    animation: asciiScan 1.2s ease-out both;
+    white-space: pre;
+  }
+
+  .ascii-sub {
+    font: 11px/1.1 ui-monospace, SFMono-Regular, Menlo, Monaco, "Courier New", monospace;
+    color: rgba(229, 231, 235, 0.6);
+    opacity: 0;
+    animation: asciiBlink 0.9s 0.45s steps(2, end) 3 forwards;
+  }
+}
+
+@keyframes asciiScan {
+  0% { transform: translateY(6px); filter: blur(6px); opacity: 0; }
+  55% { opacity: 0.9; }
+  100% { transform: translateY(0); filter: blur(0); opacity: 1; }
+}
+
+@keyframes asciiBlink {
+  0%, 49% { opacity: 0; }
+  50%, 100% { opacity: 0.7; }
+}
+
+@keyframes asciiFadeOut {
+  0% { background: transparent; }
+  100% { background: rgba(0, 0, 0, 0.96); }
+}
+
+/* prefers-reduced-motion: couper les anims */
+@media (prefers-reduced-motion: reduce) {
+  .ascii-block { animation: none !important; }
+  .ascii-sub { animation: none !important; opacity: 0.7; }
+}
+
+/* ==================
+   Utilitaires UI
+================== */
+@layer utilities {
+  /* Carte “liquid glass” (sobre, non bleutée) */
+  .glass-panel {
+    background: rgba(24, 24, 27, 0.6);        /* zinc-900 ~ */
+    -webkit-backdrop-filter: blur(10px);
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.06);
+    box-shadow:
+      inset 0 0 0.5px rgba(255, 255, 255, 0.22),
+      0 8px 30px rgba(0, 0, 0, 0.35);
+    border-radius: 1rem; /* cohérent avec tes cartes */
+  }
+
+  /* Variante utilitaire “glass” avec @apply (si tu la réutilises) */
+  .glass {
+    @apply bg-zinc-900/90 backdrop-blur-xl border border-white/10;
+    box-shadow:
+      inset 0 0 0.5px rgba(255, 255, 255, 0.25),
+      0 8px 30px rgba(0, 0, 0, 0.35);
+  }
+
+  /* Conteneur global : correspond à la classe que tu utilises dans ta page */
+  .container {
+    max-width: 1100px;
+    margin-inline: auto;
+    padding-inline: clamp(16px, 4vw, 32px);
+    width: 100%;
+  }
+}
