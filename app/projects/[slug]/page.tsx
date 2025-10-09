@@ -1,134 +1,71 @@
-import type { Metadata } from "next";
+// app/projects/[slug]/page.tsx
 import { notFound } from "next/navigation";
 import Link from "next/link";
-import { PROJECTS } from "@/app/data";
+
+export const dynamic = "force-dynamic"; // on lit /api/vimeo à la requête
 
 function slugify(input: string) {
   return input
     .toLowerCase()
-    .normalize("NFD")
+    .normalize("NFKD")
     .replace(/[\u0300-\u036f]/g, "")
     .replace(/[^a-z0-9]+/g, "-")
-    .replace(/(^-|-$)+/g, "");
+    .replace(/(^-|-$)/g, "");
 }
 
-const PROJECT_LIST = PROJECTS.map((p) => ({ slug: slugify(p.name), project: p }));
+async function getProjects() {
+  // fetch interne vers notre Route Handler
+  const res = await fetch(`${process.env.NEXT_PUBLIC_BASE_URL ?? ""}/api/vimeo`, {
+    // en local/SSR, une URL relative marche aussi:
+    // fetch("/api/vimeo", { cache: "no-store" })
+    cache: "no-store",
+  }).catch(() => null);
 
-export async function generateStaticParams() {
-  return PROJECT_LIST.map(({ slug }) => ({ slug }));
+  if (!res || !res.ok) return { items: [] as any[] };
+  return res.json();
 }
 
-type Params = { slug: string };
-
-// ⚠️ Next 15 : params est un Promise
-export async function generateMetadata({
+export default async function ProjectPage({
   params,
 }: {
-  params: Promise<Params>;
-}): Promise<Metadata> {
-  const { slug } = await params;
-  const entry = PROJECT_LIST.find((p) => p.slug === slug);
-  if (!entry) return {};
-
-  const { project } = entry;
-  const title = `${project.name} — antn.studio`;
-  const description = project.description ?? "Project — antn.studio";
-
-  return {
-    title,
-    description,
-    openGraph: {
-      title,
-      description,
-      url: `https://antn.studio/projects/${slug}`,
-      siteName: "antn.studio",
-      images: [{ url: "/cover.jpg", width: 1200, height: 630, alt: project.name }],
-      type: "website",
-    },
-    twitter: {
-      card: "summary_large_image",
-      title,
-      description,
-      images: ["/cover.jpg"],
-    },
-  };
-}
-
-// ⚠️ Next 15 : params est un Promise
-export default async function ProjectDetail({
-  params,
-}: {
-  params: Promise<Params>;
+  params: { slug: string };
 }) {
-  const { slug } = await params;
-  const entry = PROJECT_LIST.find((p) => p.slug === slug);
-  if (!entry) return notFound();
-  const { project } = entry;
+  const data = await getProjects();
+  const items: any[] = Array.isArray(data?.items) ? data.items : [];
+
+  // on match soit par slug(title) soit par id
+  const project =
+    items.find((p) => slugify(p.title || p.name || "") === params.slug) ||
+    items.find((p) => p.id === params.slug);
+
+  if (!project) return notFound();
+
+  const title = project.title || project.name || "Untitled";
+  const thumb = project.thumbnail || "";
+  const year = project.year || new Date(project.createdAt || Date.now()).getFullYear();
+  const vimeoUrl = project.vimeoUrl || project.link || "#";
 
   return (
-    <main className="grid-c py-28 space-y-10">
-      <header className="mb-4 flex items-end justify-between gap-4">
-        <div>
-          <h1 className="text-3xl font-semibold text-zinc-100">{project.name}</h1>
-          <p className="text-zinc-400">{project.description}</p>
-        </div>
+    <main className="container mx-auto px-6 py-16">
+      <div className="mb-6 text-sm text-zinc-400">
+        <Link href="/projects" className="underline hover:text-zinc-200">
+          ← Back to projects
+        </Link>
+      </div>
 
-        <div className="flex items-center gap-3">
-          {project.link && (
-            <a
-              href={project.link}
-              target="_blank"
-              rel="noreferrer"
-              className="inline-flex items-center rounded-full border border-zinc-700/70 px-3 py-1 text-sm text-zinc-200 hover:bg-zinc-900"
-            >
-              Visit ↗
-            </a>
-          )}
-          <Link
-            href="/projects"
-            className="inline-flex items-center rounded-full border border-zinc-700/50 px-3 py-1 text-sm text-zinc-300 hover:bg-zinc-900"
-          >
-            Back
-          </Link>
-        </div>
-      </header>
+      <h1 className="text-3xl font-semibold text-zinc-100">{title}</h1>
+      <p className="mt-1 text-zinc-400">{year}</p>
 
-      <section className="rounded-2xl bg-zinc-950/60 ring-1 ring-zinc-800/60 p-1">
-        {project.video ? (
-          <video
-            src={project.video}
-            autoPlay
-            loop
-            muted
-            playsInline
-            className="aspect-video w-full rounded-xl"
-          />
-        ) : (
-          <div className="aspect-video w-full rounded-xl bg-zinc-900" />
-        )}
-      </section>
-
-      <section className="grid grid-cols-1 gap-6 md:grid-cols-3">
-        <div className="rounded-xl bg-zinc-950/50 p-4 ring-1 ring-zinc-800/60">
-          <h3 className="mb-2 text-sm font-medium text-zinc-200">Role</h3>
-          <p className="text-zinc-400">Front-end, Design System, Motion</p>
-        </div>
-        <div className="rounded-xl bg-zinc-950/50 p-4 ring-1 ring-zinc-800/60">
-          <h3 className="mb-2 text-sm font-medium text-zinc-200">Stack</h3>
-          <p className="text-zinc-400">Next.js, Tailwind v4, Motion, Canvas</p>
-        </div>
-        <div className="rounded-xl bg-zinc-950/50 p-4 ring-1 ring-zinc-800/60">
-          <h3 className="mb-2 text-sm font-medium text-zinc-200">Year</h3>
-          <p className="text-zinc-400">{new Date().getFullYear()}</p>
-        </div>
-      </section>
-
-      <section className="prose prose-invert prose-zinc max-w-none">
-        <p>
-          Brief du projet, objectifs et contraintes. Page volontairement minimaliste
-          pour coller à la DA. On branchera du contenu MDX (texte + images + embeds) si besoin.
-        </p>
-      </section>
-    </main>
-  );
-}
+      {/* media */}
+      <div className="mt-8 rounded-xl overflow-hidden border border-white/10 bg-black">
+        {project.embed ? (
+          <div className="relative w-full pb-[56.25%]">
+            <iframe
+              className="absolute inset-0 h-full w-full"
+              src={project.embed}
+              allow="autoplay; fullscreen; picture-in-picture; clipboard-write; encrypted-media; web-share"
+              referrerPolicy="strict-origin-when-cross-origin"
+            />
+          </div>
+        ) : thumb ? (
+          <img src=
