@@ -26,11 +26,11 @@
       --page-vignette-extreme-size: 36px;
       --page-vignette-extreme-color: rgba(0,0,0,1);
 
-      /* Matrice fixe (proche de ta DA) */
-      --m-bg: #0b0b0b;                      /* fond quasi noir */
-      --m-dot-color: rgba(255,255,255,.08); /* intensité des points */
-      --m-dot-size: 1.1px;                  /* rayon du point */
-      --m-dot-space: 22px;                  /* espacement */
+      /* Matrice fixe */
+      --m-bg: #0b0b0b;
+      --m-dot-color: rgba(255,255,255,.08);
+      --m-dot-size: 1.1px;
+      --m-dot-space: 22px;
     }
 
     *{margin:0;padding:0;box-sizing:border-box;user-select:none}
@@ -44,10 +44,10 @@
         radial-gradient(circle, var(--m-dot-color) var(--m-dot-size), transparent calc(var(--m-dot-size) + 0.01px));
       background-size: var(--m-dot-space) var(--m-dot-space);
       background-position: 0 0;
-      background-attachment: fixed; /* ne bouge pas avec le drag */
+      background-attachment: fixed;
     }
 
-    /* Grain léger au-dessus des points */
+    /* Grain léger */
     body::before{
       content:""; position:fixed; inset:-50%;
       background:url("https://assets.iceable.com/img/noise-transparent.png") repeat 0 0/300px 300px;
@@ -76,7 +76,7 @@
     .header{top:0}
     .footer{bottom:0}
 
-    /* ⚠️ On neutralise tout style “boîte / bulle” hérité de la nav globale */
+    /* On neutralise toute “bulle” de la nav globale */
     .header, .header *{
       background: transparent !important;
       box-shadow: none !important;
@@ -85,7 +85,17 @@
       border: 0 !important;
     }
 
-    /* === YEARS dropdown (clair qu’on peut cliquer) === */
+    /* Masque proactif de l’ancien menu (si injecté) */
+    .legacy-year-menu,
+    .years-popover,
+    .years-menu,
+    .nav-years,
+    [data-ui="years-popover"],
+    [data-component="years-menu"]{
+      display:none !important;
+    }
+
+    /* === YEARS dropdown — version légère/floutée === */
     .years-section{grid-column:1 / span 4; position:relative;}
     .years-toggle{
       display:inline-flex; align-items:center; gap:.55rem;
@@ -93,19 +103,16 @@
       color:#e9e9e9; cursor:pointer; padding:.4rem .6rem .4rem .2rem;
       border-radius:999px; user-select:none; position:relative;
     }
-    /* petit “pulse” discret pour signaler l’action */
     .years-toggle::before{
       content:""; width:6px; height:6px; border-radius:50%;
-      background:#e9e9e9; opacity:.9; display:inline-block; transform:scale(1);
+      background:#e9e9e9; opacity:.9; display:inline-block;
       animation: blink 2.4s ease-in-out infinite;
     }
     @keyframes blink{0%,90%,100%{opacity:.9}45%{opacity:.3}}
 
-    /* chevron */
     .chev{width:8px;height:8px;border-right:2px solid #e9e9e9;border-bottom:2px solid #e9e9e9;transform:rotate(45deg); transition:transform .2s ease; margin-left:.2rem;}
     .years-section.open .chev{ transform:rotate(-135deg); }
 
-    /* Panneau années : déroulant, sans “carte”, juste flou local */
     .years-panel{
       position:absolute; left:0; top:2.6rem; z-index:10001;
       display:flex; flex-direction:column; gap:.35rem;
@@ -113,8 +120,6 @@
       max-height:0; overflow:hidden; transition:max-height .35s ease;
     }
     .years-section.open .years-panel{ max-height:50vh; }
-
-    /* flou de l’emprise (pas de vrai fond) */
     .years-panel::before{
       content:""; position:absolute; inset:-.2rem -1rem -.6rem -1rem; border-radius:8px;
       backdrop-filter: blur(6px); -webkit-backdrop-filter: blur(6px);
@@ -148,9 +153,7 @@
 
     .item{position:absolute;overflow:hidden;background:#000;cursor:pointer;border-radius:var(--border-radius)}
     .item-image-container{position:relative;width:100%;height:100%;overflow:hidden}
-    .item-image-container::after{
-      content:"";position:absolute;inset:0;pointer-events:none;box-shadow:inset 0 0 var(--vignette-size) rgba(0,0,0,.5);z-index:1
-    }
+    .item-image-container::after{content:"";position:absolute;inset:0;pointer-events:none;box-shadow:inset 0 0 var(--vignette-size) rgba(0,0,0,.5);z-index:1}
     .item img{width:100%;height:100%;object-fit:cover;pointer-events:none;transition:transform .3s ease}
     .item:hover img{transform:scale(var(--hover-scale))}
     .item-caption{position:absolute;left:0;bottom:0;width:100%;padding:10px;z-index:2}
@@ -256,6 +259,35 @@
     const yearsClose  = document.getElementById("yearsClose");
     const socialsEl = document.getElementById("socials");
 
+    /* 1) SUPPRIMER l'ancien menu "liquid glass" si le thème global l'injecte */
+    function removeLegacyYearsUI(){
+      const candidates = document.querySelectorAll(
+        '.legacy-year-menu, .years-popover, .years-menu, .nav-years, [data-ui="years-popover"], [data-component="years-menu"]'
+      );
+      candidates.forEach(n => n.remove());
+
+      // Heuristique : éléments contenant un titre "YEARS" + boutons d'années, hors notre #yearsSection
+      const allContainers = Array.from(document.body.querySelectorAll('*'))
+        .filter(el => el !== yearsSection && !yearsSection.contains(el));
+      allContainers.forEach(el => {
+        try{
+          const txt = (el.textContent || '').trim();
+          if(!txt) return;
+          const hasTitle = /\bYEARS\b/i.test(txt);
+          const hasButtons = /\bAll\b/i.test(txt) && /\b20\d{2}\b/.test(txt);
+          const looksLikePanel = getComputedStyle(el).position === 'fixed' || getComputedStyle(el).backdropFilter !== 'none';
+          if(hasTitle && hasButtons && looksLikePanel){
+            // remonte à un conteneur raisonnable (évite d'effacer le body)
+            const root = el.closest('div,section,nav,aside,[role="dialog"]') || el;
+            if(root && !yearsSection.contains(root)) root.remove();
+          }
+        }catch(e){}
+      });
+    }
+    // Appel au chargement + après un petit délai (au cas où la nav l’injecte async)
+    removeLegacyYearsUI();
+    setTimeout(removeLegacyYearsUI, 300);
+
     /* Socials */
     SOCIALS.forEach(s => {
       const a = document.createElement("a");
@@ -294,6 +326,7 @@
       updateYearButtons();
     }
 
+    /* 2) MENU: fermé par défaut */
     function openYears(){
       yearsSection.classList.add("open");
       yearsToggle.setAttribute("aria-expanded","true");
@@ -506,10 +539,11 @@
       const value = data.value;
       document.documentElement.setAttribute("data-year-controlled", "true");
       setActiveYear(value === "all" ? "All" : String(value));
-      openYears();
+      // On ne force plus l'ouverture auto ici.
     });
 
-    /* Init */
+    /* Init: menu fermé + rendu */
+    closeYears();
     renderYears();
     setActiveYear(activeYear);
     updateVisibleItems();
