@@ -3,146 +3,143 @@
 
 import { useEffect, useRef, useState } from "react";
 
-type ExternalSlide = {
-  type: "embed" | "video" | "image";
-  src: string;
-  alt?: string;
-  durationMs?: number; // optionnel si tu fournis des slides à la main
-};
-
 type VimeoItem = {
   id: string;
   title?: string;
-  embed?: string;
-  duration?: number; // en secondes si dispo
+  embed?: string;     // fourni par /api/vimeo
+  duration?: number;  // secondes si dispo
 };
 
-type Props = {
-  /** Slides fournis par la page.
-   *  Peut être un tableau direct OU un objet { items: [...] } (patch de robustesse). */
-  items?: ExternalSlide[] | { items: ExternalSlide[] } | unknown;
+type Slide = {
+  src: string;        // url d’embed vimeo complet
+  alt: string;
+  durationMs: number;
 };
 
-// --- helpers ---
-function normalizeSlides(input: Props["items"]): ExternalSlide[] {
-  if (Array.isArray((input as any)?.items)) return (input as any).items as ExternalSlide[];
-  if (Array.isArray(input)) return input as ExternalSlide[];
-  return [];
-}
+const DEFAULT_DURATION_MS = 15000;
 
-function toSlidesFromVimeo(items: VimeoItem[]): ExternalSlide[] {
+function toSlides(items: VimeoItem[]): Slide[] {
   return items
-    .filter((it) => it.embed)
+    .filter((it) => typeof it.embed === "string" && it.embed.length > 0)
     .map((it) => ({
-      type: "embed" as const,
-      src: `${it.embed!}&muted=1&autoplay=1&playsinline=1&controls=0&pip=1&transparent=0`,
+      src: `${it.embed!}&muted=1&autoplay=1&playsinline=1&controls=0&pip=1&transparent=0&background=1`,
       alt: it.title ?? "Untitled",
-      durationMs: Math.max(5000, (it.duration ?? 15) * 1000),
+      durationMs: Math.max(5000, (it.duration ?? DEFAULT_DURATION_MS / 1000) * 1000),
     }));
 }
 
-export default function HeroPlayer({ items }: Props) {
-  // source des slides : props normalisées → sinon API
-  const initial = normalizeSlides(items);
-  const [slides, setSlides] = useState<ExternalSlide[]>(initial);
-  const [idx, setIdx] = useState(0);
-  const timerRef = useRef<number | null>(null);
+export default function HeroPlayer() {
+  const [slides, setSlides] = useState<Slide[]>([]);
+  const [index, setIndex] = useState(0);
+  const [progress, setProgress] = useState(0); // 0..1
+  const rafRef = useRef<number | null>(null);
+  const startRef = useRef<number>(0);
+  const durationRef = useRef<number>(DEFAULT_DURATION_MS);
 
-  // réagit aux changements de props (quelle que soit la forme reçue)
+  // Fetch strictement depuis /api/vimeo
   useEffect(() => {
-    const normalized = normalizeSlides(items);
-    if (normalized.length) {
-      setSlides(normalized);
-      setIdx(0);
-      return;
-    }
-
-    // sinon, fetch Vimeo
     let stop = false;
     (async () => {
       try {
         const res = await fetch("/api/vimeo", { cache: "no-store" });
         const json = await res.json();
-        const vimeoItems: VimeoItem[] = Array.isArray(json?.items) ? json.items : [];
+        const items: VimeoItem[] = Array.isArray(json?.items) ? json.items : [];
         if (!stop) {
-          setSlides(toSlidesFromVimeo(vimeoItems));
-          setIdx(0);
+          const mapped = toSlides(items);
+          setSlides(mapped);
+          setIndex(0);
         }
       } catch {
         if (!stop) setSlides([]);
       }
     })();
-
     return () => {
       stop = true;
     };
-  }, [items]);
+  }, []);
 
-  // avance auto
+  // Progression + auto-advance
   useEffect(() => {
     if (!slides.length) return;
-    if (timerRef.current) window.clearTimeout(timerRef.current);
-    const delay = slides[idx]?.durationMs ?? 15000;
-    timerRef.current = window.setTimeout(() => {
-      setIdx((p) => (p + 1) % slides.length);
-    }, delay) as unknown as number;
-    return () => {
-      if (timerRef.current) window.clearTimeout(timerRef.current);
+    durationRef.current = slides[index]?.durationMs ?? DEFAULT_DURATION_MS;
+    setProgress(0);
+    if (rafRef.current) cancelAnimationFrame(rafRef.current);
+    startRef.current = performance.now();
+
+    const tick = (now: number) => {
+      const elapsed = now - startRef.current;
+      const dur = durationRef.current;
+      const p = Math.min(1, elapsed / dur);
+      setProgress(p);
+      if (p >= 1) {
+        setIndex((i) => (i + 1) % slides.length);
+        startRef.current = performance.now();
+        setProgress(0);
+      }
+      rafRef.current = requestAnimationFrame(tick);
     };
-  }, [slides, idx]);
+    rafRef.current = requestAnimationFrame(tick);
+
+    return () => {
+      if (rafRef.current) cancelAnimationFrame(rafRef.current);
+    };
+  }, [slides, index]);
 
   if (!slides.length) return null;
-  const current = slides[idx];
+  const current = slides[index];
 
-  // supporte video/image/embed
-  const isEmbed = current.type === "embed";
-  const isVideo = current.type === "video";
-  const isImage = current.type === "image";
+  const goTo = (i: number) => {
+    if (!slides.length) return;
+    setIndex(((i % slides.length) + slides.length) % slides.length);
+    startRef.current = performance.now();
+    setProgress(0);
+  };
 
   return (
-    <section className="relative">
-      <div className="relative w-full pb-[56.25%] overflow-hidden rounded-xl border border-white/10 bg-black">
-        {isEmbed && (
-          <iframe
-            key={idx}
-            className="absolute inset-0 h-full w-full"
-            src={current.src}
-            title={current.alt ?? "Slide"}
-            allow="autoplay; fullscreen; picture-in-picture; clipboard-write; encrypted-media; web-share"
-            referrerPolicy="strict-origin-when-cross-origin"
-          />
-        )}
-
-        {isVideo && (
-          <video
-            key={idx}
-            className="absolute inset-0 h-full w-full object-cover"
-            src={current.src}
-            autoPlay
-            muted
-            playsInline
-            loop={false}
-          />
-        )}
-
-        {isImage && (
-          <img
-            key={idx}
-            className="absolute inset-0 h-full w-full object-cover"
-            src={current.src}
-            alt={current.alt ?? "Slide"}
-          />
-        )}
+    <section className="relative h-[100svh] w-full bg-black">
+      {/* Media plein écran */}
+      <div className="absolute inset-0">
+        <iframe
+          key={index}
+          className="absolute inset-0 h-full w-full"
+          src={current.src}
+          title={current.alt}
+          allow="autoplay; fullscreen; picture-in-picture; clipboard-write; encrypted-media; web-share"
+          referrerPolicy="strict-origin-when-cross-origin"
+        />
       </div>
 
-      {/* indicateurs */}
-      <div className="absolute right-3 top-3 flex gap-2 opacity-80">
-        {slides.map((_, i) => (
-          <span
-            key={i}
-            className={`h-1.5 w-4 rounded-full ${i === idx ? "bg-white/90" : "bg-white/30"}`}
-          />
-        ))}
+      {/* Vignette douce pour du relief */}
+      <div className="pointer-events-none absolute inset-0 shadow-[inset_0_0_240px_rgba(0,0,0,0.55)]" />
+
+      {/* Sélecteurs verticaux (droite) */}
+      <div className="absolute right-6 top-1/2 -translate-y-1/2 flex flex-col gap-4 z-[5]">
+        {slides.map((_, i) => {
+          const active = i === index;
+          const pct = active ? progress : i < index ? 1 : 0;
+          return (
+            <button
+              key={i}
+              onClick={() => goTo(i)}
+              aria-label={`Go to slide ${i + 1}`}
+              className={[
+                "group relative h-28 w-[4px] overflow-hidden rounded-full",
+                "bg-white/25 transition-transform",
+                active ? "scale-x-[1.35]" : "hover:scale-x-[1.2]",
+              ].join(" ")}
+            >
+              <span
+                className="absolute bottom-0 left-0 right-0 bg-white"
+                style={{ height: `${Math.round(pct * 100)}%` }}
+              />
+            </button>
+          );
+        })}
+      </div>
+
+      {/* Légende discrète (optionnelle) */}
+      <div className="pointer-events-none absolute left-6 bottom-6 text-white/70 text-xs tracking-wide">
+        {current.alt}
       </div>
     </section>
   );
