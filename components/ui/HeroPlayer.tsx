@@ -18,9 +18,17 @@ type VimeoItem = {
 };
 
 type Props = {
-  /** Slides fournis par la page (ex. data.items). Si absent → on va chercher /api/vimeo. */
-  items?: ExternalSlide[];
+  /** Slides fournis par la page.
+   *  Peut être un tableau direct OU un objet { items: [...] } (patch de robustesse). */
+  items?: ExternalSlide[] | { items: ExternalSlide[] } | unknown;
 };
+
+// --- helpers ---
+function normalizeSlides(input: Props["items"]): ExternalSlide[] {
+  if (Array.isArray((input as any)?.items)) return (input as any).items as ExternalSlide[];
+  if (Array.isArray(input)) return input as ExternalSlide[];
+  return [];
+}
 
 function toSlidesFromVimeo(items: VimeoItem[]): ExternalSlide[] {
   return items
@@ -34,17 +42,18 @@ function toSlidesFromVimeo(items: VimeoItem[]): ExternalSlide[] {
 }
 
 export default function HeroPlayer({ items }: Props) {
-  // source des slides : soit props.items, soit API
-  const [slides, setSlides] = useState<ExternalSlide[]>(
-    Array.isArray(items) ? items : []
-  );
+  // source des slides : props normalisées → sinon API
+  const initial = normalizeSlides(items);
+  const [slides, setSlides] = useState<ExternalSlide[]>(initial);
   const [idx, setIdx] = useState(0);
   const timerRef = useRef<number | null>(null);
 
+  // réagit aux changements de props (quelle que soit la forme reçue)
   useEffect(() => {
-    // si on reçoit des items via props, on les prend tels quels
-    if (Array.isArray(items) && items.length) {
-      setSlides(items);
+    const normalized = normalizeSlides(items);
+    if (normalized.length) {
+      setSlides(normalized);
+      setIdx(0);
       return;
     }
 
@@ -55,7 +64,10 @@ export default function HeroPlayer({ items }: Props) {
         const res = await fetch("/api/vimeo", { cache: "no-store" });
         const json = await res.json();
         const vimeoItems: VimeoItem[] = Array.isArray(json?.items) ? json.items : [];
-        if (!stop) setSlides(toSlidesFromVimeo(vimeoItems));
+        if (!stop) {
+          setSlides(toSlidesFromVimeo(vimeoItems));
+          setIdx(0);
+        }
       } catch {
         if (!stop) setSlides([]);
       }
@@ -82,7 +94,7 @@ export default function HeroPlayer({ items }: Props) {
   if (!slides.length) return null;
   const current = slides[idx];
 
-  // supporte video/image/embed (tu peux ne garder que "embed" si tu veux)
+  // supporte video/image/embed
   const isEmbed = current.type === "embed";
   const isVideo = current.type === "video";
   const isImage = current.type === "image";
@@ -123,7 +135,7 @@ export default function HeroPlayer({ items }: Props) {
         )}
       </div>
 
-      {/* petits indicateurs */}
+      {/* indicateurs */}
       <div className="absolute right-3 top-3 flex gap-2 opacity-80">
         {slides.map((_, i) => (
           <span
