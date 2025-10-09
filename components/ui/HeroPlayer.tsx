@@ -15,6 +15,16 @@ const GAP = 10;               // écart entre lignes (px)
 const LINE_W = 28;            // largeur lignes inactives
 const LINE_W_ACTIVE = 84;     // largeur ligne active
 const LINE_H = 2;             // épaisseur lignes
+const SCROLL_LOCK_MS = 1000;  // throttle du scroll (1s)
+
+/* Petit cadre blanc avec 1px de "jour" autour du média */
+function WhiteFrame({ children }: { children: React.ReactNode }) {
+  return (
+    <div className="border border-white/90 shadow-[0_0_0_0.5px_rgba(255,255,255,0.6)]">
+      <div className="bg-black p-[1px]">{children}</div>
+    </div>
+  );
+}
 
 export default function HeroPlayer({ items }: { items: Item[] }) {
   const slides = useMemo(() => items?.filter(Boolean) ?? [], [items]);
@@ -26,6 +36,7 @@ export default function HeroPlayer({ items }: { items: Item[] }) {
   const videoRef = useRef<HTMLVideoElement | null>(null);
   const startedAt = useRef<number>(0);
   const imgDuration = useRef<number>(IMAGE_DEFAULT);
+  const scrollLocked = useRef(false);
 
   const clearRAF = () => {
     if (rafId.current !== null) cancelAnimationFrame(rafId.current);
@@ -38,26 +49,29 @@ export default function HeroPlayer({ items }: { items: Item[] }) {
   );
 
   // Gestion des images (progression par RAF)
-  const startImageTimer = useCallback((durationMs: number) => {
-    clearRAF();
-    imgDuration.current = durationMs;
-    startedAt.current = performance.now();
-    const tick = (t: number) => {
-      if (paused) {
-        rafId.current = requestAnimationFrame(tick);
-        return;
-      }
-      const d = imgDuration.current;
-      const p = Math.min(1, (t - startedAt.current) / d);
-      setProgress(p);
-      if (p >= 1) {
-        go(index + 1);
-      } else {
-        rafId.current = requestAnimationFrame(tick);
-      }
-    };
-    rafId.current = requestAnimationFrame(tick);
-  }, [go, index, paused]);
+  const startImageTimer = useCallback(
+    (durationMs: number) => {
+      clearRAF();
+      imgDuration.current = durationMs;
+      startedAt.current = performance.now();
+      const tick = (t: number) => {
+        if (paused) {
+          rafId.current = requestAnimationFrame(tick);
+          return;
+        }
+        const d = imgDuration.current;
+        const p = Math.min(1, (t - startedAt.current) / d);
+        setProgress(p);
+        if (p >= 1) {
+          go(index + 1);
+        } else {
+          rafId.current = requestAnimationFrame(tick);
+        }
+      };
+      rafId.current = requestAnimationFrame(tick);
+    },
+    [go, index, paused]
+  );
 
   // Quand l’index change, (re)configure selon type
   useEffect(() => {
@@ -73,7 +87,6 @@ export default function HeroPlayer({ items }: { items: Item[] }) {
       if (!v) return;
 
       const onLoaded = () => {
-        // autoplay (sans loop pour pouvoir avancer à la fin)
         v.currentTime = 0;
         if (!paused) v.play().catch(() => {});
       };
@@ -87,7 +100,6 @@ export default function HeroPlayer({ items }: { items: Item[] }) {
       v.addEventListener("timeupdate", onTime);
       v.addEventListener("ended", onEnded);
 
-      // cleanup
       return () => {
         v.pause();
         v.removeEventListener("loadedmetadata", onLoaded);
@@ -112,6 +124,44 @@ export default function HeroPlayer({ items }: { items: Item[] }) {
     else v.play().catch(() => {});
   }, [paused, index, slides]);
 
+  // Scroll step-by-step + throttle 1s (et smooth via nos transitions CSS)
+  useEffect(() => {
+    const onWheel = (e: WheelEvent) => {
+      // on gère nous-mêmes -> empêche le scroll natif
+      e.preventDefault();
+      if (scrollLocked.current) return;
+      const dir = Math.sign(e.deltaY);
+      if (!dir) return;
+      scrollLocked.current = true;
+      go(index + (dir > 0 ? 1 : -1));
+      setTimeout(() => (scrollLocked.current = false), SCROLL_LOCK_MS);
+    };
+
+    // Support tactile (swipe vertical)
+    let touchStartY = 0;
+    const onTouchStart = (e: TouchEvent) => {
+      touchStartY = e.touches[0].clientY;
+    };
+    const onTouchEnd = (e: TouchEvent) => {
+      const dy = e.changedTouches[0].clientY - touchStartY;
+      if (Math.abs(dy) < 30) return;
+      if (scrollLocked.current) return;
+      scrollLocked.current = true;
+      go(index + (dy < 0 ? 1 : -1));
+      setTimeout(() => (scrollLocked.current = false), SCROLL_LOCK_MS);
+    };
+
+    window.addEventListener("wheel", onWheel, { passive: false });
+    window.addEventListener("touchstart", onTouchStart, { passive: true });
+    window.addEventListener("touchend", onTouchEnd, { passive: true });
+
+    return () => {
+      window.removeEventListener("wheel", onWheel as any);
+      window.removeEventListener("touchstart", onTouchStart);
+      window.removeEventListener("touchend", onTouchEnd);
+    };
+  }, [go, index]);
+
   if (!slides.length) return null;
 
   const current = slides[index];
@@ -125,43 +175,45 @@ export default function HeroPlayer({ items }: { items: Item[] }) {
       onBlur={() => setPaused(false)}
       aria-label="Featured works"
     >
-      {/* Media plein écran */}
-      <div className="absolute inset-0">
+      {/* Media plein écran avec transition smooth */}
+      <div className="absolute inset-0 grid place-items-center">
         {slides.map((item, i) => {
           const visible = i === index;
           return (
             <div
               key={i}
-              className={`absolute inset-0 transition-opacity duration-500 ${
-                visible ? "opacity-100" : "opacity-0"
-              }`}
+              className={`absolute transition-all duration-600 ease-[cubic-bezier(.2,.8,.2,1)]
+                          ${visible ? "opacity-100 scale-100 blur-0" : "opacity-0 scale-[.985] blur-[4px]"}
+                          max-h-[84svh] max-w-[88vw]`}
               aria-hidden={!visible}
             >
-              {item.type === "image" ? (
-                <img
-                  src={item.src}
-                  alt={item.alt ?? ""}
-                  className="h-full w-full object-cover select-none"
-                  draggable={false}
-                />
-              ) : (
-                <video
-                  ref={visible ? videoRef : undefined}
-                  src={item.src}
-                  className="h-full w-full object-cover"
-                  muted
-                  playsInline
-                  autoPlay
-                  controls={false}
-                />
-              )}
+              <WhiteFrame>
+                {item.type === "image" ? (
+                  <img
+                    src={item.src}
+                    alt={item.alt ?? ""}
+                    className="block max-h-[84svh] max-w-[88vw] object-contain bg-black select-none"
+                    draggable={false}
+                  />
+                ) : (
+                  <video
+                    ref={visible ? videoRef : undefined}
+                    src={item.src}
+                    className="block max-h-[84svh] max-w-[88vw] bg-black"
+                    muted
+                    playsInline
+                    autoPlay
+                    controls={true}
+                  />
+                )}
+              </WhiteFrame>
             </div>
           );
         })}
       </div>
 
-      {/* Overlay léger pour la lisibilité (facile à retoucher ou retirer) */}
-      <div className="absolute inset-0 bg-gradient-to-b from-black/25 via-black/10 to-black/40 pointer-events-none" />
+      {/* Overlay léger pour la lisibilité */}
+      <div className="absolute inset-0 pointer-events-none bg-gradient-to-b from-black/25 via-black/10 to-black/40" />
 
       {/* Indicateurs : petites lignes à droite */}
       <div
@@ -177,7 +229,11 @@ export default function HeroPlayer({ items }: { items: Item[] }) {
             <button
               key={i}
               onClick={() => go(i)}
-              className="relative"
+              className={`
+                relative origin-right transition
+                hover:scale-x-[1.35] focus:scale-x-[1.35] active:scale-x-[1.2]
+                outline-none
+              `}
               aria-label={`Aller à l’élément ${i + 1}`}
               style={{ width: w, height: LINE_H }}
             >
