@@ -223,10 +223,10 @@
     CustomEase.create("hop","0.9,0,0.1,1");
 
     /* ===== Data ===== */
-    // Alimenté dynamiquement via /api/vimeo
     let PROJECTS = []; // { title, year, image }
+    let HAS_PARENT_DATA = false; // NEW: indique si le parent a fourni des projets
 
-    // Fallback local si l’API est KO (optionnel)
+    // Fallback local si l’API/parent est KO
     const FALLBACK = [
       { title: "Echo Discs", year: 2025, image: "https://cdn.cosmos.so/7b5340f5-b4dc-4c08-8495-c507fa81480b?format=jpeg" },
       { title: "Neon Handscape", year: 2025, image: "https://cdn.cosmos.so/2f49a117-05e7-4ae9-9e95-b9917f970adb?format=jpeg" },
@@ -236,20 +236,23 @@
       { title: "Sonic Horizon", year: 2023, image: "https://cdn.cosmos.so/f99f8445-6a19-4a9a-9de3-ac382acc1a3f?format=jpeg" },
     ];
 
+    // NEW: normalisation de la forme envoyée par la route / parent
+    function normalize(list){
+      return (Array.isArray(list) ? list : []).map(it => ({
+        title: it.title || it.name || "Untitled",
+        year: it.year || (new Date(it.createdAt || it.created_time || Date.now())).getFullYear(),
+        image: it.thumbnail || it.picture || it.thumb || ""
+      }));
+    }
+
     async function loadProjects(){
+      // Si le parent nous a déjà fourni les projets → on ne refetch pas
+      if (HAS_PARENT_DATA) return;
       try{
         const res = await fetch("/api/vimeo", { cache:"no-store" });
         const json = await res.json();
-        const items = Array.isArray(json?.items) ? json.items : [];
-
-        // map → notre structure minimale
-        PROJECTS = items.map(it => ({
-          title: it.title || it.name || "Untitled",
-          year: it.year || (new Date(it.createdAt || Date.now())).getFullYear(),
-          image: it.thumbnail || ""  // fallback vide ⇒ img manquante ok
-        }));
-
-        if(!PROJECTS.length) PROJECTS = FALLBACK;
+        const items = normalize(json?.items);
+        PROJECTS = items.length ? items : FALLBACK;
       }catch(e){
         PROJECTS = FALLBACK;
       }
@@ -529,19 +532,32 @@
       updateVisibleItems();
     }
 
-    /* Pilotage parent éventuel (menu Years externe) */
+    /* Pilotage parent */
     window.addEventListener("message", (evt) => {
       const data = evt && evt.data;
-      if (!data || data.type !== "SET_YEAR") return;
-      const value = data.value;
-      document.documentElement.setAttribute("data-year-controlled", "true");
-      setActiveYear(value === "all" ? "All" : String(value));
-      openYears();
+      if (!data || !data.type) return;
+
+      if (data.type === "SET_YEAR") {
+        const value = data.value;
+        document.documentElement.setAttribute("data-year-controlled", "true");
+        setActiveYear(value === "all" ? "All" : String(value));
+        openYears();
+      }
+
+      // NEW: réception des projets envoyés par Next (évite le FALLBACK)
+      if (data.type === "SET_PROJECTS") {
+        HAS_PARENT_DATA = true;
+        PROJECTS = normalize(data.value);
+        buildYearsFromProjects();
+        renderYears();
+        setActiveYear(activeYear);
+      }
     });
 
     /* ===== Init ===== */
     (async function init(){
-      await loadProjects();         // 1) fetch Vimeo
+      await loadProjects();         // 1) fetch Vimeo (skippé si parent a fourni)
+      if (!PROJECTS.length) PROJECTS = FALLBACK; // garde-fou
       buildYearsFromProjects();     // 2) calc années
       renderYears();                // 3) UI years
       closeYears();                 // 4) fermé par défaut
