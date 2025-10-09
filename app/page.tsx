@@ -49,7 +49,8 @@ export default async function HomePage() {
 
   return (
     <main className="relative">
-      <HeroPlayer items={data.items} />
+      {/* data est un tableau déjà normalisé */}
+      <HeroPlayer items={data} />
     </main>
   );
 }
