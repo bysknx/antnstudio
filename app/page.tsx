@@ -49,7 +49,7 @@ export default async function HomePage() {
 
   return (
     <main className="relative">
-      <HeroPlayer items={data} />
+      <HeroPlayer items={data.items} />
     </main>
   );
 }
