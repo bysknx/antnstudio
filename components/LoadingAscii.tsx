@@ -43,7 +43,7 @@ export default function LoadingAscii() {
       try {
         localStorage.setItem(STORAGE_KEY, String(Date.now()));
       } catch {}
-    }, 1400); // durée totale d’apparition
+    }, 5000); // durée totale d’apparition
 
     return () => {
       if (timerRef.current) window.clearTimeout(timerRef.current);
