@@ -9,18 +9,23 @@ import ErrorBoundary from "@/components/ErrorBoundary";
 export default function ClientHeroSection() {
   const [gate, setGate] = useState(true);
 
+  // Fallback: si on n’a pas reçu onReady après 2.5s, on retire quand même le gate
   useEffect(() => {
-    const html = document.documentElement;
-    html.setAttribute("data-home", "1");
-    return () => {
-      html.removeAttribute("data-home");
-    };
+    const t = window.setTimeout(() => setGate(false), 2500);
+    return () => window.clearTimeout(t);
   }, []);
 
   return (
     <>
       <LoadingAscii mode="route" active={gate} totalMs={1200} />
-      <ErrorBoundary>
+
+      <ErrorBoundary
+        fallback={
+          <div className="absolute inset-0 grid place-items-center text-sm text-zinc-400">
+            <span>Chargement des projets…</span>
+          </div>
+        }
+      >
         <HeroPlayer onReady={() => setGate(false)} />
       </ErrorBoundary>
     </>
