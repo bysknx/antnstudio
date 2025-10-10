@@ -12,7 +12,9 @@ export async function GET(req: Request) {
 
   try {
     const folderId = process.env.VIMEO_FOLDER_ID || undefined;
-    const teamId = process.envVIMEO_TEAM_ID || process.env.VIMEO_TEAM_ID || undefined; // tolérant
+    // 👇 correction ici (le point après env)
+    const teamId =
+      process.env.VIMEO_TEAM_ID || undefined; // tolérant
 
     const { items, debug } = await fetchVimeoWorks({ folderId, teamId });
 
@@ -32,8 +34,8 @@ export async function GET(req: Request) {
             teamId: process.env.VIMEO_TEAM_ID || null,
             folderId: process.env.VIMEO_FOLDER_ID || null,
           },
-          tried: debug.tried, // ← endpoints testés + nb d’items renvoyés
-          sample: items.slice(0, 2), // aperçu
+          tried: debug.tried,
+          sample: items.slice(0, 2),
           items,
         }
       : { ok: true, items };
