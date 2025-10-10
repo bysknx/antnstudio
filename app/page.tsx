@@ -1,12 +1,10 @@
-// START PATCH
-// app/page.tsx — Server Component (pas de "use client" ici)
+// app/page.tsx — Server Component
 import ClientHeroSection from "@/components/ClientHeroSection";
 
 export default function HomePage() {
   return (
-    <main className="relative">
+    <main className="relative h-[100svh] overflow-hidden">
       <ClientHeroSection />
     </main>
   );
 }
-// END PATCH
