@@ -2,149 +2,145 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 const API = "https://api.vimeo.com";
 
-function env(name: string, optional = false): string | undefined {
-  const v = process.env[name];
-  if (!v && !optional) {
-    throw new Error(`Missing env: ${name}`);
-  }
-  return v;
-}
-
-type VimeoVideo = {
-  uri: string; // "/videos/123456789"
-  name?: string;
-  description?: string;
-  created_time?: string;
-  release_time?: string;
-  pictures?: { sizes?: { link: string }[]; base_link?: string };
-  link?: string;
-  embed?: { html?: string; badges?: any };
-  duration?: number;
-};
-
-type VimeoProject = {
-  uri: string; // "/users/{id}/projects/{project_id}"
-  name?: string;
-  created_time?: string;
-};
-
-async function fetchJSON(path: string, token: string) {
-  const res = await fetch(path.startsWith("http") ? path : `${API}${path}`, {
+function req(path: string, token: string, noStore = true) {
+  return fetch(path.startsWith("http") ? path : `${API}${path}`, {
     headers: {
       Authorization: `Bearer ${token}`,
       Accept: "application/vnd.vimeo.*+json;version=3.4",
-      "Content-Type": "application/json",
     },
-    // Pas de cache côté Vercel/Next
-    cache: "no-store",
-    // timeout via AbortSignal si tu veux pousser plus loin
+    cache: noStore ? "no-store" : "no-cache",
   });
-
-  if (!res.ok) {
-    const text = await res.text().catch(() => "");
-    throw new Error(
-      `Vimeo ${res.status} ${res.statusText} on ${path} – ${text?.slice(0, 500)}`
-    );
-  }
-  return res.json();
 }
 
-/** Vimeo pagine avec `paging.next` – on agrège tout. */
+function env(name: string, optional = false): string | undefined {
+  const v = process.env[name];
+  if (!v && !optional) throw new Error(`Missing env: ${name}`);
+  return v;
+}
+
 async function listAll(token: string, firstPath: string) {
-  let url: string | null = `${API}${firstPath}`;
   const out: any[] = [];
+  let url: string | null = firstPath.startsWith("http") ? firstPath : `${API}${firstPath}`;
 
   while (url) {
-    const res = await fetch(url, {
-      headers: {
-        Authorization: `Bearer ${token}`,
-        Accept: "application/vnd.vimeo.*+json;version=3.4",
-      },
-      cache: "no-store",
-    });
-
-    if (!res.ok) {
-      const t = await res.text().catch(() => "");
-      throw new Error(`Vimeo ${res.status} on ${url} – ${t?.slice(0, 500)}`);
+    const r = await req(url, token);
+    if (!r.ok) {
+      const txt = await r.text().catch(() => "");
+      throw new Error(`Vimeo ${r.status} on ${url} – ${txt.slice(0, 400)}`);
     }
-
-    const json = await res.json();
-    const data = Array.isArray(json?.data) ? json.data : [];
+    const j = await r.json();
+    const data = Array.isArray(j?.data) ? j.data : [];
     out.push(...data);
 
-    const nextRel = json?.paging?.next as string | undefined;
-    url = nextRel ? (nextRel.startsWith("http") ? nextRel : `${API}${nextRel}`) : null;
+    const next = j?.paging?.next as string | undefined;
+    url = next ? (next.startsWith("http") ? next : `${API}${next}`) : null;
   }
-
   return out;
 }
 
-/** Liste les sous-projets d’un projet. */
-async function listChildProjects(token: string, userId: string, projectId: string) {
-  const path = `/users/${userId}/projects/${projectId}/children`;
-  return listAll(token, path) as Promise<VimeoProject[]>;
+/** Certains endpoints renvoient 'items' (type:'video'), d'autres un tableau de 'videos'. */
+function onlyVideos(rows: any[]): any[] {
+  return rows
+    .map((x) => {
+      // format “items”: { type:'video', uri:'/users/.../items/xxx', video:{ uri:'/videos/123', ... } }
+      if (x?.type === "video" && x?.video?.uri) return x.video;
+      // format “videos”: directement { uri:'/videos/123', ... }
+      return x;
+    })
+    .filter((v) => typeof v?.uri === "string" && v.uri.includes("/videos/"));
 }
 
-/** Liste les vidéos d’un projet. */
-async function listProjectVideos(token: string, userId: string, projectId: string) {
-  const path = `/users/${userId}/projects/${projectId}/videos`;
-  return listAll(token, path) as Promise<VimeoVideo[]>;
-}
-
-/** Descente récursive : projet + tous ses enfants (2023/2024/2025, etc.). */
-async function listProjectVideosRecursive(
-  token: string,
-  userId: string,
-  projectId: string
-) {
-  const videos = await listProjectVideos(token, userId, projectId);
-
-  const children = await listChildProjects(token, userId, projectId).catch(() => []);
-  for (const child of children) {
-    const childId = child.uri.split("/").pop()!;
-    const childVideos = await listProjectVideos(token, userId, childId).catch(() => []);
-    videos.push(...childVideos);
+async function tryMany(token: string, paths: string[]) {
+  const tried: Record<string, number> = {};
+  for (const p of paths) {
+    try {
+      const all = await listAll(token, p);
+      const vids = onlyVideos(all);
+      tried[p] = vids.length;
+      if (vids.length) return { videos: vids, tried };
+    } catch (e) {
+      tried[p] = -1; // -1 = erreur
+    }
   }
-
-  return videos;
+  return { videos: [] as any[], tried };
 }
 
-/** Points d’entrée exportés par l’app */
+/** Récupère les vidéos d’un projet + enfants (si dispo) en testant plusieurs variantes d’API. */
 export async function fetchVimeoWorks(opts: {
-  folderId?: string; // id du projet "WORKS"
-  teamId?: string; // id de l’équipe / user
-  perPage?: number; // ignoré (on pagine totalement)
+  folderId?: string; // id “WORKS”
+  teamId?: string; // id user/équipe (numérique)
 }) {
   const token = env("VIMEO_TOKEN")!;
   const userId = opts.teamId || env("VIMEO_TEAM_ID")!;
-
   const projectId = opts.folderId || env("VIMEO_FOLDER_ID")!;
   if (!projectId) throw new Error("VIMEO_FOLDER_ID manquant");
 
-  // Vidéos du projet + de ses sous-projets
-  const videos = await listProjectVideosRecursive(token, userId, projectId);
+  // 1) vidéos du projet
+  const { videos: directVideos, tried: triedA } = await tryMany(token, [
+    `/users/${userId}/projects/${projectId}/videos`,
+    `/me/projects/${projectId}/videos`,
+    `/users/${userId}/projects/${projectId}/items`, // certains comptes
+    `/me/projects/${projectId}/items`,
+  ]);
 
-  // Normalisation minimale pour le front
-  return videos.map((v) => {
+  // 2) enfants (sous-dossiers)
+  const { videos: fromChildren, tried: triedB } = await (async () => {
+    // on essaie d’abord à récupérer les enfants, puis on agrège leurs vidéos
+    const childTried: Record<string, number> = {};
+    const children = await (async () => {
+      const { videos: dummy, tried } = await tryMany(token, [
+        `/users/${userId}/projects/${projectId}/children`,
+        `/me/projects/${projectId}/children`,
+      ]);
+      // hack: tryMany ne sait pas lire “children” (ce ne sont pas des vidéos),
+      // donc on refait une requête simple pour la première route OK.
+      const firstOk = Object.entries(tried).find(([, n]) => n >= 0)?.[0];
+      if (!firstOk) return [] as any[];
+      childTried[firstOk] = -2; // -2 = a bien répondu mais ce n’était pas des vidéos
+      const r = await req(firstOk, token);
+      if (!r.ok) return [];
+      const j = await r.json();
+      return Array.isArray(j?.data) ? j.data : [];
+    })();
+
+    const aggregate: any[] = [];
+    for (const c of children) {
+      const cid = String(c?.uri?.split?.("/")?.pop?.() ?? "");
+      if (!cid) continue;
+      const { videos, tried } = await tryMany(token, [
+        `/users/${userId}/projects/${cid}/videos`,
+        `/me/projects/${cid}/videos`,
+        `/users/${userId}/projects/${cid}/items`,
+        `/me/projects/${cid}/items`,
+      ]);
+      Object.assign(childTried, tried);
+      aggregate.push(...videos);
+    }
+    return { videos: aggregate, tried: childTried };
+  })();
+
+  const all = [...directVideos, ...fromChildren].map((v) => {
     const id = v?.uri?.split("/").pop() || "";
-    const title = v?.name || "Untitled";
-    const created =
-      v?.release_time || v?.created_time || null;
-    const createdAt = created ? new Date(created).toISOString() : null;
-
+    const created = v?.release_time || v?.created_time || null;
     const thumb =
       v?.pictures?.sizes?.[v?.pictures?.sizes?.length - 1]?.link ||
       v?.pictures?.base_link ||
       "";
-
     return {
       id,
-      title,
-      createdAt,
+      title: v?.name || "Untitled",
+      createdAt: created ? new Date(created).toISOString() : null,
       thumbnail: thumb,
-      link: v?.link || `https://vimeo.com/${id}`,
-      embed: `https://player.vimeo.com/video/${id}?muted=1&autoplay=0&playsinline=1&controls=0&pip=1&transparent=0`,
+      link: v?.link || (id ? `https://vimeo.com/${id}` : ""),
+      embed: id
+        ? `https://player.vimeo.com/video/${id}?muted=1&autoplay=0&playsinline=1&controls=0&pip=1&transparent=0`
+        : "",
       duration: v?.duration ?? undefined,
     };
   });
+
+  // Petit objet debug renvoyé par la route quand ?debug=1
+  const debug = { tried: { ...triedA, ...triedB } };
+
+  return { items: all, debug };
 }
