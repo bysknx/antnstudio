@@ -5,13 +5,13 @@ type VimeoVideo = {
   duration?: number;
   created_time?: string;
   pictures?: { sizes?: { link: string }[] };
-  player_embed_url?: string;   // souvent présent
+  player_embed_url?: string;
 };
 
 type VimeoProjectItem = {
   uri: string;                 // "/projects/24525006"
   type?: "project" | "video";
-  project?: { uri: string };   // si /items renvoie un wrapper
+  project?: { uri: string };
 };
 
 const API = "https://api.vimeo.com";
@@ -35,7 +35,6 @@ async function vimeoGET(path: string, params: Record<string, any> = {}) {
       Accept: "application/json",
       "Content-Type": "application/json",
     },
-    // pas de cache côté server, on gère via ISR dans la route
     cache: "no-store",
   });
 
@@ -46,7 +45,6 @@ async function vimeoGET(path: string, params: Record<string, any> = {}) {
   return res.json();
 }
 
-// paginate all pages (Vimeo v3 a un objet "paging" avec "next"/"next_href")
 async function listAll(path: string, params: Record<string, any> = {}) {
   const out: any[] = [];
   let url: string | null = `${API}${path}?per_page=100`;
@@ -58,7 +56,6 @@ async function listAll(path: string, params: Record<string, any> = {}) {
     const json = await vimeoGET(url);
     const data = Array.isArray(json.data) ? json.data : [];
     out.push(...data);
-    // “paging.next” peut être un chemin relatif ou null
     const next = json?.paging?.next || json?.paging?.next_href || null;
     url = next ? (next.startsWith("http") ? next : `${API}${next}`) : null;
   }
@@ -67,25 +64,23 @@ async function listAll(path: string, params: Record<string, any> = {}) {
 
 /** Récupère les vidéos d’un project (dossier) */
 async function getVideosFromProject(projectId: string) {
-  // 1) Essaye /me (token user/team)
   try {
     return await listAll(`/me/projects/${projectId}/videos`);
-  } catch {
-    // 2) Essaye via team/user explicite si fourni
+  } catch (err) {
+    // essai via team/user si disponible
     const teamId = env("VIMEO_TEAM_ID", true);
-    if (teamId) return await listAll(`/users/${teamId}/projects/${projectId}/videos`);
-    throw;
+    if (teamId) {
+      return await listAll(`/users/${teamId}/projects/${projectId}/videos`);
+    }
+    // re-lance l’erreur d’origine (pas de throw nu)
+    throw err;
   }
 }
 
 /** Liste les sous-projects d’un project */
 async function getChildProjects(projectId: string): Promise<string[]> {
-  // Plusieurs variantes d’API existent selon comptes :
-  // - /projects/{id}/items?type=project
-  // - /projects/{id}/projects
   const ids = new Set<string>();
 
-  // a) /items?type=project
   try {
     const items: VimeoProjectItem[] = await listAll(`/me/projects/${projectId}/items`, {
       type: "project",
@@ -98,7 +93,6 @@ async function getChildProjects(projectId: string): Promise<string[]> {
     });
   } catch {}
 
-  // b) /projects
   try {
     const projs: VimeoProjectItem[] = await listAll(`/me/projects/${projectId}/projects`);
     projs.forEach((p) => {
@@ -107,7 +101,6 @@ async function getChildProjects(projectId: string): Promise<string[]> {
     });
   } catch {}
 
-  // fallback via team id
   if (!ids.size) {
     const teamId = env("VIMEO_TEAM_ID", true);
     if (teamId) {
@@ -153,11 +146,10 @@ export async function fetchVimeoWorks(opts: { folderId?: string; perPage?: numbe
   const folderId = opts.folderId || env("VIMEO_FOLDER_ID");
   const raw: VimeoVideo[] = await collectVideosRecursive(folderId);
 
-  // map → forme simple pour le front
   const mapped = raw.map((v) => {
     const id = v.uri?.split("/").pop() || "";
     const thumb =
-      v.pictures?.sizes?.[v.pictures.sizes.length - 1]?.link || // plus grande
+      v.pictures?.sizes?.[v.pictures.sizes.length - 1]?.link ||
       v.pictures?.sizes?.[0]?.link ||
       "";
 
@@ -167,19 +159,16 @@ export async function fetchVimeoWorks(opts: { folderId?: string; perPage?: numbe
       createdAt: v.created_time,
       duration: v.duration,
       thumbnail: thumb,
-      // player_embed_url est souvent renvoyé par l'API ; sinon fallback générique
       embed: v.player_embed_url || (id ? `https://player.vimeo.com/video/${id}` : undefined),
       year: v.created_time ? new Date(v.created_time).getFullYear() : undefined,
     };
   });
 
-  // supprime les doublons éventuels (si une vidéo est visible à plusieurs niveaux)
   const uniq = new Map<string, any>();
   mapped.forEach((m) => {
     if (m.id && !uniq.has(m.id)) uniq.set(m.id, m);
   });
 
-  // tri par date desc si dispo, sinon par titre
   const items = Array.from(uniq.values()).sort((a, b) => {
     const ad = a.createdAt ? +new Date(a.createdAt) : 0;
     const bd = b.createdAt ? +new Date(b.createdAt) : 0;
