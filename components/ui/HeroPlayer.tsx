@@ -1,28 +1,62 @@
-// START PATCH
-// …imports et types identiques…
+"use client";
+
 import { useCallback, useEffect, useRef, useState } from "react";
 
+/** ---- Types ---- */
+type VimeoItem = {
+  id: string;
+  title?: string;
+  embed?: string;     // fourni par /api/vimeo
+  duration?: number;  // secondes si dispo
+};
+
+type Slide = {
+  src: string;        // URL d’embed vimeo complet (avec query)
+  alt: string;
+  durationMs: number;
+};
+
+/** ---- Constantes ---- */
 const DEFAULT_DURATION_MS = 15000;
 const MAX_FEATURED = 6;
 const WHEEL_THROTTLE_MS = 1000;
 
-// …toSlides identique…
+/** ---- Mapping API->slides ---- */
+function toSlides(items: VimeoItem[]): Slide[] {
+  return items
+    .filter((it) => typeof it.embed === "string" && it.embed.length > 0)
+    .slice(0, MAX_FEATURED)
+    .map((it) => ({
+      src: `${it.embed!}&muted=1&autoplay=1&playsinline=1&controls=0&pip=1&transparent=0&background=1`,
+      alt: it.title ?? "Untitled",
+      durationMs: DEFAULT_DURATION_MS,
+    }));
+}
 
-export default function HeroPlayer({ onReady, readyTimeoutMs = 3500 }: { onReady?: () => void; readyTimeoutMs?: number; }) {
+/** ---- Composant ---- */
+export default function HeroPlayer({
+  onReady,
+  readyTimeoutMs = 3500,
+}: {
+  onReady?: () => void;
+  readyTimeoutMs?: number;
+}) {
   const [slides, setSlides] = useState<Slide[]>([]);
   const [index, setIndex] = useState(0);
   const [progress, setProgress] = useState(0);
   const [visible, setVisible] = useState(false);
+
   const rafRef = useRef<number | null>(null);
   const startRef = useRef<number>(0);
   const iframeRef = useRef<HTMLIFrameElement | null>(null);
   const playerRef = useRef<any>(null);
+
   const firstPlaySentRef = useRef(false);
   const safetyTimeoutRef = useRef<number | null>(null);
   const wheelLockRef = useRef<number>(0);
   const touchStartY = useRef<number | null>(null);
 
-  // Fetch
+  /** Fetch Vimeo items */
   useEffect(() => {
     let stop = false;
     (async () => {
@@ -40,9 +74,12 @@ export default function HeroPlayer({ onReady, readyTimeoutMs = 3500 }: { onReady
         if (!stop) setSlides([]);
       }
     })();
-    return () => { stop = true; };
+    return () => {
+      stop = true;
+    };
   }, []);
 
+  /** Lancer la progression pour le slide courant */
   const startProgress = useCallback(() => {
     if (!slides.length) return;
     const dur = slides[index]?.durationMs ?? DEFAULT_DURATION_MS;
@@ -53,15 +90,19 @@ export default function HeroPlayer({ onReady, readyTimeoutMs = 3500 }: { onReady
     const tick = (now: number) => {
       const p = Math.min(1, (now - startRef.current) / dur);
       setProgress(p);
-      if (p >= 1) { setIndex((i) => (i + 1) % slides.length); return; }
+      if (p >= 1) {
+        setIndex((i) => (i + 1) % slides.length);
+        return; // le prochain cycle redémarre quand le prochain "play" arrive
+      }
       rafRef.current = requestAnimationFrame(tick);
     };
     rafRef.current = requestAnimationFrame(tick);
   }, [slides, index]);
 
-  // Init Vimeo player
+  /** Initialise le player Vimeo pour le slide courant */
   useEffect(() => {
     if (!slides.length) return;
+
     let cancelled = false;
 
     const run = async () => {
@@ -69,31 +110,46 @@ export default function HeroPlayer({ onReady, readyTimeoutMs = 3500 }: { onReady
       setProgress(0);
       if (rafRef.current) cancelAnimationFrame(rafRef.current);
 
+      // Filet si aucun "play" ne vient
       if (safetyTimeoutRef.current) window.clearTimeout(safetyTimeoutRef.current);
       safetyTimeoutRef.current = window.setTimeout(() => {
         if (!cancelled) {
           setVisible(true);
-          if (!firstPlaySentRef.current) { firstPlaySentRef.current = true; onReady?.(); }
+          if (!firstPlaySentRef.current) {
+            firstPlaySentRef.current = true;
+            onReady?.();
+          }
           startProgress();
         }
       }, readyTimeoutMs);
 
       try {
-        const mod = await import("@vimeo/player").catch((e) => { throw e; });
+        const mod = await import("@vimeo/player");
         const Player = mod.default;
         if (!iframeRef.current) throw new Error("iframeRef null");
 
-        try { await playerRef.current?.unload?.(); } catch {}
-        playerRef.current = new Player(iframeRef.current);
+        try {
+          await playerRef.current?.unload?.();
+        } catch {}
 
+        playerRef.current = new Player(iframeRef.current);
         await playerRef.current.ready();
-        try { await playerRef.current.setMuted(true); await playerRef.current.play(); } catch {}
+
+        try {
+          await playerRef.current.setMuted(true);
+          await playerRef.current.play();
+        } catch {
+          // autoplay peut être bloqué: le timeout fera le job
+        }
 
         playerRef.current.on?.("play", () => {
           if (cancelled) return;
           if (safetyTimeoutRef.current) window.clearTimeout(safetyTimeoutRef.current);
           setVisible(true);
-          if (!firstPlaySentRef.current) { firstPlaySentRef.current = true; onReady?.(); }
+          if (!firstPlaySentRef.current) {
+            firstPlaySentRef.current = true;
+            onReady?.();
+          }
           startProgress();
         });
 
@@ -102,7 +158,11 @@ export default function HeroPlayer({ onReady, readyTimeoutMs = 3500 }: { onReady
           if (cancelled) return;
           if (safetyTimeoutRef.current) window.clearTimeout(safetyTimeoutRef.current);
           setVisible(true);
-          if (!firstPlaySentRef.current) { firstPlaySentRef.current = true; onReady?.(); }
+          if (!firstPlaySentRef.current) {
+            firstPlaySentRef.current = true;
+            onReady?.();
+          }
+          // Skip au prochain
           setIndex((i) => (i + 1) % slides.length);
         });
       } catch (e) {
@@ -110,7 +170,10 @@ export default function HeroPlayer({ onReady, readyTimeoutMs = 3500 }: { onReady
         if (!cancelled) {
           if (safetyTimeoutRef.current) window.clearTimeout(safetyTimeoutRef.current);
           setVisible(true);
-          if (!firstPlaySentRef.current) { firstPlaySentRef.current = true; onReady?.(); }
+          if (!firstPlaySentRef.current) {
+            firstPlaySentRef.current = true;
+            onReady?.();
+          }
           startProgress();
         }
       }
@@ -122,25 +185,34 @@ export default function HeroPlayer({ onReady, readyTimeoutMs = 3500 }: { onReady
       cancelled = true;
       if (rafRef.current) cancelAnimationFrame(rafRef.current);
       if (safetyTimeoutRef.current) window.clearTimeout(safetyTimeoutRef.current);
-      try { playerRef.current?.off?.("play"); playerRef.current?.off?.("error"); playerRef.current?.unload?.(); } catch {}
+      try {
+        playerRef.current?.off?.("play");
+        playerRef.current?.off?.("error");
+        playerRef.current?.unload?.();
+      } catch {}
     };
   }, [slides, index, onReady, readyTimeoutMs, startProgress]);
 
   if (!slides.length) return null;
   const current = slides[index];
 
+  /** Navigation manuelle */
   const goTo = (i: number) => {
     if (!slides.length) return;
     if (rafRef.current) cancelAnimationFrame(rafRef.current);
     setIndex(((i % slides.length) + slides.length) % slides.length);
   };
 
-  const step = useCallback((dir: 1 | -1) => {
-    const now = Date.now();
-    if (now - wheelLockRef.current < WHEEL_THROTTLE_MS) return;
-    wheelLockRef.current = now;
-    goTo(index + dir);
-  }, [index]);
+  /** Wheel / swipe (throttle) */
+  const step = useCallback(
+    (dir: 1 | -1) => {
+      const now = Date.now();
+      if (now - wheelLockRef.current < WHEEL_THROTTLE_MS) return;
+      wheelLockRef.current = now;
+      goTo(index + dir);
+    },
+    [index],
+  );
 
   useEffect(() => {
     const el = document.getElementById("hero-root");
@@ -154,7 +226,9 @@ export default function HeroPlayer({ onReady, readyTimeoutMs = 3500 }: { onReady
         console.warn("[Hero] wheel handler error:", err);
       }
     };
-    const onTouchStart = (e: TouchEvent) => { touchStartY.current = e.touches[0]?.clientY ?? null; };
+    const onTouchStart = (e: TouchEvent) => {
+      touchStartY.current = e.touches[0]?.clientY ?? null;
+    };
     const onTouchEnd = (e: TouchEvent) => {
       try {
         if (touchStartY.current == null) return;
@@ -176,13 +250,17 @@ export default function HeroPlayer({ onReady, readyTimeoutMs = 3500 }: { onReady
     };
   }, [step]);
 
+  /** UI */
   return (
     <section id="hero-root" className="relative h-[100svh] w-full overflow-hidden bg-black">
+      {/* Media plein écran */}
       <div className="absolute inset-0">
         <iframe
           key={index}
           ref={iframeRef}
-          className={`absolute inset-0 h-full w-full transition-opacity duration-300 ${visible ? "opacity-100" : "opacity-0"}`}
+          className={`absolute inset-0 h-full w-full transition-opacity duration-300 ${
+            visible ? "opacity-100" : "opacity-0"
+          }`}
           src={current.src}
           title={current.alt}
           allow="autoplay; fullscreen; picture-in-picture; encrypted-media; clipboard-write; web-share"
@@ -191,9 +269,10 @@ export default function HeroPlayer({ onReady, readyTimeoutMs = 3500 }: { onReady
         />
       </div>
 
+      {/* Vignette douce */}
       <div className="pointer-events-none absolute inset-0 shadow-[inset_0_0_240px_rgba(0,0,0,0.55)]" />
 
-      {/* Barres horizontales */}
+      {/* Barres horizontales (droite) */}
       <div className="absolute right-6 top-1/2 -translate-y-1/2 flex flex-col gap-3 z-[5] w-[160px]">
         {slides.map((_, i) => {
           const active = i === index;
@@ -209,17 +288,20 @@ export default function HeroPlayer({ onReady, readyTimeoutMs = 3500 }: { onReady
                 active ? "ring-1 ring-white/40" : "hover:bg-white/25",
               ].join(" ")}
             >
-              <span className="absolute left-0 top-0 bottom-0 bg-white/90 group-hover:bg-white" style={{ width: `${Math.round(pct * 100)}%` }} />
+              <span
+                className="absolute left-0 top-0 bottom-0 bg-white/90 group-hover:bg-white"
+                style={{ width: `${Math.round(pct * 100)}%` }}
+              />
               <span className="absolute inset-0 rounded-full ring-0 group-focus-visible:ring-2 group-focus-visible:ring-white/70" />
             </button>
           );
         })}
       </div>
 
+      {/* Légende courte */}
       <div className="pointer-events-none absolute left-6 bottom-6 text-white/70 text-xs tracking-wide">
         {current.alt}
       </div>
     </section>
   );
 }
-// END PATCH
