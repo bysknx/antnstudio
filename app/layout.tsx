@@ -1,3 +1,4 @@
+// START PATCH
 // app/layout.tsx
 import type { Metadata } from "next";
 import "./globals.css";
@@ -34,6 +35,16 @@ export const metadata: Metadata = {
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="fr" className="dark">
+      {/* Hints réseau pour accélérer Vimeo (fonctionne avec l'App Router) */}
+      <head>
+        <link rel="preconnect" href="https://player.vimeo.com" />
+        <link rel="preconnect" href="https://i.vimeocdn.com" />
+        <link rel="preconnect" href="https://f.vimeocdn.com" />
+        <link rel="dns-prefetch" href="https://player.vimeo.com" />
+        <link rel="dns-prefetch" href="https://i.vimeocdn.com" />
+        <link rel="dns-prefetch" href="https://f.vimeocdn.com" />
+      </head>
+
       <body>
         {/* Loader ASCII (TTL ~ 1h si ajusté dans LoadingAscii) */}
         <LoadingAscii />
@@ -57,3 +68,4 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
     </html>
   );
 }
+// END PATCH
