@@ -6,78 +6,32 @@ export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 export const revalidate = 0;
 
-type RawItem = any;
-
-function toItem(p: RawItem) {
-  const id =
-    String(
-      p?.id ??
-        p?.uri?.split?.("/")?.pop?.() ??
-        // Node runtime => crypto global OK
-        crypto.randomUUID()
-    );
-
-  const title = p?.title ?? p?.name ?? "Untitled";
-
-  const created =
-    p?.createdAt ?? p?.created_time ?? p?.release_time ?? null;
-  const createdAt = created ? new Date(created).toISOString() : null;
-  const year = p?.year ?? (created ? new Date(created).getFullYear() : undefined);
-
-  const thumbFromPictures =
-    p?.pictures?.sizes?.[p?.pictures?.sizes?.length - 1]?.link ??
-    p?.pictures?.base_link ??
-    null;
-
-  const thumbnail =
-    p?.thumbnail ?? p?.picture ?? p?.thumb ?? thumbFromPictures ?? "";
-
-  const link = p?.vimeoUrl ?? p?.link ?? p?.url ?? "";
-
-  const embed =
-    p?.embed ??
-    (/^\d+$/.test(id)
-      ? `https://player.vimeo.com/video/${id}?autoplay=0&muted=1&playsinline=1`
-      : undefined);
-
-  return { id, title, thumbnail, link, embed, year, createdAt };
-}
-
 export async function GET(req: Request) {
-  const url = new URL(req.url);
-  const debug = url.searchParams.get("debug") === "1";
-  const folderOverride = url.searchParams.get("folder") || undefined;
-  const limit = Number(url.searchParams.get("limit") || "200");
+  const { searchParams } = new URL(req.url);
+  const debug = searchParams.get("debug") === "1";
 
   try {
-    const folderId = folderOverride || process.env.VIMEO_FOLDER_ID || undefined;
+    const folderId = process.env.VIMEO_FOLDER_ID || undefined;
+    const teamId = process.env.VIMEO_TEAM_ID || undefined;
 
-    // va lire lib/vimeo.ts qui gère /me/... puis fallback /users/{VIMEO_TEAM_ID}/...
-    const list: RawItem[] = (await fetchVimeoWorks({
-      folderId,
-      perPage: Number.isFinite(limit) ? limit : 200,
-    })) ?? [];
+    const raw = await fetchVimeoWorks({ folderId, teamId });
 
-    const items = list
-      .map(toItem)
-      .sort((a, b) => {
-        const da = a.createdAt ? Date.parse(a.createdAt) : 0;
-        const db = b.createdAt ? Date.parse(b.createdAt) : 0;
-        return db - da;
-      });
+    // Tri date desc
+    const items = raw.sort((a, b) => {
+      const da = a.createdAt ? Date.parse(a.createdAt) : 0;
+      const db = b.createdAt ? Date.parse(b.createdAt) : 0;
+      return db - da;
+    });
 
     const body = debug
       ? {
           ok: true,
           count: items.length,
           env: {
-            hasToken: Boolean(process.env.VIMEO_TOKEN),
-            hasFolderId: Boolean(process.env.VIMEO_FOLDER_ID),
-            hasTeamId: Boolean(process.env.VIMEO_TEAM_ID),
-            folderUsed: folderId ?? null,
-            teamIdUsed: process.env.VIMEO_TEAM_ID || null,
+            hasToken: !!process.env.VIMEO_TOKEN,
+            teamId,
+            folderId,
           },
-          sample: items.slice(0, 3),
           items,
         }
       : { ok: true, items };
@@ -86,22 +40,18 @@ export async function GET(req: Request) {
       headers: { "Cache-Control": "no-store" },
     });
   } catch (e: any) {
-    const body: any = {
+    const body = {
       ok: false,
       items: [],
-      error: typeof e?.message === "string" ? e.message : String(e),
+      error: e?.message || String(e),
+      env: {
+        hasToken: !!process.env.VIMEO_TOKEN,
+        teamId: process.env.VIMEO_TEAM_ID || null,
+        folderId: process.env.VIMEO_FOLDER_ID || null,
+      },
     };
-    if (debug) {
-      body.env = {
-        hasToken: Boolean(process.env.VIMEO_TOKEN),
-        hasFolderId: Boolean(process.env.VIMEO_FOLDER_ID),
-        hasTeamId: Boolean(process.env.VIMEO_TEAM_ID),
-        folderUsed: folderOverride || process.env.VIMEO_FOLDER_ID || null,
-        teamIdUsed: process.env.VIMEO_TEAM_ID || null,
-      };
-    }
     return NextResponse.json(body, {
-      status: 500,
+      status: 200, // on renvoie 200 pour que l’iframe puisse lire le message d’erreur
       headers: { "Cache-Control": "no-store" },
     });
   }
