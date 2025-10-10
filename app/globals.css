@@ -229,5 +229,14 @@
     margin-inline: auto;
     padding-inline: clamp(16px, 4vw, 32px);
     width: 100%;
+
+   /* START PATCH: chrome hidden during ASCII loader & hide canvas on home */
+/* Cache toute l’UI (nav, canvas, contenu) pendant le loader ASCII */
+html[data-loading="1"] .chrome { visibility: hidden; }
+
+/* Sur la home, pas de GlCanvas/dot-matrix derrière le player */
+html[data-home="1"] #gl-layer { display: none; }
+/* END PATCH */
+
   }
 }
