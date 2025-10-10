@@ -1,13 +1,11 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
+import { createPortal } from "react-dom";
 
-/** Stockage pour le TTL (mode "hourly") */
 const STORAGE_KEY = "antn_ascii_loader_last_seen";
-
 type Mode = "hourly" | "always" | "route";
 
-/** Durées par défaut (ms) */
 const DEFAULT_TOTAL_MS = 2200;
 const FADE_IN_MS = 180;
 const FADE_OUT_MS = 220;
@@ -25,7 +23,7 @@ function shouldShowHourly(ttlHours: number): boolean {
 export default function LoadingAscii({
   mode = "hourly",
   ttlHours = 1,
-  active,              // utile en mode "route"
+  active,
   totalMs = DEFAULT_TOTAL_MS,
 }: {
   mode?: Mode;
@@ -34,13 +32,13 @@ export default function LoadingAscii({
   totalMs?: number;
 }) {
   const [visible, setVisible] = useState(false);
-  const [progress, setProgress] = useState(0); // 0..1
+  const [progress, setProgress] = useState(0);
   const rafRef = useRef<number | null>(null);
   const doneRef = useRef(false);
   const startRef = useRef(0);
   const loadedRef = useRef(false);
 
-  // Déclenchement selon le mode
+  // déclenchement selon le mode
   useEffect(() => {
     const reduce =
       typeof window !== "undefined" &&
@@ -48,7 +46,6 @@ export default function LoadingAscii({
 
     if (mode === "route") {
       if (!active || reduce) return;
-      // reset
       setProgress(0);
       doneRef.current = false;
       loadedRef.current = false;
@@ -57,7 +54,6 @@ export default function LoadingAscii({
       return;
     }
 
-    // hourly / always
     const show = mode === "always" ? !reduce : shouldShowHourly(ttlHours) && !reduce;
     if (!show) return;
 
@@ -65,7 +61,20 @@ export default function LoadingAscii({
     startRef.current = performance.now();
   }, [mode, ttlHours, active, totalMs]);
 
-  // Progression + fermeture
+  // état global (overflow + drapeau html)
+  useEffect(() => {
+    if (!visible) return;
+    const html = document.documentElement;
+    const prevOverflow = html.style.overflow;
+    html.style.overflow = "hidden";
+    html.setAttribute("data-loading", "1");
+    return () => {
+      html.style.overflow = prevOverflow;
+      html.removeAttribute("data-loading");
+    };
+  }, [visible]);
+
+  // progression + fermeture
   useEffect(() => {
     if (!visible) return;
 
@@ -80,7 +89,7 @@ export default function LoadingAscii({
       const target = loadedRef.current ? 1 : timeTarget;
 
       setProgress((p) => {
-        const next = p + (target - p) * 0.2; // lerp
+        const next = p + (target - p) * 0.2;
         return next > 0.999 ? 1 : next;
       });
 
@@ -109,11 +118,11 @@ export default function LoadingAscii({
 
   if (!visible) return null;
 
-  return (
+  const overlay = (
     <div
       aria-hidden
       style={{ ["--in" as any]: `${FADE_IN_MS}ms` }}
-      className="fixed inset-0 z-[9999] overflow-hidden bg-black text-zinc-100 animate-[antnFadeIn_var(--in)_ease-out_forwards]"
+      className="fixed inset-0 z-[99999] overflow-hidden bg-black text-zinc-100 animate-[antnFadeIn_var(--in)_ease-out_forwards]"
     >
       {/* grain + scanlines */}
       <div className="pointer-events-none absolute inset-0 opacity-[0.10] mix-blend-screen [background-image:radial-gradient(rgba(255,255,255,.08)_1px,transparent_1px)] [background-size:2px_2px]" />
@@ -161,4 +170,7 @@ export default function LoadingAscii({
       `}</style>
     </div>
   );
+
+  // PORTAL pour sortir de toute stack locale (Nav/Canvas inclus)
+  return createPortal(overlay, document.body);
 }
