@@ -13,9 +13,7 @@
       --spacing-base: 1rem;
       --color-text: #fff;
       --font-size-base: 14px;
-      --transition-medium: .3s ease;
-      --border-radius: 0px;
-      --vignette-size: 0px;
+      --border-radius: 10px;
       --hover-scale: 1.05;
 
       /* Vignette page */
@@ -31,11 +29,13 @@
       --m-dot-color: rgba(255,255,255,.08);
       --m-dot-size: 1.1px;
       --m-dot-space: 22px;
+
+      /* Effets */
+      --halo-color: rgba(255,255,255,0.25);
     }
 
     *{margin:0;padding:0;box-sizing:border-box;user-select:none}
 
-    /* ===== Fond : matrice de points FIXE ===== */
     body{
       font-family:"PP Neue Montreal",system-ui,-apple-system,Segoe UI,Roboto,sans-serif;
       color:#fff; overflow:hidden; position:relative;
@@ -54,11 +54,8 @@
       animation:noise .3s steps(5) infinite; opacity:.22; pointer-events:none; z-index:100;
     }
     @keyframes noise{
-      0%{transform:translate(0,0)}10%{transform:translate(-2%,-3%)}
-      20%{transform:translate(-4%,2%)}30%{transform:translate(2%,-4%)}
-      40%{transform:translate(-2%,5%)}50%{transform:translate(-4%,2%)}
-      60%{transform:translate(3%,0)}70%{transform:translate(0,3%)}
-      80%{transform:translate(-3%,0)}90%{transform:translate(2%,2%)}
+      0%{transform:translate(0,0)}
+      50%{transform:translate(-2%,-3%)}
       100%{transform:translate(1%,0)}
     }
 
@@ -76,7 +73,7 @@
     .header{top:0}
     .footer{bottom:0}
 
-    /* On neutralise les styles “bulle” de la nav globale côté header uniquement */
+    /* On neutralise les styles “bulle” côté header uniquement */
     .header, .header *{
       background: transparent;
       box-shadow: none;
@@ -85,7 +82,7 @@
       border: 0;
     }
 
-    /* === YEARS (menu de base, stylé dropdown flouté) === */
+    /* === YEARS (menu) === */
     .legacy-year-menu{grid-column:1 / span 4; position:relative;}
     .legacy-years-toggle{
       display:inline-flex; align-items:center; gap:.55rem;
@@ -101,22 +98,15 @@
     .chev{width:8px;height:8px;border-right:2px solid #e9e9e9;border-bottom:2px solid #e9e9e9;transform:rotate(45deg); transition:transform .2s ease; margin-left:.2rem;}
     .legacy-year-menu.open .chev{ transform:rotate(-135deg); }
 
-    /* Panneau années – fermé = aucune empreinte visuelle */
     .legacy-years-panel{
       position:absolute; left:0; top:2.6rem; z-index:10001;
       display:flex; flex-direction:column; gap:.35rem;
       overflow:hidden;
-      max-height:0;
-      padding:0;
-      opacity:0;
-      transform:translateY(-4px);
-      pointer-events:none;
+      max-height:0; padding:0; opacity:0; transform:translateY(-4px); pointer-events:none;
       transition: max-height .35s ease, padding .2s ease, opacity .2s ease, transform .2s ease;
     }
     .legacy-year-menu.open .legacy-years-panel{
-      max-height:50vh;
-      padding:.45rem .4rem .55rem .4rem;
-      opacity:1; transform:none; pointer-events:auto;
+      max-height:50vh; padding:.45rem .4rem .55rem .4rem; opacity:1; transform:none; pointer-events:auto;
     }
     .legacy-years-panel::before{
       content:""; position:absolute; inset:-.2rem -1rem -.6rem -1rem; border-radius:8px;
@@ -128,11 +118,11 @@
     .years{ display:flex; flex-direction:column; gap:.35rem; }
     .year-btn{
       all:unset; cursor:pointer; color:#bcbcbc; font-weight:700; letter-spacing:-.01em;
-      padding:.22rem .55rem; border-radius:6px; transition:color .2s ease, background .2s ease;
-      display:block;
+      padding:.22rem .55rem; border-radius:6px; transition:color .2s ease, background .2s ease; display:block;
     }
     .year-btn:hover{ color:#fff; background:rgba(255,255,255,0.05);}
     .year-btn[aria-pressed="true"]{ color:#fff; background:rgba(255,255,255,0.08);}
+
     .years-close{
       all:unset; cursor:pointer; align-self:flex-start; margin-top:.25rem;
       color:#ddd; font-weight:800; font-size:10px; letter-spacing:.14em; text-transform:uppercase;
@@ -150,11 +140,13 @@
     .canvas{position:absolute;will-change:transform}
 
     .item{position:absolute;overflow:hidden;background:#000;cursor:pointer;border-radius:var(--border-radius)}
-    .item-image-container{position:relative;width:100%;height:100%;overflow:hidden}
-    .item-image-container::after{content:"";position:absolute;inset:0;pointer-events:none;box-shadow:inset 0 0 var(--vignette-size) rgba(0,0,0,.5);z-index:1}
-    .item img{width:100%;height:100%;object-fit:cover;pointer-events:none;transition:transform .3s ease}
-    .item:hover img{transform:scale(var(--hover-scale))}
-    .item-caption{position:absolute;left:0;bottom:0;width:100%;padding:10px;z-index:2}
+    .item-image-container{position:relative;width:100%;height:100%;overflow:hidden;border-radius:inherit}
+    .item-image-container::before{content:"";position:absolute;inset:0;background: radial-gradient(circle at center, transparent 55%, var(--halo-color) 130%);opacity:0;transition:opacity .35s ease}
+    .item img{width:100%;height:100%;object-fit:cover;pointer-events:none;transition:transform .3s ease, filter .45s ease;filter: grayscale(100%) contrast(1.1) brightness(0.82)}
+    .item:hover img{transform:scale(var(--hover-scale)); filter:none}
+    .item:hover .item-image-container::before{opacity:.8}
+
+    .item-caption{position:absolute;left:0;bottom:0;width:100%;padding:10px;z-index:2;background:linear-gradient(to top, rgba(0,0,0,.7), transparent)}
     .item-name{font-size:12px;text-transform:uppercase;letter-spacing:-.03em;margin-bottom:2px;overflow:hidden;height:16px}
     .item-number{font:400 10px/1 "TheGoodMonolith",monospace;color:#888;overflow:hidden;height:14px}
 
@@ -178,7 +170,6 @@
 <body>
   <!-- ===== HEADER ===== -->
   <div class="header">
-    <!-- Menu de base uniquement -->
     <div class="legacy-year-menu" id="legacyYears">
       <div class="legacy-years-toggle" id="legacyYearsToggle" role="button" aria-expanded="false" aria-controls="legacyYearsPanel">
         <span>+ YEARS</span>
@@ -223,38 +214,53 @@
     CustomEase.create("hop","0.9,0,0.1,1");
 
     /* ===== Data ===== */
-    let PROJECTS = []; // { title, year, image }
-    let HAS_PARENT_DATA = false; // NEW: indique si le parent a fourni des projets
+    let PROJECTS = []; // { id, title, year, image, createdAt? }
+    let HAS_PARENT_DATA = false;
 
-    // Fallback local si l’API/parent est KO
-    const FALLBACK = [
-      { title: "Echo Discs", year: 2025, image: "https://cdn.cosmos.so/7b5340f5-b4dc-4c08-8495-c507fa81480b?format=jpeg" },
-      { title: "Neon Handscape", year: 2025, image: "https://cdn.cosmos.so/2f49a117-05e7-4ae9-9e95-b9917f970adb?format=jpeg" },
-      { title: "Solar Bloom", year: 2025, image: "https://cdn.cosmos.so/47caf8a0-f456-41c5-98ea-6d0476315731?format=jpeg" },
-      { title: "Chromatic Loopscape", year: 2024, image: "https://cdn.cosmos.so/0f164449-f65e-4584-9d62-a9b3e1f4a90a?format=jpeg" },
-      { title: "Nova Pulse", year: 2024, image: "https://cdn.cosmos.so/f733585a-081e-48e7-a30e-e636446f2168?format=jpeg" },
-      { title: "Sonic Horizon", year: 2023, image: "https://cdn.cosmos.so/f99f8445-6a19-4a9a-9de3-ac382acc1a3f?format=jpeg" },
-    ];
+    // parsing année depuis le titre (ex: "2025 — Title", "[2024] Name", "Title (2023)")
+    function yearFromTitle(t){
+      if(!t || typeof t !== "string") return null;
+      const m = t.match(/(?:^|\D)(20\d{2}|19\d{2})(?:\D|$)/);
+      const y = m ? parseInt(m[1],10) : null;
+      if(y && y>=1900 && y<=2100) return y;
+      return null;
+    }
 
-    // NEW: normalisation de la forme envoyée par la route / parent
     function normalize(list){
-      return (Array.isArray(list) ? list : []).map(it => ({
-        title: it.title || it.name || "Untitled",
-        year: it.year || (new Date(it.createdAt || it.created_time || Date.now())).getFullYear(),
-        image: it.thumbnail || it.picture || it.thumb || ""
-      }));
+      return (Array.isArray(list) ? list : []).map(it => {
+        const title = it.title || it.name || "Untitled";
+        const yFromTitle = yearFromTitle(title);
+        const created = it.createdAt || it.created_time || null;
+        const yFromDate = created ? new Date(created).getFullYear() : (it.year || null);
+
+        // meilleure image dispo
+        const img =
+          it.thumbnail ||
+          (it.pictures && it.pictures.sizes && it.pictures.sizes.length
+            ? it.pictures.sizes[it.pictures.sizes.length - 1].link
+            : null) ||
+          it.picture ||
+          it.thumb ||
+          "";
+
+        return {
+          id: String(it.id ?? (it.uri && it.uri.split("/").pop()) ?? title),
+          title,
+          year: yFromTitle ?? yFromDate ?? new Date().getFullYear(),
+          image: img
+        };
+      });
     }
 
     async function loadProjects(){
-      // Si le parent nous a déjà fourni les projets → on ne refetch pas
       if (HAS_PARENT_DATA) return;
       try{
         const res = await fetch("/api/vimeo", { cache:"no-store" });
         const json = await res.json();
         const items = normalize(json?.items);
-        PROJECTS = items.length ? items : FALLBACK;
+        PROJECTS = items.filter(p => !!p.image); // évite les items sans image
       }catch(e){
-        PROJECTS = FALLBACK;
+        PROJECTS = [];
       }
     }
 
@@ -280,8 +286,7 @@
     const yearsToggle = document.getElementById("legacyYearsToggle");
     const yearsClose  = document.getElementById("legacyYearsClose");
     const yearsEl     = document.getElementById("years");
-
-    const socialsEl = document.getElementById("socials");
+    const socialsEl   = document.getElementById("socials");
 
     /* Socials */
     SOCIALS.forEach(s => {
@@ -291,7 +296,7 @@
       socialsEl.appendChild(a);
     });
 
-    /* ===== Years (recalculé une fois les projets chargés) ===== */
+    /* ===== Years ===== */
     let uniqueYears = [];
     const qpYear = new URLSearchParams(location.search).get("year");
     let activeYear = "All";
@@ -346,7 +351,7 @@
       return PROJECTS.filter(p => p.year === y);
     }
 
-    /* ===== Grille ===== */
+    /* ===== Grille / rendu infini ===== */
     const itemSizes = [
       { width: settings.baseWidth, height: settings.smallHeight },
       { width: settings.baseWidth, height: settings.largeHeight }
@@ -370,10 +375,12 @@
     function overlayIn(){
       if(overlayAnim) overlayAnim.kill();
       overlayAnim = gsap.to(overlay,{ opacity:settings.overlayOpacity, duration:settings.overlayEaseDuration, ease:"power2.inOut", overwrite:true });
+      overlay.classList.add("active");
     }
     function overlayOut(){
       if(overlayAnim) overlayAnim.kill();
-      overlayAnim = gsap.to(overlay,{ opacity:0, duration:settings.overlayEaseDuration, ease:"power2.inOut" });
+      overlayAnim = gsap.to(overlay,{ opacity:0, duration:settings.overlayEaseDuration, ease:"power2.inOut",
+        onComplete:()=>overlay.classList.remove("active") });
     }
 
     function getItemSize(row,col){ const idx = Math.abs((row*columns+col)%itemSizes.length); return itemSizes[idx]; }
@@ -383,6 +390,7 @@
     function updateVisibleItems(){
       const list = currentList();
       const itemCount = list.length || 1;
+      if(!itemCount) return;
 
       const buffer = settings.bufferZone;
       const vw = innerWidth*(1+buffer), vh = innerHeight*(1+buffer);
@@ -424,7 +432,7 @@
           const caption = document.createElement("div");
           caption.className = "item-caption";
           const name = document.createElement("div"); name.className="item-name"; name.textContent = proj.title;
-          const number = document.createElement("div"); number.className="item-number"; number.textContent = `#${String(idx+1).padStart(5,"0")}`;
+          const number = document.createElement("div"); number.className="item-number"; number.textContent = String(proj.year);
           caption.appendChild(name); caption.appendChild(number); item.appendChild(caption);
 
           item.addEventListener("click", () => { if(mouseHasMoved||isDragging) return; expandItem(item, proj); });
@@ -450,7 +458,7 @@
       const rect = item.getBoundingClientRect();
       const w = parseInt(item.dataset.width,10);
       const h = parseInt(item.dataset.height,10);
-      overlay.classList.add("active"); overlayIn();
+      overlayIn();
 
       const expandedItem = document.createElement("div");
       expandedItem.className="expanded-item";
@@ -467,7 +475,7 @@
       const targetW = vw*settings.expandedScale;
       const aspect = h/w; const targetH = targetW*aspect;
 
-      gsap.delayedCall(.5, animateTitleIn);
+      gsap.delayedCall(.45, animateTitleIn);
       gsap.fromTo(expandedItem,
         { width:w, height:h, x: rect.left+w/2 - innerWidth/2, y: rect.top+h/2 - innerHeight/2 },
         { width:targetW, height:targetH, x:0, y:0, duration:settings.zoomDuration, ease:"hop" }
@@ -481,7 +489,7 @@
       if(!expandedItem) return;
       animateTitleOut(); overlayOut();
 
-      document.querySelectorAll(".item").forEach(el=>{ if(el.id!==activeItemId) gsap.to(el,{opacity:1,duration:settings.overlayEaseDuration,delay:.3,ease:"power2.inOut"}); });
+      document.querySelectorAll(".item").forEach(el=>{ if(el.id!==activeItemId) gsap.to(el,{opacity:1,duration:settings.overlayEaseDuration,delay:.25,ease:"power2.inOut"}); });
 
       const rect = activeItem.getBoundingClientRect();
       const w = parseInt(activeItem.dataset.width,10);
@@ -496,7 +504,7 @@
           expandedItem.remove();
           window.__expandedItem = null;
           isExpanded=false; activeItem=null; activeItemId=null; canDrag=true;
-          container.style.cursor="grab"; overlay.classList.remove("active");
+          container.style.cursor="grab";
         }
       });
     }
@@ -532,54 +540,60 @@
       updateVisibleItems();
     }
 
-    /* Pilotage parent */
+    /* Pilotage parent (Next.js) */
     window.addEventListener("message", (evt) => {
-if (data.type === "SET_STATUS") {
-  console.log("[projects] API status:", data.value);
-  // Optionnel: petit indicateur en bas à droite
-  let badge = document.getElementById("apiStatusBadge");
-  if (!badge) {
-    badge = document.createElement("div");
-    badge.id = "apiStatusBadge";
-    Object.assign(badge.style, {
-      position: "fixed",
-      right: "10px",
-      bottom: "10px",
-      font: "600 11px/1.4 system-ui, -apple-system, Segoe UI, Roboto, sans-serif",
-      color: "#bbb",
-      background: "rgba(0,0,0,.35)",
-      padding: "6px 8px",
-      borderRadius: "8px",
-      zIndex: 10050,
-      pointerEvents: "none",
-    });
-    document.body.appendChild(badge);
-  }
-  const ok = data.value?.ok;
-  const count = data.value?.count ?? 0;
-  badge.textContent = ok ? `Vimeo OK • ${count} items` : `Vimeo KO`;
-}
+      const data = evt && evt.data;
+      if (!data || typeof data !== "object") return;
 
-      // NEW: réception des projets envoyés par Next (évite le FALLBACK)
+      if (data.type === "SET_STATUS") {
+        let badge = document.getElementById("apiStatusBadge");
+        if (!badge) {
+          badge = document.createElement("div");
+          badge.id = "apiStatusBadge";
+          Object.assign(badge.style, {
+            position: "fixed",
+            right: "10px",
+            bottom: "10px",
+            font: "600 11px/1.4 system-ui, -apple-system, Segoe UI, Roboto, sans-serif",
+            color: "#bbb",
+            background: "rgba(0,0,0,.35)",
+            padding: "6px 8px",
+            borderRadius: "8px",
+            zIndex: 10050,
+            pointerEvents: "none",
+          });
+          document.body.appendChild(badge);
+        }
+        const ok = data.value?.ok;
+        const count = data.value?.count ?? 0;
+        badge.textContent = ok ? `Vimeo OK • ${count} items` : `Vimeo KO`;
+      }
+
       if (data.type === "SET_PROJECTS") {
         HAS_PARENT_DATA = true;
-        PROJECTS = normalize(data.value);
+        PROJECTS = normalize(data.value).filter(p => !!p.image);
         buildYearsFromProjects();
         renderYears();
         setActiveYear(activeYear);
+      }
+
+      if (data.type === "SET_YEAR") {
+        const value = data.value;
+        document.documentElement.setAttribute("data-year-controlled", "true");
+        setActiveYear(value === "all" ? "All" : String(value));
+        openYears();
       }
     });
 
     /* ===== Init ===== */
     (async function init(){
-      await loadProjects();         // 1) fetch Vimeo (skippé si parent a fourni)
-      if (!PROJECTS.length) PROJECTS = FALLBACK; // garde-fou
-      buildYearsFromProjects();     // 2) calc années
-      renderYears();                // 3) UI years
-      closeYears();                 // 4) fermé par défaut
-      setActiveYear(activeYear);    // 5) filtre initial
-      updateVisibleItems();         // 6) première passe
-      animate();                    // 7) loop
+      await loadProjects();                     // fetch Vimeo (si parent n'a rien envoyé)
+      buildYearsFromProjects();                 // calc années
+      renderYears();                            // UI années
+      closeYears();                             // fermé par défaut
+      setActiveYear(activeYear);                // filtre initial
+      updateVisibleItems();                     // première passe
+      animate();                                // loop
     })();
   })();
   </script>
