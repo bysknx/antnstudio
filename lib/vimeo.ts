@@ -1,10 +1,7 @@
 // lib/vimeo.ts
-/* Vimeo helper – liste les vidéos d’un "project" (folder) et, si besoin,
-   descend dans les sous-dossiers (projects enfants). */
-
-type VimeoItem = any;
-
 const API = "https://api.vimeo.com";
+
+type ListOpts = { folderId?: string; perPage?: number };
 
 function env(name: string, optional = false) {
   const v = process.env[name];
@@ -12,90 +9,71 @@ function env(name: string, optional = false) {
   return v || "";
 }
 
-function authHeaders() {
+async function vimeoFetch(path: string, init: RequestInit = {}) {
   const token = env("VIMEO_TOKEN");
-  return {
-    Authorization: `Bearer ${token}`,
-    Accept: "application/json",
-  };
-}
-
-async function vimeoGet(path: string, params?: Record<string, any>) {
-  const qs = params
-    ? "?" +
-      Object.entries(params)
-        .filter(([, v]) => v !== undefined && v !== null && v !== "")
-        .map(([k, v]) => `${encodeURIComponent(k)}=${encodeURIComponent(String(v))}`)
-        .join("&")
-    : "";
-  const res = await fetch(`${API}${path}${qs}`, { headers: authHeaders(), cache: "no-store" });
+  const res = await fetch(`${API}${path}`, {
+    headers: {
+      Authorization: `bearer ${token}`,
+      Accept: "application/vnd.vimeo.*+json;version=3.4",
+      "Content-Type": "application/json",
+    },
+    cache: "no-store",
+    ...init,
+  });
   if (!res.ok) {
-    const txt = await res.text().catch(() => "");
-    throw new Error(`Vimeo ${res.status} ${res.statusText} on ${path}${qs ? " "+qs : ""} :: ${txt}`);
+    const text = await res.text().catch(() => "");
+    throw new Error(`Vimeo ${res.status}: ${res.statusText} • ${text}`);
   }
   return res.json();
 }
 
-async function listAll(path: string, params?: Record<string, any>) {
-  const out: any[] = [];
-  let page = 1;
-  // Vimeo pagine avec "page" / "per_page" + champ "paging.next"
-  for (;;) {
-    const data = await vimeoGet(path, { ...params, page });
-    const items = Array.isArray(data?.data) ? data.data : [];
-    out.push(...items);
-    const next = data?.paging?.next;
-    if (!next) break;
-    page += 1;
+/**
+ * Vimeo pagination helper. Follows `paging.next` links until completion.
+ */
+async function listAll(path: string): Promise<any[]> {
+  let out: any[] = [];
+  let next: string | null = path;
+
+  while (next) {
+    const page = await vimeoFetch(next);
+    const data = Array.isArray(page?.data) ? page.data : [];
+    out = out.concat(data);
+
+    const nextHref: string | undefined = page?.paging?.next;
+    // paging.next is a full URL; convert to path for our fetcher
+    if (nextHref) {
+      const url = new URL(nextHref);
+      next = url.pathname + url.search;
+    } else {
+      next = null;
+    }
   }
   return out;
 }
 
-// Try a base path, else throw to let caller fallback to the other base.
-async function listProjectVideosUnder(basePath: string) {
-  // 1) vidéos directement dans le project
-  const direct = await listAll(`${basePath}/videos`, { per_page: 100 });
-  if (direct.length) return direct;
+/**
+ * Get videos from a folder (project). If the folder is empty because
+ * content lives in sub-folders (e.g., 2023/2024/2025), we fall back
+ * to all videos for the team/user.
+ */
+export async function fetchVimeoWorks(opts: ListOpts = {}) {
+  const perPage = Math.max(1, Math.min(200, opts.perPage ?? 100));
+  const teamId = env("VIMEO_TEAM_ID", true) || "me";
 
-  // 2) sinon, chercher les sous-dossiers (items => type "folder"/"project")
-  const items = await listAll(`${basePath}/items`, { per_page: 100 });
-  const subProjects = items.filter((it: any) => {
-    const t = it?.type || it?.metadata?.connection?.type || it?.resource_type;
-    // Selon les versions d’API, “project” / “folder” apparaissent
-    return String(t || "").includes("project") || String(t || "").includes("folder");
-  });
+  // 1) If folderId provided, try to list its direct videos
+  if (opts.folderId) {
+    const direct = await listAll(
+      `/users/${teamId}/projects/${opts.folderId}/videos?per_page=${perPage}&sort=date&direction=desc`
+    );
+    if (direct.length > 0) return direct;
 
-  if (!subProjects.length) return direct; // rien à descendre
-
-  // 3) agréger les vidéos de chaque sous-dossier
-  const all: any[] = [];
-  for (const sp of subProjects) {
-    const uri: string = sp?.uri || "";
-    const childId = uri.split("/").pop();
-    if (!childId) continue;
-    const child = await listAll(`${basePath.replace(/\/projects\/[^/]+$/, "")}/projects/${childId}/videos`, {
-      per_page: 100,
-    }).catch(() => []);
-    all.push(...child);
+    // Optional: if you later want to recurse into subfolders, list them here
+    // and aggregate. For now we keep it simple and fall back below.
   }
+
+  // 2) Fallback: list all videos for the account (ignores folder structure)
+  const all = await listAll(
+    `/users/${teamId}/videos?per_page=${perPage}&sort=date&direction=desc`
+  );
   return all;
-}
-
-export async function fetchVimeoWorks(opts: { folderId?: string; perPage?: number }) {
-  const projectId = opts?.folderId || env("VIMEO_FOLDER_ID", true) || undefined;
-  if (!projectId) return [] as VimeoItem[];
-
-  // Tentative #1: via /me/...
-  try {
-    const base1 = `/me/projects/${projectId}`;
-    return await listProjectVideosUnder(base1);
-  } catch (_) {
-    // ignore -> fallback
-  }
-
-  // Tentative #2: via /users/{TEAM_ID}/...
-  const teamId = env("VIMEO_TEAM_ID", true);
-  if (!teamId) return [] as VimeoItem[]; // pas de team => on ne peut pas fallback
-  const base2 = `/users/${teamId}/projects/${projectId}`;
-  return await listProjectVideosUnder(base2);
 }
