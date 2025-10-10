@@ -197,4 +197,104 @@ export default function HeroPlayer({
   const goTo = (i: number) => {
     if (!slides.length) return;
     if (rafRef.current) cancelAnimationFrame(rafRef.current);
-    setIndex(((i % slides.length) + slides.length) %
+    setIndex(((i % slides.length) + slides.length) % slides.length);
+  };
+
+  // Wheel / swipe → step slides (throttle 1s)
+  const step = useCallback(
+    (dir: 1 | -1) => {
+      const now = Date.now();
+      if (now - wheelLockRef.current < WHEEL_THROTTLE_MS) return;
+      wheelLockRef.current = now;
+      goTo(index + dir);
+    },
+    [index],
+  );
+
+  useEffect(() => {
+    const el = document.getElementById("hero-root");
+    if (!el) return;
+
+    const onWheel = (e: WheelEvent) => {
+      // Empêche le scroll page et navigue dans les slides
+      e.preventDefault();
+      const dir = e.deltaY > 0 ? 1 : -1;
+      step(dir as 1 | -1);
+    };
+    const onTouchStart = (e: TouchEvent) => {
+      touchStartY.current = e.touches[0].clientY;
+    };
+    const onTouchEnd = (e: TouchEvent) => {
+      if (touchStartY.current == null) return;
+      const dy = e.changedTouches[0].clientY - touchStartY.current;
+      if (Math.abs(dy) > 40) step(dy < 0 ? 1 : -1);
+      touchStartY.current = null;
+    };
+
+    el.addEventListener("wheel", onWheel, { passive: false });
+    el.addEventListener("touchstart", onTouchStart, { passive: true });
+    el.addEventListener("touchend", onTouchEnd, { passive: true });
+
+    return () => {
+      el.removeEventListener("wheel", onWheel as any);
+      el.removeEventListener("touchstart", onTouchStart as any);
+      el.removeEventListener("touchend", onTouchEnd as any);
+    };
+  }, [step]);
+
+  return (
+    <section id="hero-root" className="relative h-[100svh] w-full overflow-hidden bg-black">
+      {/* Media plein écran (masqué tant que pas "play") */}
+      <div className="absolute inset-0">
+        <iframe
+          key={index}
+          ref={iframeRef}
+          className={`absolute inset-0 h-full w-full transition-opacity duration-300 ${
+            visible ? "opacity-100" : "opacity-0"
+          }`}
+          src={current.src}
+          title={current.alt}
+          allow="autoplay; fullscreen; picture-in-picture; encrypted-media; clipboard-write; web-share"
+          referrerPolicy="strict-origin-when-cross-origin"
+          loading="eager"
+        />
+      </div>
+
+      {/* Vignette douce pour du relief */}
+      <div className="pointer-events-none absolute inset-0 shadow-[inset_0_0_240px_rgba(0,0,0,0.55)]" />
+
+      {/* BARRES HORIZONTALES (à droite) */}
+      <div className="absolute right-6 top-1/2 -translate-y-1/2 flex flex-col gap-3 z-[5] w-[160px]">
+        {slides.map((_, i) => {
+          const active = i === index;
+          const pct = active ? progress : i < index ? 1 : 0;
+          return (
+            <button
+              key={i}
+              onClick={() => goTo(i)}
+              aria-label={`Aller au projet ${i + 1}`}
+              className={[
+                "group relative h-[8px] w-full overflow-hidden rounded-full",
+                "bg-white/15 transition-all",
+                active ? "ring-1 ring-white/40" : "hover:bg-white/25",
+              ].join(" ")}
+            >
+              {/* remplissage gauche→droite */}
+              <span
+                className="absolute left-0 top-0 bottom-0 bg-white/90 group-hover:bg-white"
+                style={{ width: `${Math.round(pct * 100)}%` }}
+              />
+              {/* focus ring visible clavier */}
+              <span className="absolute inset-0 rounded-full ring-0 group-focus-visible:ring-2 group-focus-visible:ring-white/70" />
+            </button>
+          );
+        })}
+      </div>
+
+      {/* Légende discrète (optionnelle) */}
+      <div className="pointer-events-none absolute left-6 bottom-6 text-white/70 text-xs tracking-wide">
+        {current.alt}
+      </div>
+    </section>
+  );
+}
