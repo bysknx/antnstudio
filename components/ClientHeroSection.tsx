@@ -1,4 +1,4 @@
-// components/ClientHeroSection.tsx
+// START PATCH
 "use client";
 
 import { useEffect, useState } from "react";
@@ -8,12 +8,12 @@ import HeroPlayer from "@/components/ui/HeroPlayer";
 export default function ClientHeroSection() {
   const [gate, setGate] = useState(true);
 
-  // Empêche la barre de scroll pendant le Hero
+  // Marque la home pour masquer le canvas global
   useEffect(() => {
-    const prev = document.documentElement.style.overflow;
-    document.documentElement.style.overflow = "hidden";
+    const html = document.documentElement;
+    html.setAttribute("data-home", "1");
     return () => {
-      document.documentElement.style.overflow = prev;
+      html.removeAttribute("data-home");
     };
   }, []);
 
@@ -24,3 +24,4 @@ export default function ClientHeroSection() {
     </>
   );
 }
+// END PATCH
