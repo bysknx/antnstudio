@@ -2,10 +2,10 @@
 import type { Metadata } from "next";
 import "./globals.css";
 
-import GlCanvas from "@/components/GlCanvas";
 import LoadingAscii from "@/components/LoadingAscii";
 import ClientFade from "@/components/ClientFade";
-import Nav from "@/components/Nav";
+import ChromeFrame from "@/components/ChromeFrame";
+import RouteLoader from "@/components/RouteLoader";
 
 export const metadata: Metadata = {
   title: "antn.studio — Anthony",
@@ -40,27 +40,14 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <link rel="dns-prefetch" href="https://f.vimeocdn.com" />
       </head>
       <body>
-        {/* Loader en portal (couvre tout) */}
+        {/* Loader “heure / premier accès” en portal */}
         <LoadingAscii />
 
-        {/* Tout le "chrome" de l'app est dans ce wrapper */}
+        {/* Loader court à CHAQUE changement de route */}
+        <RouteLoader />
+
         <ClientFade>
-          <div className="chrome relative z-0">
-            {/* Fond interactif + overlays d’ambiance */}
-            <div id="gl-layer">
-              <GlCanvas />
-              <div className="grain" />
-              <div className="scanlines" />
-            </div>
-
-            {/* Nav au-dessus du canvas */}
-            <div className="relative z-20">
-              <Nav />
-            </div>
-
-            {/* Contenu principal */}
-            <div className="page relative z-10">{children}</div>
-          </div>
+          <ChromeFrame>{children}</ChromeFrame>
         </ClientFade>
       </body>
     </html>
