@@ -1,98 +1,79 @@
-import { ContactForm } from "@/components/ContactForm";
-
-/* === Petit helper pour mots “réactifs” au hover (souligné fluide + léger glow) === */
-function HoverWord({ children }: { children: React.ReactNode }) {
-  return (
-    <span className="group relative inline-block cursor-default transition-transform duration-200 hover:-translate-y-[1px]">
-      <span className="relative z-10">{children}</span>
-      <span
-        aria-hidden
-        className="pointer-events-none absolute left-0 right-0 -bottom-0.5 h-[1.5px] origin-left scale-x-0 bg-white/80 transition-transform duration-200 ease-out group-hover:scale-x-100"
-      />
-      <span
-        aria-hidden
-        className="pointer-events-none absolute inset-x-0 -bottom-1 h-2 rounded-full bg-white/10 opacity-0 blur-[2px] transition-opacity duration-200 group-hover:opacity-100"
-      />
-    </span>
-  );
-}
-
-/* === Tes vraies expériences === */
-const EXPERIENCES = [
-  { title: "CEO", company: "antn.studio", dates: "2019 – Present", type: "" },
-  { title: "Edit Supervisor", company: "Freelance @ Jellysmack", dates: "2022 – 2023", type: "" },
-  { title: "International Project Manager", company: "Freelance", dates: "2023 – 2025", type: "" },
-];
+// START PATCH
+import Link from "next/link";
 
 export default function ContactPage() {
   return (
-    <main className="relative container mx-auto px-6 py-24 flex flex-col justify-between min-h-[100svh]">
-      {/* Section principale : centrée verticalement */}
-      <div className="flex flex-col lg:flex-row items-center justify-between gap-12 flex-grow">
-        {/* ===== FORMULAIRE ===== */}
-        <div className="w-full max-w-md flex-shrink-0">
-          <ContactForm className="glass-panel" />
+    <main className="shell stack-16 py-14 md:py-20 relative">
+      <section className="grid md:grid-cols-2 gap-10 items-start">
+        {/* Forme à gauche — inchangé si tu as déjà ton composant */}
+        <div className="glass-panel p-5 md:p-6">
+          {/* ... ton formulaire existant ... */}
         </div>
 
-        {/* ===== ABOUT + MAIL ===== */}
-        <section className="w-full lg:w-1/2 space-y-6 text-left">
-          <div>
-            <h2 className="text-2xl font-semibold text-zinc-100 mb-3">About</h2>
+        {/* About à droite */}
+        <div className="space-y-6">
+          <h2 className="text-xl md:text-2xl font-semibold">About.</h2>
 
-            <p className="text-[15px] leading-relaxed text-zinc-300/90 max-w-xl">
-              <strong className="font-semibold">« antn.studio »</strong> founded by Anthony, an independent director and
-              project lead from <HoverWord>Paris</HoverWord>. Blending <HoverWord>precision</HoverWord> with{" "}
-              <HoverWord>emotion</HoverWord>, the studio crafts <HoverWord>cinematic visuals</HoverWord>,{" "}
-              <HoverWord>brand films</HoverWord>, and <HoverWord>digital experiences</HoverWord> with a strong{" "}
-              <HoverWord>narrative core</HoverWord>. Each project is shaped with <HoverWord>technical mastery</HoverWord>,
-              and driven by a search for <HoverWord>authenticity</HoverWord> and <HoverWord>impact</HoverWord>.
+          <div className="text-[15px] md:text-[17px] leading-[1.75] text-zinc-200 [text-align:justify] [text-justify:inter-word] space-y-4">
+            <p>
+              « <strong>antn.studio</strong> » founded by <strong>Anthony</strong>, an independent{" "}
+              <strong>director</strong> and <strong>project lead</strong> from Paris.
             </p>
-
-            <p className="mt-3 text-[15px] leading-relaxed text-zinc-300/90 max-w-xl">
-              <HoverWord>Sensory</HoverWord>, <HoverWord>intentional</HoverWord>, <HoverWord>timeless</HoverWord> — antn.studio
-              turns ideas into <HoverWord>living imagery</HoverWord>.
+            <p>
+              Blending <strong>precision</strong> with <strong>emotion</strong>, the studio crafts{" "}
+              <strong>cinematic visuals</strong>, brand films, and digital experiences with a{" "}
+              <strong>strong narrative core</strong>.
+            </p>
+            <p>
+              Each project is shaped with <strong>technical mastery</strong>, and driven by a search for{" "}
+              <strong>authenticity</strong> and <strong>impact</strong>.
+            </p>
+            <p>
+              <em>Sensory, intentional, timeless</em> — <strong>antn.studio</strong> turns ideas into living imagery.
             </p>
           </div>
 
-          {/* Sous-bloc contact */}
-          <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4 pt-2">
-            <span className="text-sm text-zinc-400">Contact me :</span>
-
-            <a
+          {/* CTA + email alignés en hauteur */}
+          <div className="flex flex-wrap items-stretch gap-3 pt-2">
+            <div className="uppercase font-semibold tracking-wide text-[12px] md:text-[13px] text-zinc-100
+                            grid place-items-center px-4 rounded-lg ring-1 ring-white/10 bg-zinc-900/60">
+              Let’s connect :
+            </div>
+            <Link
               href="mailto:anthony@antn.studio"
-              className="group relative inline-flex items-center overflow-hidden rounded-md border border-white/10 bg-zinc-900/40 px-5 py-2.5 text-sm font-medium text-zinc-100 backdrop-blur transition-colors"
+              className="grid place-items-center rounded-lg px-4 h-10 md:h-11 bg-zinc-800/70 hover:bg-zinc-800
+                         text-zinc-100 font-medium ring-1 ring-white/10"
             >
-              <span className="relative z-10 transition-colors duration-300 group-hover:text-zinc-900">
-                anthony@antn.studio
-              </span>
-              <span
-                aria-hidden
-                className="absolute inset-0 -z-0 translate-x-[-101%] bg-white transition-transform duration-300 ease-out group-hover:translate-x-0"
-              />
-            </a>
+              anthony@antn.studio
+            </Link>
           </div>
-        </section>
-      </div>
+        </div>
+      </section>
 
-      {/* ===== EXPÉRIENCES ===== */}
-      <section className="mt-24">
-        <h3 className="sr-only">Experiences</h3>
-        <ul className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 place-items-center">
-          {EXPERIENCES.map((exp) => (
-            <li
-              key={`${exp.company}-${exp.title}`}
-              className="glass-panel rounded-2xl p-4 w-full max-w-sm"
-            >
-              <div className="mb-1 flex items-center justify-between text-xs text-zinc-400">
-                <span>{exp.company}</span>
-                <span>{exp.dates}</span>
-              </div>
-              <div className="text-sm text-zinc-200">{exp.title}</div>
-              {exp.type ? <div className="mt-1 text-xs text-zinc-500">{exp.type}</div> : null}
-            </li>
-          ))}
-        </ul>
+      {/* Expériences — plus espacées + hover subtil */}
+      <section className="pt-10">
+        <div className="grid md:grid-cols-3 gap-4 md:gap-6">
+          {/* Exemple de carte ; duplique/branche sur tes données */}
+          <article className="group rounded-2xl border border-white/10 bg-zinc-900/40 p-4 md:p-5
+                              hover:bg-zinc-900/60 hover:-translate-y-[1px] transition-all">
+            <div className="text-xs text-zinc-400">antn.studio — 2019 → Present</div>
+            <div className="font-semibold mt-1">CEO</div>
+          </article>
+
+          <article className="group rounded-2xl border border-white/10 bg-zinc-900/40 p-4 md:p-5
+                              hover:bg-zinc-900/60 hover:-translate-y-[1px] transition-all">
+            <div className="text-xs text-zinc-400">Freelance @ Jellysmack — 2022 → 2023</div>
+            <div className="font-semibold mt-1">Edit Supervisor</div>
+          </article>
+
+          <article className="group rounded-2xl border border-white/10 bg-zinc-900/40 p-4 md:p-5
+                              hover:bg-zinc-900/60 hover:-translate-y-[1px] transition-all">
+            <div className="text-xs text-zinc-400">Freelance — 2023 → 2025</div>
+            <div className="font-semibold mt-1">International Project Manager</div>
+          </article>
+        </div>
       </section>
     </main>
   );
 }
+// END PATCH
