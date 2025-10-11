@@ -1,18 +1,16 @@
-import ContactForm from "@/components/ContactForm";
+// app/contact/page.tsx
+import { ContactForm } from "@/components/ContactForm";
 
 export default function ContactPage() {
   return (
     <main className="relative min-h-[100svh]">
       <section className="mx-auto w-full max-w-[1200px] px-6 sm:px-8 pt-10 pb-24">
-        {/* Grille : formulaire à gauche / about à droite */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-10 lg:gap-14 items-start">
-          {/* Formulaire (restauré) */}
           <div className="glass-panel p-5 sm:p-6">
             <h2 className="mb-4 text-lg font-semibold tracking-wide">Contact</h2>
             <ContactForm />
           </div>
 
-          {/* About — justifié + gras sur mots clés */}
           <article>
             <h2 className="mb-4 text-xl font-semibold">About.</h2>
 
@@ -43,7 +41,6 @@ export default function ContactPage() {
               </p>
             </div>
 
-            {/* CTA aligné et centré verticalement avec le bouton email */}
             <div className="mt-4 flex flex-wrap items-stretch gap-3">
               <div className="flex items-center">
                 <span className="inline-flex h-10 items-center rounded-md border border-white/15 px-4 text-xs font-semibold tracking-widest uppercase">
@@ -60,22 +57,16 @@ export default function ContactPage() {
           </article>
         </div>
 
-        {/* Expériences : plus espacées + hover subtil */}
         <div className="mt-12 grid grid-cols-1 md:grid-cols-3 gap-6">
-          <div className="rounded-2xl border border-white/10 bg-zinc-900/60 p-4 transition
-                          hover:translate-y-[-1px] hover:shadow-[0_10px_30px_rgba(0,0,0,0.35)]">
+          <div className="rounded-2xl border border-white/10 bg-zinc-900/60 p-4 transition hover:-translate-y-px hover:shadow-[0_10px_30px_rgba(0,0,0,0.35)]">
             <div className="text-xs text-zinc-400 mb-2">antn.studio — 2019 → Present</div>
             <div className="font-semibold">CEO</div>
           </div>
-
-          <div className="rounded-2xl border border-white/10 bg-zinc-900/60 p-4 transition
-                          hover:translate-y-[-1px] hover:shadow-[0_10px_30px_rgba(0,0,0,0.35)]">
+          <div className="rounded-2xl border border-white/10 bg-zinc-900/60 p-4 transition hover:-translate-y-px hover:shadow-[0_10px_30px_rgba(0,0,0,0.35)]">
             <div className="text-xs text-zinc-400 mb-2">Freelance @ Jellysmack — 2022 → 2023</div>
             <div className="font-semibold">Edit Supervisor</div>
           </div>
-
-          <div className="rounded-2xl border border-white/10 bg-zinc-900/60 p-4 transition
-                          hover:translate-y-[-1px] hover:shadow-[0_10px_30px_rgba(0,0,0,0.35)]">
+          <div className="rounded-2xl border border-white/10 bg-zinc-900/60 p-4 transition hover:-translate-y-px hover:shadow-[0_10px_30px_rgba(0,0,0,0.35)]">
             <div className="text-xs text-zinc-400 mb-2">Freelance — 2023 → 2025</div>
             <div className="font-semibold">International Project Manager</div>
           </div>
