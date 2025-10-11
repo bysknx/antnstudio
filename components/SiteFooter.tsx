@@ -7,8 +7,9 @@ export default function SiteFooter() {
     <div
       className="
         antn-footer
-        fixed inset-x-0 bottom-0 z-40
+        fixed inset-x-0 bottom-3 z-40
         px-4 md:px-6
+        pointer-events-none
       "
       role="contentinfo"
       aria-label="Footer"
@@ -17,16 +18,16 @@ export default function SiteFooter() {
         className="
           mx-auto w-full max-w-[1400px]
           flex items-center justify-between gap-6
-          text-[12px] md:text-[13px] leading-none text-zinc-300
+          text-[12px] md:text-[13px] leading-none text-zinc-200
         "
       >
         {/* Gauche : coordonnées */}
-        <div className="coordinates-section whitespace-nowrap">
+        <div className="coordinates-section whitespace-nowrap pointer-events-auto">
           <p>48.7264° N, 2.2770° E</p>
         </div>
 
         {/* Centre : liens sociaux */}
-        <div className="links-section flex items-center gap-6" id="socials">
+        <div className="links-section flex items-center gap-6 pointer-events-auto" id="socials">
           <a
             className="hover:text-white transition-colors"
             href="https://instagram.com/antnstudio" target="_blank" rel="noreferrer"
@@ -50,7 +51,7 @@ export default function SiteFooter() {
         </div>
 
         {/* Droite : info */}
-        <div className="info-section whitespace-nowrap">
+        <div className="info-section whitespace-nowrap pointer-events-auto">
           <p>
             Est. 2025 •{" "}
             <Link
