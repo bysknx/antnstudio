@@ -1,11 +1,10 @@
-// app/layout.tsx
 import type { Metadata } from "next";
 import "./globals.css";
 
 import LoadingAscii from "@/components/LoadingAscii";
 import ClientFade from "@/components/ClientFade";
 import ChromeFrame from "@/components/ChromeFrame";
-import SiteFooter from "@/components/SiteFooter"; // ⬅️ remplace { Footer } from "./footer"
+import FooterMount from "@/components/FooterMount";
 
 export const metadata: Metadata = {
   title: "antn.studio — Anthony",
@@ -43,15 +42,17 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <link rel="dns-prefetch" href="https://f.vimeocdn.com" />
       </head>
       <body>
-        {/* Loader “première visite / TTL” */}
+        {/* Loader TTL */}
         <LoadingAscii />
 
         {/* Crossfade/blur entre routes */}
         <ClientFade>
           <ChromeFrame>
             {children}
-            <SiteFooter /> {/* module bas de page partout */}
           </ChromeFrame>
+
+          {/* Footer global (pas sur /projects) */}
+          <FooterMount />
         </ClientFade>
       </body>
     </html>
