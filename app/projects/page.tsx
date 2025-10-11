@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef, useState, Suspense } from "react";
+import { Suspense, useEffect, useMemo, useRef, useState } from "react";
 import { useSearchParams } from "next/navigation";
 import FullBleedPlayer from "@/components/ui/FullBleedPlayer";
 
@@ -46,13 +46,20 @@ function ProjectsIframe() {
   const [open, setOpen] = useState(false);
   const [current, setCurrent] = useState<VimeoItem | null>(null);
 
-  const src = `/projects-pen.html${year ? `?year=${encodeURIComponent(year)}` : ""}`;
+  // URL de l'iframe — on masque le footer natif du pen
+  const src = useMemo(() => {
+    const params = new URLSearchParams();
+    if (year) params.set("year", year);
+    params.set("noftr", "1"); // <-- cache le footer du pen
+    const q = params.toString();
+    return `/projects-pen.html${q ? `?${q}` : ""}`;
+  }, [year]);
 
   const post = (msg: unknown) => {
     iframeRef.current?.contentWindow?.postMessage(msg, "*");
   };
 
-  // Récupération des projets — sans debug ni statut
+  // Récupération des projets (sans debug ni statut)
   useEffect(() => {
     let stop = false;
     (async () => {
@@ -76,7 +83,7 @@ function ProjectsIframe() {
     post({ type: "SET_YEAR", value: year === "all" ? "all" : year });
   }, [year, iframeReady]);
 
-  // Pousser les projets (et re-pousser l’année)
+  // Pousser les projets (et re-pousser l’année si présente)
   useEffect(() => {
     if (!iframeReady || !projects) return;
     post({ type: "SET_PROJECTS", value: projects });
@@ -126,7 +133,7 @@ function ProjectsIframe() {
       <iframe
         ref={iframeRef}
         src={src}
-        className="h-[100svh] w-full border-0 block"
+        className="block h-[100svh] w-full border-0"
         title="Projects Grid"
         onLoad={() => {
           setIframeReady(true);
