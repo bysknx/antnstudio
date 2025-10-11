@@ -1,79 +1,86 @@
-// START PATCH
-import Link from "next/link";
+import ContactForm from "@/components/ContactForm";
 
 export default function ContactPage() {
   return (
-    <main className="shell stack-16 py-14 md:py-20 relative">
-      <section className="grid md:grid-cols-2 gap-10 items-start">
-        {/* Forme à gauche — inchangé si tu as déjà ton composant */}
-        <div className="glass-panel p-5 md:p-6">
-          {/* ... ton formulaire existant ... */}
-        </div>
-
-        {/* About à droite */}
-        <div className="space-y-6">
-          <h2 className="text-xl md:text-2xl font-semibold">About.</h2>
-
-          <div className="text-[15px] md:text-[17px] leading-[1.75] text-zinc-200 [text-align:justify] [text-justify:inter-word] space-y-4">
-            <p>
-              « <strong>antn.studio</strong> » founded by <strong>Anthony</strong>, an independent{" "}
-              <strong>director</strong> and <strong>project lead</strong> from Paris.
-            </p>
-            <p>
-              Blending <strong>precision</strong> with <strong>emotion</strong>, the studio crafts{" "}
-              <strong>cinematic visuals</strong>, brand films, and digital experiences with a{" "}
-              <strong>strong narrative core</strong>.
-            </p>
-            <p>
-              Each project is shaped with <strong>technical mastery</strong>, and driven by a search for{" "}
-              <strong>authenticity</strong> and <strong>impact</strong>.
-            </p>
-            <p>
-              <em>Sensory, intentional, timeless</em> — <strong>antn.studio</strong> turns ideas into living imagery.
-            </p>
+    <main className="relative min-h-[100svh]">
+      <section className="mx-auto w-full max-w-[1200px] px-6 sm:px-8 pt-10 pb-24">
+        {/* Grille : formulaire à gauche / about à droite */}
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-10 lg:gap-14 items-start">
+          {/* Formulaire (restauré) */}
+          <div className="glass-panel p-5 sm:p-6">
+            <h2 className="mb-4 text-lg font-semibold tracking-wide">Contact</h2>
+            <ContactForm />
           </div>
 
-          {/* CTA + email alignés en hauteur */}
-          <div className="flex flex-wrap items-stretch gap-3 pt-2">
-            <div className="uppercase font-semibold tracking-wide text-[12px] md:text-[13px] text-zinc-100
-                            grid place-items-center px-4 rounded-lg ring-1 ring-white/10 bg-zinc-900/60">
-              Let’s connect :
+          {/* About — justifié + gras sur mots clés */}
+          <article>
+            <h2 className="mb-4 text-xl font-semibold">About.</h2>
+
+            <div className="text-[15px] leading-relaxed text-zinc-200/90 [text-align:justify]">
+              <p className="mb-3">
+                « <span className="font-semibold">antn.studio</span> » founded by{" "}
+                <span className="font-semibold">Anthony</span>, an independent{" "}
+                <span className="font-semibold">director</span> and{" "}
+                <span className="font-semibold">project lead</span> from Paris.
+              </p>
+              <p className="mb-3">
+                Blending <span className="font-semibold">precision</span> with{" "}
+                <span className="font-semibold">emotion</span>, the studio crafts{" "}
+                <span className="font-semibold">cinematic visuals</span>, brand films,
+                and digital experiences with a{" "}
+                <span className="font-semibold">strong narrative core</span>.
+              </p>
+              <p className="mb-3">
+                Each project is shaped with{" "}
+                <span className="font-semibold">technical mastery</span>, and driven by
+                a search for <span className="font-semibold">authenticity</span> and{" "}
+                <span className="font-semibold">impact</span>.
+              </p>
+              <p className="mb-6">
+                <em>Sensory, intentional, timeless</em> —{" "}
+                <span className="font-semibold">antn.studio</span> turns ideas into
+                living imagery.
+              </p>
             </div>
-            <Link
-              href="mailto:anthony@antn.studio"
-              className="grid place-items-center rounded-lg px-4 h-10 md:h-11 bg-zinc-800/70 hover:bg-zinc-800
-                         text-zinc-100 font-medium ring-1 ring-white/10"
-            >
-              anthony@antn.studio
-            </Link>
-          </div>
+
+            {/* CTA aligné et centré verticalement avec le bouton email */}
+            <div className="mt-4 flex flex-wrap items-stretch gap-3">
+              <div className="flex items-center">
+                <span className="inline-flex h-10 items-center rounded-md border border-white/15 px-4 text-xs font-semibold tracking-widest uppercase">
+                  Let’s connect :
+                </span>
+              </div>
+              <a
+                href="mailto:anthony@antn.studio"
+                className="inline-flex h-10 items-center rounded-md bg-white/10 px-4 text-sm font-medium text-white border border-white/15 hover:bg-white/15 focus:outline-none focus:ring-2 focus:ring-white/30"
+              >
+                anthony@antn.studio
+              </a>
+            </div>
+          </article>
         </div>
-      </section>
 
-      {/* Expériences — plus espacées + hover subtil */}
-      <section className="pt-10">
-        <div className="grid md:grid-cols-3 gap-4 md:gap-6">
-          {/* Exemple de carte ; duplique/branche sur tes données */}
-          <article className="group rounded-2xl border border-white/10 bg-zinc-900/40 p-4 md:p-5
-                              hover:bg-zinc-900/60 hover:-translate-y-[1px] transition-all">
-            <div className="text-xs text-zinc-400">antn.studio — 2019 → Present</div>
-            <div className="font-semibold mt-1">CEO</div>
-          </article>
+        {/* Expériences : plus espacées + hover subtil */}
+        <div className="mt-12 grid grid-cols-1 md:grid-cols-3 gap-6">
+          <div className="rounded-2xl border border-white/10 bg-zinc-900/60 p-4 transition
+                          hover:translate-y-[-1px] hover:shadow-[0_10px_30px_rgba(0,0,0,0.35)]">
+            <div className="text-xs text-zinc-400 mb-2">antn.studio — 2019 → Present</div>
+            <div className="font-semibold">CEO</div>
+          </div>
 
-          <article className="group rounded-2xl border border-white/10 bg-zinc-900/40 p-4 md:p-5
-                              hover:bg-zinc-900/60 hover:-translate-y-[1px] transition-all">
-            <div className="text-xs text-zinc-400">Freelance @ Jellysmack — 2022 → 2023</div>
-            <div className="font-semibold mt-1">Edit Supervisor</div>
-          </article>
+          <div className="rounded-2xl border border-white/10 bg-zinc-900/60 p-4 transition
+                          hover:translate-y-[-1px] hover:shadow-[0_10px_30px_rgba(0,0,0,0.35)]">
+            <div className="text-xs text-zinc-400 mb-2">Freelance @ Jellysmack — 2022 → 2023</div>
+            <div className="font-semibold">Edit Supervisor</div>
+          </div>
 
-          <article className="group rounded-2xl border border-white/10 bg-zinc-900/40 p-4 md:p-5
-                              hover:bg-zinc-900/60 hover:-translate-y-[1px] transition-all">
-            <div className="text-xs text-zinc-400">Freelance — 2023 → 2025</div>
-            <div className="font-semibold mt-1">International Project Manager</div>
-          </article>
+          <div className="rounded-2xl border border-white/10 bg-zinc-900/60 p-4 transition
+                          hover:translate-y-[-1px] hover:shadow-[0_10px_30px_rgba(0,0,0,0.35)]">
+            <div className="text-xs text-zinc-400 mb-2">Freelance — 2023 → 2025</div>
+            <div className="font-semibold">International Project Manager</div>
+          </div>
         </div>
       </section>
     </main>
   );
 }
-// END PATCH
