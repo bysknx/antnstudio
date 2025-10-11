@@ -50,23 +50,15 @@
   h3 {
     line-height: 1.15;
   }
-  h1 {
-    margin: 0 0 1rem;
-  }
+  h1 { margin: 0 0 1rem; }
   h2,
-  h3 {
-    margin: 0 0 0.75rem;
-  }
+  h3 { margin: 0 0 0.75rem; }
 
   /* Fond & texte via Tailwind (override propre) */
-  body {
-    @apply bg-zinc-950 text-zinc-200;
-  }
+  body { @apply bg-zinc-950 text-zinc-200; }
 
   /* Wrapper page (z-index / flow) */
-  .page {
-    position: relative;
-  }
+  .page { position: relative; }
 }
 
 /* ===========================
@@ -132,9 +124,7 @@
     margin-inline: auto;
     width: 100%;
   }
-  .shell-lg {
-    max-width: 1400px;
-  }
+  .shell-lg { max-width: 1400px; }
 
   .stack-24 > * + * { margin-top: 6rem; }
   .stack-16 > * + * { margin-top: 4rem; }
@@ -229,14 +219,26 @@
     margin-inline: auto;
     padding-inline: clamp(16px, 4vw, 32px);
     width: 100%;
+  }
+}
 
-   /* START PATCH: chrome hidden during ASCII loader & hide canvas on home */
+/* ===== START PATCH: chrome hidden during ASCII loader & hide canvas on home ===== */
 /* Cache toute l’UI (nav, canvas, contenu) pendant le loader ASCII */
 html[data-loading="1"] .chrome { visibility: hidden; }
 
 /* Sur la home, pas de GlCanvas/dot-matrix derrière le player */
 html[data-home="1"] #gl-layer { display: none; }
-/* END PATCH */
+/* ===== END PATCH ===== */
 
-  }
+/* START PATCH: SiteFooter — texte nu (pas de ligne, pas de fond) */
+/* On garde uniquement la gestion des interactions. */
+.antn-footer{
+  /* pas de background, pas de bordure, pas de blur */
 }
+.antn-footer a,
+.antn-footer .links-section,
+.antn-footer .coordinates-section,
+.antn-footer .info-section{
+  pointer-events: auto;
+}
+/* END PATCH */
