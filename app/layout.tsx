@@ -5,7 +5,7 @@ import "./globals.css";
 import LoadingAscii from "@/components/LoadingAscii";
 import ClientFade from "@/components/ClientFade";
 import ChromeFrame from "@/components/ChromeFrame";
-import { Footer } from "./footer"; // ✅ export nommé
+import SiteFooter from "@/components/SiteFooter"; // ⬅️ remplace { Footer } from "./footer"
 
 export const metadata: Metadata = {
   title: "antn.studio — Anthony",
@@ -45,11 +45,12 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
       <body>
         {/* Loader “première visite / TTL” */}
         <LoadingAscii />
+
         {/* Crossfade/blur entre routes */}
         <ClientFade>
           <ChromeFrame>
             {children}
-            <Footer /> {/* réseaux en bas partout */}
+            <SiteFooter /> {/* module bas de page partout */}
           </ChromeFrame>
         </ClientFade>
       </body>
