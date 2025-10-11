@@ -150,11 +150,10 @@
     .item-name{font-size:12px;text-transform:uppercase;letter-spacing:-.03em;margin-bottom:2px;overflow:hidden;height:16px}
     .item-number{font:400 10px/1 "TheGoodMonolith",monospace;color:#888;overflow:hidden;height:14px}
 
-    .expanded-item{position:fixed;z-index:10000;top:50%;left:50%;transform:translate(-50%,-50%);background:#000;overflow:hidden;cursor:pointer;border-radius:var(--border-radius)}
-    .expanded-item img{width:100%;height:100%;object-fit:cover;pointer-events:none}
+    /* Styles restants non utilisés pour overlay local (laissé inoffensif) */
+    .expanded-item{display:none}
+    .overlay{display:none}
 
-    .overlay{position:fixed;inset:0;background:#000;pointer-events:none;opacity:0;z-index:9999}
-    .overlay.active{pointer-events:auto}
     .page-vignette-container{position:fixed;inset:0;pointer-events:none;z-index:9998}
     .page-vignette{position:absolute;inset:0;box-shadow:inset 0 0 var(--page-vignette-size) var(--page-vignette-color)}
     .page-vignette-strong{position:absolute;inset:0;box-shadow:inset 0 0 var(--page-vignette-strong-size) var(--page-vignette-strong-color)}
@@ -192,7 +191,6 @@
   <!-- ===== GRID ===== -->
   <div class="container">
     <div class="canvas" id="canvas"></div>
-    <div class="overlay" id="overlay"></div>
   </div>
 
   <div class="project-title"><p></p></div>
@@ -214,16 +212,31 @@
     CustomEase.create("hop","0.9,0,0.1,1");
 
     /* ===== Data ===== */
-    let PROJECTS = []; // { id, title, year, image, createdAt? }
+    let PROJECTS = []; // { id, title, year, image, poster?, embed?, src?, videoSrc?, link? }
     let HAS_PARENT_DATA = false;
+    let REQUESTED_PARENT = false;
 
-    // parsing année depuis le titre (ex: "2025 — Title", "[2024] Name", "Title (2023)")
+    // parsing année depuis le titre
     function yearFromTitle(t){
       if(!t || typeof t !== "string") return null;
       const m = t.match(/(?:^|\D)(20\d{2}|19\d{2})(?:\D|$)/);
       const y = m ? parseInt(m[1],10) : null;
       if(y && y>=1900 && y<=2100) return y;
       return null;
+    }
+
+    // --- PATCH: on préserve les champs vidéo & poster ---
+    function pickPoster(it){
+      return (
+        it.poster ||
+        it.thumbnail ||
+        (it.pictures && it.pictures.sizes && it.pictures.sizes.length
+          ? it.pictures.sizes[it.pictures.sizes.length - 1].link
+          : null) ||
+        it.picture ||
+        it.thumb ||
+        ""
+      );
     }
 
     function normalize(list){
@@ -233,21 +246,18 @@
         const created = it.createdAt || it.created_time || null;
         const yFromDate = created ? new Date(created).getFullYear() : (it.year || null);
 
-        // meilleure image dispo
-        const img =
-          it.thumbnail ||
-          (it.pictures && it.pictures.sizes && it.pictures.sizes.length
-            ? it.pictures.sizes[it.pictures.sizes.length - 1].link
-            : null) ||
-          it.picture ||
-          it.thumb ||
-          "";
-
         return {
           id: String(it.id ?? (it.uri && it.uri.split("/").pop()) ?? title),
           title,
           year: yFromTitle ?? yFromDate ?? new Date().getFullYear(),
-          image: img
+          image: pickPoster(it),
+
+          // champs conservés pour le parent
+          poster: pickPoster(it),
+          embed: it.embed || (it.player && it.player.embed_url) || null,
+          src: it.src || null,
+          videoSrc: it.videoSrc || null,
+          link: it.link || null,
         };
       });
     }
@@ -258,7 +268,7 @@
         const res = await fetch("/api/vimeo", { cache:"no-store" });
         const json = await res.json();
         const items = normalize(json?.items);
-        PROJECTS = items.filter(p => !!p.image); // évite les items sans image
+        PROJECTS = items.filter(p => !!p.image);
       }catch(e){
         PROJECTS = [];
       }
@@ -272,14 +282,13 @@
 
     const settings = {
       baseWidth: 400, smallHeight: 330, largeHeight: 500, itemGap: 65,
-      hoverScale: 1.05, expandedScale: 0.4, dragEase: 0.075, momentumFactor: 200,
-      bufferZone: 3, zoomDuration: 0.6, overlayOpacity: 0.9, overlayEaseDuration: 0.8
+      hoverScale: 1.05, dragEase: 0.075, momentumFactor: 200,
+      bufferZone: 3
     };
 
     /* ===== DOM ===== */
     const container = document.querySelector(".container");
     const canvas = document.getElementById("canvas");
-    const overlay = document.getElementById("overlay");
     const projectTitleElement = document.querySelector(".project-title p");
 
     const yearsWrap   = document.getElementById("legacyYears");
@@ -329,6 +338,8 @@
       document.documentElement.setAttribute("data-year", String(label).toLowerCase());
       resetAndRebuild();
       updateYearButtons();
+      // PATCH: informer le parent du filtre en cours si besoin
+      window.parent?.postMessage({ type: "REQUEST_YEAR_ACK", value: activeYear === "All" ? "all" : activeYear }, "*");
     }
 
     function openYears(){
@@ -356,32 +367,12 @@
       { width: settings.baseWidth, height: settings.smallHeight },
       { width: settings.baseWidth, height: settings.largeHeight }
     ];
-    const cellWidth = settings.baseWidth + settings.itemGap;
-    const cellHeight = Math.max(settings.smallHeight, settings.largeHeight) + settings.itemGap;
+    const cellWidth = settings.baseWidth + 65;
+    const cellHeight = Math.max(settings.smallHeight, settings.largeHeight) + 65;
     let columns = 4;
 
     let isDragging=false,startX,startY,targetX=0,targetY=0,currentX=0,currentY=0,dragVX=0,dragVY=0,lastDrag=0;
     let mouseHasMoved=false,visibleItems=new Set(),lastUpdate=0,lastX=0,lastY=0;
-    let isExpanded=false,activeItem=null,activeItemId=null,canDrag=true,overlayAnim=null,titleSplit=null;
-
-    function setAndAnimateTitle(title){
-      if(titleSplit) titleSplit.revert();
-      projectTitleElement.textContent = title;
-      titleSplit = new SplitType(projectTitleElement,{ types:"words" });
-      gsap.set(titleSplit.words,{ y:"100%" });
-    }
-    function animateTitleIn(){ gsap.fromTo(titleSplit.words,{ y:"100%",opacity:0 },{ y:"0%",opacity:1,duration:1,stagger:.1,ease:"power3.out" }); }
-    function animateTitleOut(){ gsap.to(titleSplit.words,{ y:"-100%",opacity:0,duration:1,stagger:.1,ease:"power3.out" }); }
-    function overlayIn(){
-      if(overlayAnim) overlayAnim.kill();
-      overlayAnim = gsap.to(overlay,{ opacity:settings.overlayOpacity, duration:settings.overlayEaseDuration, ease:"power2.inOut", overwrite:true });
-      overlay.classList.add("active");
-    }
-    function overlayOut(){
-      if(overlayAnim) overlayAnim.kill();
-      overlayAnim = gsap.to(overlay,{ opacity:0, duration:settings.overlayEaseDuration, ease:"power2.inOut",
-        onComplete:()=>overlay.classList.remove("active") });
-    }
 
     function getItemSize(row,col){ const idx = Math.abs((row*columns+col)%itemSizes.length); return itemSizes[idx]; }
     function getItemId(col,row){ return `${col},${row}`; }
@@ -392,7 +383,7 @@
       const itemCount = list.length || 1;
       if(!itemCount) return;
 
-      const buffer = settings.bufferZone;
+      const buffer = 3;
       const vw = innerWidth*(1+buffer), vh = innerHeight*(1+buffer);
       const startCol = Math.floor((-currentX - vw/2)/cellWidth);
       const endCol   = Math.ceil((-currentX + vw*1.5)/cellWidth);
@@ -405,7 +396,6 @@
         for(let col=startCol; col<=endCol; col++){
           const id = getItemId(col,row); currentSet.add(id);
           if(visibleItems.has(id)) continue;
-          if(activeItemId===id && isExpanded) continue;
 
           const size = getItemSize(row,col);
           const pos = getItemPos(col,row);
@@ -435,7 +425,19 @@
           const number = document.createElement("div"); number.className="item-number"; number.textContent = String(proj.year);
           caption.appendChild(name); caption.appendChild(number); item.appendChild(caption);
 
-          item.addEventListener("click", () => { if(mouseHasMoved||isDragging) return; expandItem(item, proj); });
+          // PATCH: clic => notifie le parent d’ouvrir le player
+          item.addEventListener("click", () => {
+            if(mouseHasMoved||isDragging) return;
+            const payload = {
+              id: proj.id,
+              title: proj.title,
+              poster: proj.poster || proj.image,
+              embed: proj.embed || proj.src || proj.videoSrc || null,
+              link: proj.link || null,
+              year: proj.year
+            };
+            window.parent?.postMessage({ type: "OPEN_PLAYER", value: payload }, "*");
+          });
 
           canvas.appendChild(item); visibleItems.add(id);
         }
@@ -443,7 +445,7 @@
 
       // cleanup
       visibleItems.forEach((id)=>{
-        if(!currentSet.has(id) || (activeItemId===id && isExpanded)){
+        if(!currentSet.has(id)){
           const el = document.getElementById(id);
           if(el && el.parentNode===canvas) canvas.removeChild(el);
           visibleItems.delete(id);
@@ -451,87 +453,26 @@
       });
     }
 
-    function expandItem(item, proj){
-      isExpanded=true; activeItem=item; activeItemId=item.id; canDrag=false; container.style.cursor="auto";
-      setAndAnimateTitle(proj.title);
-
-      const rect = item.getBoundingClientRect();
-      const w = parseInt(item.dataset.width,10);
-      const h = parseInt(item.dataset.height,10);
-      overlayIn();
-
-      const expandedItem = document.createElement("div");
-      expandedItem.className="expanded-item";
-      expandedItem.style.width=`${w}px`; expandedItem.style.height=`${h}px`;
-      expandedItem.style.borderRadius="var(--border-radius)";
-      const img = document.createElement("img"); img.src = item.querySelector("img").src;
-      expandedItem.appendChild(img);
-      expandedItem.addEventListener("click", closeExpandedItem);
-      document.body.appendChild(expandedItem);
-
-      document.querySelectorAll(".item").forEach(el=>{ if(el!==activeItem) gsap.to(el,{opacity:0,duration:settings.overlayEaseDuration,ease:"power2.inOut"}); });
-
-      const vw = innerWidth;
-      const targetW = vw*settings.expandedScale;
-      const aspect = h/w; const targetH = targetW*aspect;
-
-      gsap.delayedCall(.45, animateTitleIn);
-      gsap.fromTo(expandedItem,
-        { width:w, height:h, x: rect.left+w/2 - innerWidth/2, y: rect.top+h/2 - innerHeight/2 },
-        { width:targetW, height:targetH, x:0, y:0, duration:settings.zoomDuration, ease:"hop" }
-      );
-
-      window.__expandedItem = expandedItem;
-    }
-
-    function closeExpandedItem(){
-      const expandedItem = window.__expandedItem;
-      if(!expandedItem) return;
-      animateTitleOut(); overlayOut();
-
-      document.querySelectorAll(".item").forEach(el=>{ if(el.id!==activeItemId) gsap.to(el,{opacity:1,duration:settings.overlayEaseDuration,delay:.25,ease:"power2.inOut"}); });
-
-      const rect = activeItem.getBoundingClientRect();
-      const w = parseInt(activeItem.dataset.width,10);
-      const h = parseInt(activeItem.dataset.height,10);
-
-      gsap.to(expandedItem,{
-        width:w, height:h,
-        x: rect.left+w/2 - innerWidth/2,
-        y: rect.top+h/2 - innerHeight/2,
-        duration:settings.zoomDuration, ease:"hop",
-        onComplete:()=>{
-          expandedItem.remove();
-          window.__expandedItem = null;
-          isExpanded=false; activeItem=null; activeItemId=null; canDrag=true;
-          container.style.cursor="grab";
-        }
-      });
-    }
-
     function animate(){
-      if(canDrag){
-        const e=settings.dragEase;
-        currentX += (targetX-currentX)*e;
-        currentY += (targetY-currentY)*e;
-        canvas.style.transform = `translate(${currentX}px,${currentY}px)`;
-        const now = Date.now(), dist = Math.hypot(currentX-lastX,currentY-lastY);
-        if(dist>100 || now-lastUpdate>120){ updateVisibleItems(); lastX=currentX; lastY=currentY; lastUpdate=now; }
-      }
+      const e = settings.dragEase;
+      currentX += (targetX-currentX)*e;
+      currentY += (targetY-currentY)*e;
+      canvas.style.transform = `translate(${currentX}px,${currentY}px)`;
+      const now = Date.now(), dist = Math.hypot(currentX-lastX,currentY-lastY);
+      if(dist>100 || now-lastUpdate>120){ updateVisibleItems(); lastX=currentX; lastY=currentY; lastUpdate=now; }
       requestAnimationFrame(animate);
     }
 
     // drag / touch
-    container.addEventListener("mousedown",(e)=>{ if(!canDrag) return; isDragging=true; mouseHasMoved=false; startX=e.clientX; startY=e.clientY; container.style.cursor="grabbing"; });
-    addEventListener("mousemove",(e)=>{ if(!isDragging||!canDrag) return; const dx=e.clientX-startX, dy=e.clientY-startY; if(Math.abs(dx)>5||Math.abs(dy)>5) mouseHasMoved=true; const now=Date.now(), dt=Math.max(10, now-lastDrag); lastDrag=now; dragVX=dx/dt; dragVY=dy/dt; targetX+=dx; targetY+=dy; startX=e.clientX; startY=e.clientY; });
-    addEventListener("mouseup",()=>{ if(!isDragging) return; isDragging=false; if(canDrag){ container.style.cursor="grab"; if(Math.abs(dragVX)>0.1||Math.abs(dragVY)>0.1){ targetX += dragVX*settings.momentumFactor; targetY += dragVY*settings.momentumFactor; } } });
-    overlay.addEventListener("click",()=>{ if(isExpanded) closeExpandedItem(); });
+    container.addEventListener("mousedown",(e)=>{ isDragging=true; mouseHasMoved=false; startX=e.clientX; startY=e.clientY; container.style.cursor="grabbing"; });
+    addEventListener("mousemove",(e)=>{ if(!isDragging) return; const dx=e.clientX-startX, dy=e.clientY-startY; if(Math.abs(dx)>5||Math.abs(dy)>5) mouseHasMoved=true; const now=Date.now(), dt=Math.max(10, now-lastDrag); lastDrag=now; dragVX=dx/dt; dragVY=dy/dt; targetX+=dx; targetY+=dy; startX=e.clientX; startY=e.clientY; });
+    addEventListener("mouseup",()=>{ if(!isDragging) return; isDragging=false; container.style.cursor="grab"; if(Math.abs(dragVX)>0.1||Math.abs(dragVY)>0.1){ targetX += dragVX*settings.momentumFactor; targetY += dragVY*settings.momentumFactor; } });
 
-    container.addEventListener("touchstart",(e)=>{ if(!canDrag) return; isDragging=true; mouseHasMoved=false; startX=e.touches[0].clientX; startY=e.touches[0].clientY; });
-    addEventListener("touchmove",(e)=>{ if(!isDragging||!canDrag) return; const dx=e.touches[0].clientX-startX, dy=e.touches[0].clientY-startY; if(Math.abs(dx)>5||Math.abs(dy)>5) mouseHasMoved=true; targetX+=dx; targetY+=dy; startX=e.touches[0].clientX; startY=e.touches[0].clientY; });
+    container.addEventListener("touchstart",(e)=>{ isDragging=true; mouseHasMoved=false; startX=e.touches[0].clientX; startY=e.touches[0].clientY; });
+    addEventListener("touchmove",(e)=>{ if(!isDragging) return; const dx=e.touches[0].clientX-startX, dy=e.touches[0].clientY-startY; if(Math.abs(dx)>5||Math.abs(dy)>5) mouseHasMoved=true; targetX+=dx; targetY+=dy; startX=e.touches[0].clientX; startY=e.touches[0].clientY; });
     addEventListener("touchend",()=>{ isDragging=false; });
 
-    addEventListener("resize",()=>{ if(isExpanded&&window.__expandedItem&&activeItem){ const w=parseInt(activeItem.dataset.width,10), h=parseInt(activeItem.dataset.height,10); const targetW=innerWidth*settings.expandedScale, targetH=targetW*(h/w); gsap.to(window.__expandedItem,{width:targetW,height:targetH,duration:.3,ease:"power2.out"}); } else { updateVisibleItems(); } });
+    addEventListener("resize",()=>{ updateVisibleItems(); });
 
     function resetAndRebuild(){
       const ids=[...visibleItems]; ids.forEach(id=>{ const el=document.getElementById(id); if(el&&el.parentNode===canvas) canvas.removeChild(el); });
@@ -540,7 +481,7 @@
       updateVisibleItems();
     }
 
-    /* Pilotage parent (Next.js) */
+    /* ====== Messaging avec le parent (Next.js) ====== */
     window.addEventListener("message", (evt) => {
       const data = evt && evt.data;
       if (!data || typeof data !== "object") return;
@@ -583,18 +524,49 @@
         setActiveYear(value === "all" ? "All" : String(value));
         openYears();
       }
+
+      // Optionnel : le parent peut demander explicitement les projets/année
+      if (data.type === "PING") {
+        window.parent?.postMessage({ type: "PONG" }, "*");
+      }
     });
 
     /* ===== Init ===== */
     (async function init(){
-      await loadProjects();                     // fetch Vimeo (si parent n'a rien envoyé)
-      buildYearsFromProjects();                 // calc années
-      renderYears();                            // UI années
-      closeYears();                             // fermé par défaut
-      setActiveYear(activeYear);                // filtre initial
-      updateVisibleItems();                     // première passe
-      animate();                                // loop
+      // Signaler au parent qu'on est prêt
+      window.parent?.postMessage({ type: "IFRAME_READY" }, "*");
+
+      await loadProjects();      // fetch Vimeo si le parent n'a pas injecté
+      if (!HAS_PARENT_DATA && PROJECTS.length === 0 && !REQUESTED_PARENT) {
+        REQUESTED_PARENT = true;
+        window.parent?.postMessage({ type: "REQUEST_PROJECTS" }, "*");
+        const y = new URLSearchParams(location.search).get("year");
+        if (y) window.parent?.postMessage({ type: "REQUEST_YEAR" }, "*");
+      }
+
+      buildYearsFromProjects();
+      renderYears();
+      closeYears();
+      setActiveYear(activeYear);
+      updateVisibleItems();
+      (function animateLoop(){ animate(); })();
     })();
+
+    // Petite anim de titre (subtile)
+    let titleSplit = null;
+    function setAndAnimateTitle(title){
+      if(!projectTitleElement) return;
+      if(titleSplit) titleSplit.revert();
+      projectTitleElement.textContent = title || "";
+      titleSplit = new SplitType(projectTitleElement,{ types:"words" });
+      gsap.set(titleSplit.words,{ y:"100%", opacity:0 });
+      gsap.to(titleSplit.words,{ y:"0%", opacity:1, duration:0.8, stagger:.05, ease:"power3.out" });
+    }
+    // Met à jour le titre au scroll (facultatif)
+    document.addEventListener("pointerup", ()=> {
+      const list = currentList();
+      if(list.length) setAndAnimateTitle(list[Math.floor(Math.random()*list.length)].title);
+    });
   })();
   </script>
 </body>
