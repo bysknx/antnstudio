@@ -5,7 +5,7 @@ import "./globals.css";
 import LoadingAscii from "@/components/LoadingAscii";
 import ClientFade from "@/components/ClientFade";
 import ChromeFrame from "@/components/ChromeFrame";
-import Footer from "@/components/Footer"; // ⬅️ ajout
+import Footer from "./footer"; // ⬅️ ajout
 
 export const metadata: Metadata = {
   title: "antn.studio — Anthony",
