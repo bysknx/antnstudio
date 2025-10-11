@@ -1,10 +1,12 @@
+// START PATCH
+// app/layout.tsx
 import type { Metadata } from "next";
 import "./globals.css";
 
 import LoadingAscii from "@/components/LoadingAscii";
 import ClientFade from "@/components/ClientFade";
 import ChromeFrame from "@/components/ChromeFrame";
-import FooterMount from "@/components/FooterMount";
+import FooterFromPen from "@/components/FooterFromPen"; // ⬅️ nouveau
 
 export const metadata: Metadata = {
   title: "antn.studio — Anthony",
@@ -42,19 +44,16 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <link rel="dns-prefetch" href="https://f.vimeocdn.com" />
       </head>
       <body>
-        {/* Loader TTL */}
         <LoadingAscii />
-
-        {/* Crossfade/blur entre routes */}
         <ClientFade>
           <ChromeFrame>
             {children}
           </ChromeFrame>
-
-          {/* Footer global (pas sur /projects) */}
-          <FooterMount />
+          {/* Footer du pen affiché PARTOUT */}
+          <FooterFromPen />
         </ClientFade>
       </body>
     </html>
   );
 }
+// END PATCH
