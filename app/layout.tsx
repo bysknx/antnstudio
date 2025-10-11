@@ -5,7 +5,7 @@ import "./globals.css";
 import LoadingAscii from "@/components/LoadingAscii";
 import ClientFade from "@/components/ClientFade";
 import ChromeFrame from "@/components/ChromeFrame";
-import Footer from "./footer"; // ⬅️ ajout
+import { Footer } from "./footer"; // ✅ export nommé
 
 export const metadata: Metadata = {
   title: "antn.studio — Anthony",
@@ -43,9 +43,8 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <link rel="dns-prefetch" href="https://f.vimeocdn.com" />
       </head>
       <body>
-        {/* Loader “première visite / TTL” en portal */}
+        {/* Loader “première visite / TTL” */}
         <LoadingAscii />
-
         {/* Crossfade/blur entre routes */}
         <ClientFade>
           <ChromeFrame>
