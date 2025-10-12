@@ -5,17 +5,15 @@ import "./globals.css";
 import LoadingAscii from "@/components/LoadingAscii";
 import ClientFade from "@/components/ClientFade";
 import ChromeFrame from "@/components/ChromeFrame";
-import FooterPen from "@/components/FooterPen"; // ✅ bon import
+import FooterFromPen from "@/components/FooterFromPen";
 
 export const metadata: Metadata = {
   title: "antn.studio — Anthony",
-  description:
-    "Front-end & DA minimale. Expériences web sobres, performantes, accessibles.",
+  description: "Front-end & DA minimale. Expériences web sobres, performantes, accessibles.",
   metadataBase: new URL("https://antn.studio"),
   openGraph: {
     title: "antn.studio — Anthony",
-    description:
-      "Front-end & DA minimale. Expériences web sobres, performantes, accessibles.",
+    description: "Front-end & DA minimale. Expériences web sobres, performantes, accessibles.",
     url: "https://antn.studio",
     siteName: "antn.studio",
     images: [{ url: "/cover.jpg", width: 1200, height: 630, alt: "antn.studio" }],
@@ -24,8 +22,7 @@ export const metadata: Metadata = {
   twitter: {
     card: "summary_large_image",
     title: "antn.studio — Anthony",
-    description:
-      "Front-end & DA minimale. Expériences web sobres, performantes, accessibles.",
+    description: "Front-end & DA minimale. Expériences web sobres, performantes, accessibles.",
     images: ["/cover.jpg"],
   },
   icons: [{ rel: "icon", url: "/favicon.ico" }],
@@ -45,13 +42,11 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
       <body>
         <LoadingAscii />
         <ClientFade>
-          <ChromeFrame>
-            {children}
-          </ChromeFrame>
-
-          {/* Footer identique au projects-pen.html, affiché PARTOUT */}
-          <FooterPen />
+          <ChromeFrame>{children}</ChromeFrame>
         </ClientFade>
+
+        {/* Footer original du pen, monté partout. Masqué automatiquement sur /projects */}
+        <FooterFromPen />
       </body>
     </html>
   );
