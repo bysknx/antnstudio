@@ -1,36 +1,31 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import { createPortal } from "react-dom";
 
-const STORAGE_KEY = "antn_ascii_loader_last_seen";
-type Mode = "hourly" | "always" | "route";
+/** TTL (1h) + clés de cache */
+const STORAGE_KEY_LAST = "antn_ascii_loader_last_seen";
+const CACHE_KEY_VIMEO = "antn_vimeo_cache_v1";
+const TTL_HOURS = 1;
 
-const DEFAULT_TOTAL_MS = 2200;
+/** Durées (ms) */
+const TOTAL_MS = 2200;
 const FADE_IN_MS = 180;
 const FADE_OUT_MS = 220;
 
-function shouldShowHourly(ttlHours: number): boolean {
+/** helper TTL */
+function shouldShow(): boolean {
   try {
-    const raw = localStorage.getItem(STORAGE_KEY);
+    const raw = localStorage.getItem(STORAGE_KEY_LAST);
     if (!raw) return true;
-    return Date.now() - Number(raw) > ttlHours * 60 * 60 * 1000;
+    return Date.now() - Number(raw) > TTL_HOURS * 60 * 60 * 1000;
   } catch {
     return true;
   }
 }
 
 export default function LoadingAscii({
-  mode = "hourly",
-  ttlHours = 1,
-  active,
-  totalMs = DEFAULT_TOTAL_MS,
-}: {
-  mode?: Mode;
-  ttlHours?: number;
-  active?: boolean;
-  totalMs?: number;
-}) {
+  force = false,
+}: { force?: boolean } = {}) {
   const [visible, setVisible] = useState(false);
   const [progress, setProgress] = useState(0);
   const rafRef = useRef<number | null>(null);
@@ -38,45 +33,27 @@ export default function LoadingAscii({
   const startRef = useRef(0);
   const loadedRef = useRef(false);
 
-  // déclenchement selon le mode
   useEffect(() => {
     const reduce =
       typeof window !== "undefined" &&
       window.matchMedia?.("(prefers-reduced-motion: reduce)").matches;
-
-    if (mode === "route") {
-      if (!active || reduce) return;
-      setProgress(0);
-      doneRef.current = false;
-      loadedRef.current = false;
-      setVisible(true);
-      startRef.current = performance.now();
-      return;
-    }
-
-    const show = mode === "always" ? !reduce : shouldShowHourly(ttlHours) && !reduce;
+    const show = (force || shouldShow()) && !reduce;
     if (!show) return;
 
     setVisible(true);
     startRef.current = performance.now();
-  }, [mode, ttlHours, active, totalMs]);
 
-  // état global (overflow + drapeau html)
-  useEffect(() => {
-    if (!visible) return;
-    const html = document.documentElement;
-    const prevOverflow = html.style.overflow;
-    html.style.overflow = "hidden";
-    html.setAttribute("data-loading", "1");
-    return () => {
-      html.style.overflow = prevOverflow;
-      html.removeAttribute("data-loading");
-    };
-  }, [visible]);
-
-  // progression + fermeture
-  useEffect(() => {
-    if (!visible) return;
+    // ----- précharge les projets pendant le loader -----
+    (async () => {
+      try {
+        const already = sessionStorage.getItem(CACHE_KEY_VIMEO);
+        if (!already) {
+          const res = await fetch("/api/vimeo", { cache: "no-store" });
+          const json = await res.json();
+          sessionStorage.setItem(CACHE_KEY_VIMEO, JSON.stringify(json));
+        }
+      } catch {}
+    })();
 
     const onWindowLoad = () => {
       loadedRef.current = true;
@@ -85,7 +62,10 @@ export default function LoadingAscii({
 
     const tick = (now: number) => {
       const elapsed = now - startRef.current;
-      const timeTarget = Math.min(0.9, elapsed / Math.max(1, totalMs - FADE_OUT_MS));
+      const timeTarget = Math.min(
+        0.9,
+        elapsed / Math.max(1, TOTAL_MS - FADE_OUT_MS)
+      );
       const target = loadedRef.current ? 1 : timeTarget;
 
       setProgress((p) => {
@@ -94,12 +74,12 @@ export default function LoadingAscii({
       });
 
       if (!doneRef.current) {
-        if (elapsed >= totalMs || (loadedRef.current && progress >= 0.995)) {
+        if (elapsed >= TOTAL_MS || (loadedRef.current && progress >= 0.995)) {
           doneRef.current = true;
           setTimeout(() => {
             setVisible(false);
             try {
-              if (mode === "hourly") localStorage.setItem(STORAGE_KEY, String(Date.now()));
+              localStorage.setItem(STORAGE_KEY_LAST, String(Date.now()));
             } catch {}
           }, FADE_OUT_MS);
         } else {
@@ -107,28 +87,27 @@ export default function LoadingAscii({
         }
       }
     };
-
     rafRef.current = requestAnimationFrame(tick);
 
     return () => {
       window.removeEventListener("load", onWindowLoad);
       if (rafRef.current) cancelAnimationFrame(rafRef.current);
     };
-  }, [visible, progress, mode, totalMs]);
+  }, [force, progress]);
 
   if (!visible) return null;
 
-  const overlay = (
+  return (
     <div
       aria-hidden
       style={{ ["--in" as any]: `${FADE_IN_MS}ms` }}
-      className="fixed inset-0 z-[99999] overflow-hidden bg-black text-zinc-100 animate-[antnFadeIn_var(--in)_ease-out_forwards]"
+      className="fixed inset-0 z-[9999] overflow-hidden bg-black text-zinc-100 animate-[antnFadeIn_var(--in)_ease-out_forwards]"
     >
       {/* grain + scanlines */}
       <div className="pointer-events-none absolute inset-0 opacity-[0.10] mix-blend-screen [background-image:radial-gradient(rgba(255,255,255,.08)_1px,transparent_1px)] [background-size:2px_2px]" />
       <div className="pointer-events-none absolute inset-0 opacity-[0.08] [background-image:linear-gradient(to_bottom,rgba(255,255,255,.25)_1px,transparent_1px)] [background-size:100%_3px]" />
 
-      {/* contenu ASCII */}
+      {/* centre */}
       <div className="absolute inset-0 grid place-items-center">
         <div className="px-6">
           <pre className="select-none whitespace-pre leading-[1.05] tracking-[0.02em] text-[min(6vw,24px)] font-mono mb-6">
@@ -158,19 +137,15 @@ export default function LoadingAscii({
         </div>
       </div>
 
-      {/* fade out */}
+      {/* fondu de sortie */}
       <div
-        style={{ ["--out" as any]: `${FADE_OUT_MS}ms`, animationDelay: `${Math.max(0, totalMs - FADE_OUT_MS)}ms` }}
+        style={{ ["--out" as any]: `${FADE_OUT_MS}ms`, animationDelay: `${TOTAL_MS - FADE_OUT_MS}ms` }}
         className="pointer-events-none absolute inset-0 animate-[antnFadeOut_var(--out)_ease-in_forwards]"
       />
-
       <style jsx global>{`
         @keyframes antnFadeIn { from { opacity: 0 } to { opacity: 1 } }
         @keyframes antnFadeOut { from { opacity: 1 } to { opacity: 0 } }
       `}</style>
     </div>
   );
-
-  // PORTAL pour sortir de toute stack locale (Nav/Canvas inclus)
-  return createPortal(overlay, document.body);
 }
