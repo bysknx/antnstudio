@@ -22,8 +22,6 @@ type VimeoItem = {
   created_time?: string;
 };
 
-const CACHE_KEY_VIMEO = "antn_vimeo_cache_v1";
-
 export default function ProjectsPage() {
   return (
     <main className="relative min-h-[100svh]">
@@ -41,9 +39,9 @@ function ProjectsIframe() {
 
   const [projects, setProjects] = useState<VimeoItem[] | null>(null);
   const [iframeReady, setIframeReady] = useState(false);
-  const [mounted, setMounted] = useState(false); // ⬅️ nouveau
   const [open, setOpen] = useState(false);
   const [current, setCurrent] = useState<VimeoItem | null>(null);
+  const [mounted, setMounted] = useState(false);
 
   const src = `/projects-pen.html${year ? `?year=${encodeURIComponent(year)}` : ""}`;
 
@@ -51,36 +49,42 @@ function ProjectsIframe() {
     iframeRef.current?.contentWindow?.postMessage(msg, "*");
   };
 
-  // charge depuis sessionStorage si dispo (préchargé par le loader)
+  // === nouveau fetch propre ===
   useEffect(() => {
     let stop = false;
-    const boot = async () => {
+
+    (async () => {
       try {
-        const cached = sessionStorage.getItem(CACHE_KEY_VIMEO);
-        if (cached) {
-          const json = JSON.parse(cached);
-          const items: VimeoItem[] = Array.isArray(json?.items) ? json.items : [];
-          const normalized = items.map((it: any) => ({
-            ...it,
-            title: parseVimeoTitle(it), // "Client — Titre"
-          }));
-          if (!stop) setProjects(normalized);
-        } else {
-          const res = await fetch("/api/vimeo", { cache: "no-store" });
-          const json = await res.json();
-          sessionStorage.setItem(CACHE_KEY_VIMEO, JSON.stringify(json));
-          const items: VimeoItem[] = Array.isArray(json?.items) ? json.items : [];
-          const normalized = items.map((it: any) => ({
-            ...it,
-            title: parseVimeoTitle(it), // "Client — Titre"
-          }));
-          if (!stop) setProjects(normalized);
-        }
+        const res = await fetch("/api/vimeo", { cache: "no-store" });
+        const json = await res.json();
+        const items: any[] = Array.isArray(json?.items) ? json.items : [];
+
+        // 1) garder ceux qui ont une image
+        // 2) trier du plus récent au plus ancien
+        // 3) ne garder que les 5 derniers
+        const shortlisted = items
+          .filter(
+            (x) => x.poster || x.thumbnail || x.picture || x.thumb
+          )
+          .sort((a, b) => {
+            const ta = Date.parse(a.createdAt || a.created_time || "") || 0;
+            const tb = Date.parse(b.createdAt || b.created_time || "") || 0;
+            return tb - ta;
+          })
+          .slice(0, 5);
+
+        // 4) forcer le titre propre
+        const normalized = shortlisted.map((it) => ({
+          ...it,
+          title: parseVimeoTitle(it),
+        }));
+
+        if (!stop) setProjects(normalized);
       } catch {
         if (!stop) setProjects([]);
       }
-    };
-    boot();
+    })();
+
     return () => {
       stop = true;
     };
@@ -137,16 +141,16 @@ function ProjectsIframe() {
       <iframe
         ref={iframeRef}
         src={src}
+        className={`h-[100svh] w-full border-0 block transition-opacity duration-300 ${
+          mounted ? "opacity-100" : "opacity-0"
+        }`}
         title="Projects Grid"
         onLoad={() => {
           setIframeReady(true);
           if (projects) post({ type: "SET_PROJECTS", value: projects });
           if (year) post({ type: "SET_YEAR", value: year === "all" ? "all" : year });
-          setMounted(true); // ⬅️ nouveau
+          setMounted(true);
         }}
-        className={`h-[100svh] w-full border-0 block transition-opacity duration-300 ${
-          mounted ? "opacity-100" : "opacity-0"
-        }`}
       />
 
       <FullBleedPlayer
