@@ -46,20 +46,21 @@ function ProjectsIframe() {
   const [open, setOpen] = useState(false);
   const [current, setCurrent] = useState<VimeoItem | null>(null);
 
-  // URL de l'iframe — on masque le footer natif du pen
+  // START PATCH: construction src avec year + noftr=1
   const src = useMemo(() => {
     const params = new URLSearchParams();
     if (year) params.set("year", year);
-    params.set("noftr", "1"); // <-- cache le footer du pen
+    params.set("noftr", "1"); // masque le footer dans l’iframe
     const q = params.toString();
     return `/projects-pen.html${q ? `?${q}` : ""}`;
   }, [year]);
+  // END PATCH
 
   const post = (msg: unknown) => {
-    iframeRef.current?.contentWindow?.postMessage(msg, "*");
+    iframeRef.current?.contentWindow?.postMessage(msg as any, "*");
   };
 
-  // Récupération des projets (sans debug ni statut)
+  // Récupération des projets
   useEffect(() => {
     let stop = false;
     (async () => {
