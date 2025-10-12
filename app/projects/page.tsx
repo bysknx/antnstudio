@@ -3,7 +3,8 @@
 import { useEffect, useRef, useState, Suspense } from "react";
 import { useSearchParams } from "next/navigation";
 import FullBleedPlayer from "@/components/ui/FullBleedPlayer";
-import parseVimeoTitle from "@/lib/parseVimeoTitle";
+import { parseVimeoTitle } from "@/lib/parseVimeoTitle";
+
 
 type VimeoItem = {
   id: string;
