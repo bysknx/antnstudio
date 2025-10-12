@@ -41,6 +41,7 @@ function ProjectsIframe() {
 
   const [projects, setProjects] = useState<VimeoItem[] | null>(null);
   const [iframeReady, setIframeReady] = useState(false);
+  const [mounted, setMounted] = useState(false); // ⬅️ nouveau
   const [open, setOpen] = useState(false);
   const [current, setCurrent] = useState<VimeoItem | null>(null);
 
@@ -59,7 +60,6 @@ function ProjectsIframe() {
         if (cached) {
           const json = JSON.parse(cached);
           const items: VimeoItem[] = Array.isArray(json?.items) ? json.items : [];
-          // ===== PATCH: normalisation des titres via parseVimeoTitle(it)
           const normalized = items.map((it: any) => ({
             ...it,
             title: parseVimeoTitle(it), // "Client — Titre"
@@ -70,7 +70,6 @@ function ProjectsIframe() {
           const json = await res.json();
           sessionStorage.setItem(CACHE_KEY_VIMEO, JSON.stringify(json));
           const items: VimeoItem[] = Array.isArray(json?.items) ? json.items : [];
-          // ===== PATCH: normalisation des titres via parseVimeoTitle(it)
           const normalized = items.map((it: any) => ({
             ...it,
             title: parseVimeoTitle(it), // "Client — Titre"
@@ -94,7 +93,6 @@ function ProjectsIframe() {
 
   useEffect(() => {
     if (!iframeReady || !projects) return;
-    // ===== PATCH: envoi de la liste normalisée vers l’iframe
     post({ type: "SET_PROJECTS", value: projects });
     if (year) post({ type: "SET_YEAR", value: year === "all" ? "all" : year });
   }, [projects, iframeReady, year]);
@@ -107,7 +105,7 @@ function ProjectsIframe() {
       switch ((data as any).type) {
         case "IFRAME_READY": {
           setIframeReady(true);
-          if (projects) post({ type: "SET_PROJECTS", value: projects }); // normalisé
+          if (projects) post({ type: "SET_PROJECTS", value: projects });
           if (year) post({ type: "SET_YEAR", value: year === "all" ? "all" : year });
           break;
         }
@@ -120,7 +118,7 @@ function ProjectsIframe() {
           break;
         }
         case "REQUEST_PROJECTS": {
-          if (projects) post({ type: "SET_PROJECTS", value: projects }); // normalisé
+          if (projects) post({ type: "SET_PROJECTS", value: projects });
           break;
         }
         case "REQUEST_YEAR": {
@@ -139,13 +137,16 @@ function ProjectsIframe() {
       <iframe
         ref={iframeRef}
         src={src}
-        className="h-[100svh] w-full border-0 block"
         title="Projects Grid"
         onLoad={() => {
           setIframeReady(true);
-          if (projects) post({ type: "SET_PROJECTS", value: projects }); // normalisé
+          if (projects) post({ type: "SET_PROJECTS", value: projects });
           if (year) post({ type: "SET_YEAR", value: year === "all" ? "all" : year });
+          setMounted(true); // ⬅️ nouveau
         }}
+        className={`h-[100svh] w-full border-0 block transition-opacity duration-300 ${
+          mounted ? "opacity-100" : "opacity-0"
+        }`}
       />
 
       <FullBleedPlayer
