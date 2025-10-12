@@ -1,83 +1,63 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
+import { usePathname } from "next/navigation";
 
 /**
- * Récupère le HTML de /projects-pen.html, extrait .footer
- * et l’injecte tel quel (sans les séparateurs/traits).
+ * Monte le footer *original* du projects-pen.html via iframe
+ * -> identique pixel-perfect, aucune re-implémentation.
+ * Masqué sur /projects pour éviter le doublon (le pen affiche déjà son footer).
  */
 export default function FooterFromPen() {
-  const [html, setHtml] = useState<string>("");
+  const pathname = usePathname();
+  const hide = pathname.startsWith("/projects"); // évite le doublon sur /projects
+  const ref = useRef<HTMLIFrameElement>(null);
+  const [h, setH] = useState(56); // hauteur approximative, puis auto-ajustée
 
   useEffect(() => {
-    let alive = true;
-    (async () => {
+    const onLoad = () => {
+      // on mesure la hauteur du footer dans l’iframe
       try {
-        const res = await fetch("/projects-pen.html", { cache: "force-cache" });
-        const text = await res.text();
-        if (!alive) return;
-
-        const doc = new DOMParser().parseFromString(text, "text/html");
-        // On cible la racine du module footer du pen
-        const root =
-          (doc.querySelector(".footer") as HTMLElement | null) ||
-          (doc.querySelector("#footer") as HTMLElement | null);
-
-        if (!root) return;
-
-        // 1) Supprimer toute ligne/séparateur éventuel
-        root.querySelectorAll("hr, .separator, .line, .divider").forEach((el) => el.remove());
-
-        // 2) S’assurer que les liens s’ouvrent dans un nouvel onglet
-        root.querySelectorAll("a").forEach((a) => {
-          a.setAttribute("target", "_blank");
-          a.setAttribute("rel", "noopener noreferrer");
-        });
-
-        // 3) On sérialise uniquement le contenu utile (innerHTML) dans notre wrapper
-        setHtml(root.innerHTML);
-      } catch (e) {
-        console.error("[FooterFromPen] fetch/parse error:", e);
+        const doc = ref.current?.contentDocument;
+        const footer = doc?.querySelector(".footer") as HTMLElement | null;
+        if (footer) setH(footer.getBoundingClientRect().height);
+      } catch {
+        /* cross-origin safeguards */
       }
-    })();
-
-    return () => {
-      alive = false;
     };
+    const el = ref.current;
+    el?.addEventListener("load", onLoad);
+    return () => el?.removeEventListener("load", onLoad);
   }, []);
 
-  if (!html) return null;
+  if (hide) return null;
 
   return (
-    <div className="pen-footer-mount">
-      <div className="footer" dangerouslySetInnerHTML={{ __html: html }} />
-      <style jsx>{`
-        .pen-footer-mount {
-          position: fixed;
-          left: 0;
-          right: 0;
-          bottom: 0;
-          z-index: 40; /* au-dessus du contenu, sous la nav si besoin */
-          pointer-events: none; /* laisse cliquer à travers sauf liens socials */
-        }
-        .pen-footer-mount .footer {
-          pointer-events: auto; /* réactive les clics sur les liens socials */
-        }
-        /* Pas de traits/lines, fond transparent (on garde le look du pen) */
-        .pen-footer-mount .footer::before,
-        .pen-footer-mount .footer::after {
-          display: none !important;
-        }
-        .pen-footer-mount .footer {
-          background: transparent !important;
-          border: 0 !important;
-        }
-
-        /* Optionnel: assure une lisibilité minimale */
-        .pen-footer-mount .footer a {
-          text-decoration: none;
-        }
-      `}</style>
+    <div
+      aria-hidden
+      style={{
+        position: "fixed",
+        left: 0,
+        right: 0,
+        bottom: 0,
+        height: h,
+        zIndex: 50,
+        pointerEvents: "none",
+      }}
+    >
+      <iframe
+        ref={ref}
+        src="/projects-pen.html?embed=footer"
+        title="pen-footer"
+        style={{
+          width: "100%",
+          height: "100%",
+          border: "0",
+          display: "block",
+          pointerEvents: "none",
+          background: "transparent",
+        }}
+      />
     </div>
   );
 }
