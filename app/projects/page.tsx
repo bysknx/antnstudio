@@ -1,10 +1,10 @@
 "use client";
 
-import { Suspense, useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useRef, useState, Suspense } from "react";
 import { useSearchParams } from "next/navigation";
 import FullBleedPlayer from "@/components/ui/FullBleedPlayer";
+import parseVimeoTitle from "@/lib/parseVimeoTitle";
 
-/* ========= Types ========= */
 type VimeoItem = {
   id: string;
   title?: string;
@@ -14,15 +14,16 @@ type VimeoItem = {
   thumb?: string;
   poster?: string;
   link?: string;
-  embed?: string;      // URL d’embed Vimeo
-  src?: string;        // fallback
-  videoSrc?: string;   // fallback
+  embed?: string;
+  src?: string;
+  videoSrc?: string;
   year?: number;
   createdAt?: string;
   created_time?: string;
 };
 
-/* ========= Page ========= */
+const CACHE_KEY_VIMEO = "antn_vimeo_cache_v1";
+
 export default function ProjectsPage() {
   return (
     <main className="relative min-h-[100svh]">
@@ -33,7 +34,6 @@ export default function ProjectsPage() {
   );
 }
 
-/* ========= Iframe + Overlay (communication postMessage) ========= */
 function ProjectsIframe() {
   const iframeRef = useRef<HTMLIFrameElement>(null);
   const search = useSearchParams();
@@ -41,57 +41,70 @@ function ProjectsIframe() {
 
   const [projects, setProjects] = useState<VimeoItem[] | null>(null);
   const [iframeReady, setIframeReady] = useState(false);
-
-  // Overlay player
   const [open, setOpen] = useState(false);
   const [current, setCurrent] = useState<VimeoItem | null>(null);
 
-  // START PATCH: construction src avec year + noftr=1
-  const src = useMemo(() => {
-    const params = new URLSearchParams();
-    if (year) params.set("year", year);
-    params.set("noftr", "1"); // masque le footer dans l’iframe
-    const q = params.toString();
-    return `/projects-pen.html${q ? `?${q}` : ""}`;
-  }, [year]);
-  // END PATCH
+  const src = `/projects-pen.html${year ? `?year=${encodeURIComponent(year)}` : ""}`;
 
   const post = (msg: unknown) => {
-    iframeRef.current?.contentWindow?.postMessage(msg as any, "*");
+    iframeRef.current?.contentWindow?.postMessage(msg, "*");
   };
 
-  // Récupération des projets
+  // charge depuis sessionStorage si dispo (préchargé par le loader)
   useEffect(() => {
     let stop = false;
-    (async () => {
+    const boot = async () => {
       try {
-        const res = await fetch("/api/vimeo", { cache: "no-store" });
-        const json = await res.json();
-        const items: VimeoItem[] = Array.isArray(json?.items) ? json.items : [];
-        if (!stop) setProjects(items);
+        const cached = sessionStorage.getItem(CACHE_KEY_VIMEO);
+        if (cached) {
+          const json = JSON.parse(cached);
+          const items: VimeoItem[] = Array.isArray(json?.items) ? json.items : [];
+          // enrichir titres (client + title + year)
+          const mapped = items.map((it) => {
+            const p = parseVimeoTitle(it.title || it.name || "");
+            return {
+              ...it,
+              title: `${p.client ?? ""}${p.client ? " — " : ""}${p.title ?? ""}`,
+              year: Number(p.year) || it.year,
+            };
+          });
+          if (!stop) setProjects(mapped);
+        } else {
+          const res = await fetch("/api/vimeo", { cache: "no-store" });
+          const json = await res.json();
+          sessionStorage.setItem(CACHE_KEY_VIMEO, JSON.stringify(json));
+          const items: VimeoItem[] = Array.isArray(json?.items) ? json.items : [];
+          const mapped = items.map((it) => {
+            const p = parseVimeoTitle(it.title || it.name || "");
+            return {
+              ...it,
+              title: `${p.client ?? ""}${p.client ? " — " : ""}${p.title ?? ""}`,
+              year: Number(p.year) || it.year,
+            };
+          });
+          if (!stop) setProjects(mapped);
+        }
       } catch {
         if (!stop) setProjects([]);
       }
-    })();
+    };
+    boot();
     return () => {
       stop = true;
     };
   }, []);
 
-  // Pousser le filtre année quand prêt
   useEffect(() => {
     if (!iframeReady || !year) return;
     post({ type: "SET_YEAR", value: year === "all" ? "all" : year });
   }, [year, iframeReady]);
 
-  // Pousser les projets (et re-pousser l’année si présente)
   useEffect(() => {
     if (!iframeReady || !projects) return;
     post({ type: "SET_PROJECTS", value: projects });
     if (year) post({ type: "SET_YEAR", value: year === "all" ? "all" : year });
   }, [projects, iframeReady, year]);
 
-  // Écoute des messages de l’iframe
   useEffect(() => {
     const onMessage = (e: MessageEvent) => {
       const data = e?.data;
@@ -120,8 +133,6 @@ function ProjectsIframe() {
           if (year) post({ type: "SET_YEAR", value: year === "all" ? "all" : year });
           break;
         }
-        default:
-          break;
       }
     };
 
@@ -134,7 +145,7 @@ function ProjectsIframe() {
       <iframe
         ref={iframeRef}
         src={src}
-        className="block h-[100svh] w-full border-0"
+        className="h-[100svh] w-full border-0 block"
         title="Projects Grid"
         onLoad={() => {
           setIframeReady(true);
