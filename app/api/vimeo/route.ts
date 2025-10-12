@@ -1,6 +1,7 @@
 // app/api/vimeo/route.ts
 import { NextResponse } from "next/server";
 import { fetchVimeoWorks } from "@/lib/vimeo";
+import { parseVimeoTitle } from "@/lib/parseVimeoTitle";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -12,9 +13,7 @@ export async function GET(req: Request) {
 
   try {
     const folderId = process.env.VIMEO_FOLDER_ID || undefined;
-    // 👇 correction ici (le point après env)
-    const teamId =
-      process.env.VIMEO_TEAM_ID || undefined; // tolérant
+    const teamId = process.env.VIMEO_TEAM_ID || undefined;
 
     const { items, debug } = await fetchVimeoWorks({ folderId, teamId });
 
@@ -25,22 +24,43 @@ export async function GET(req: Request) {
       return db - da;
     });
 
-    const body = debugFlag
-      ? {
+    // Normalisation propre des titres et années
+    const data = items.map((it: any) => {
+      const raw = it.title || it.name || "";
+      const pretty = parseVimeoTitle(raw);
+      return {
+        ...it,
+        title: pretty.display, // utilisé par l’iframe
+        year:
+          it.year ||
+          pretty.year ||
+          (it.created_time ? new Date(it.created_time).getFullYear() : null),
+      };
+    });
+
+    if (debugFlag) {
+      return NextResponse.json(
+        {
           ok: true,
-          count: items.length,
+          count: data.length,
           env: {
             token: !!process.env.VIMEO_TOKEN,
             teamId: process.env.VIMEO_TEAM_ID || null,
             folderId: process.env.VIMEO_FOLDER_ID || null,
           },
           tried: debug.tried,
-          sample: items.slice(0, 2),
-          items,
-        }
-      : { ok: true, items };
+          sample: data.slice(0, 2),
+          items: data,
+        },
+        { headers: { "Cache-Control": "no-store" } }
+      );
+    }
 
-    return NextResponse.json(body, { headers: { "Cache-Control": "no-store" } });
+    // Réponse standard
+    return NextResponse.json(
+      { ok: true, items: data },
+      { headers: { "Cache-Control": "no-store" } }
+    );
   } catch (e: any) {
     return NextResponse.json(
       {
