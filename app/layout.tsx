@@ -5,7 +5,7 @@ import "./globals.css";
 import LoadingAscii from "@/components/LoadingAscii";
 import ClientFade from "@/components/ClientFade";
 import ChromeFrame from "@/components/ChromeFrame";
-import FooterFromPen from "@/components/FooterFromPen";
+import FooterMount from "@/components/FooterMount"; // ⬅️ on utilise le mount unifié
 
 export const metadata: Metadata = {
   title: "antn.studio — Anthony",
@@ -32,6 +32,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
   return (
     <html lang="fr" className="dark">
       <head>
+        {/* Preconnect/DNS-prefetch pour Vimeo */}
         <link rel="preconnect" href="https://player.vimeo.com" />
         <link rel="preconnect" href="https://i.vimeocdn.com" />
         <link rel="preconnect" href="https://f.vimeocdn.com" />
@@ -45,8 +46,9 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           <ChromeFrame>{children}</ChromeFrame>
         </ClientFade>
 
-        {/* Footer original du pen, monté partout. Masqué automatiquement sur /projects */}
-        <FooterFromPen />
+        {/* Footer global (issu du pen), monté partout via un composant client.
+            Sa logique interne peut masquer automatiquement sur /projects si nécessaire. */}
+        <FooterMount />
       </body>
     </html>
   );
