@@ -1,11 +1,12 @@
-// app/layout.tsx
+// FILE: app/layout.tsx
 import type { Metadata } from "next";
 import "./globals.css";
 
 import LoadingAscii from "@/components/LoadingAscii";
 import ClientFade from "@/components/ClientFade";
 import ChromeFrame from "@/components/ChromeFrame";
-import FooterMount from "@/components/FooterMount"; // ⬅️ on utilise le mount unifié
+import FooterMount from "@/components/FooterMount";
+import { Header } from "./header"; // ✅ on rend la nav partout
 
 export const metadata: Metadata = {
   title: "antn.studio — Anthony",
@@ -40,14 +41,19 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <link rel="dns-prefetch" href="https://i.vimeocdn.com" />
         <link rel="dns-prefetch" href="https://f.vimeocdn.com" />
       </head>
-      <body>
+      <body className="overflow-x-hidden">
+        {/* Loader ASCII (plein écran, z-max) */}
         <LoadingAscii />
+
+        {/* Header global au-dessus du contenu */}
+        <Header />
+
+        {/* Transitions de page + chrome visuel */}
         <ClientFade>
           <ChromeFrame>{children}</ChromeFrame>
         </ClientFade>
 
-        {/* Footer global (issu du pen), monté partout via un composant client.
-            Sa logique interne peut masquer automatiquement sur /projects si nécessaire. */}
+        {/* Footer global issu du pen, monté partout (fixed via son propre style/portal) */}
         <FooterMount />
       </body>
     </html>
