@@ -1,4 +1,3 @@
-// START PATCH
 // app/layout.tsx
 import type { Metadata } from "next";
 import "./globals.css";
@@ -6,7 +5,7 @@ import "./globals.css";
 import LoadingAscii from "@/components/LoadingAscii";
 import ClientFade from "@/components/ClientFade";
 import ChromeFrame from "@/components/ChromeFrame";
-import FooterFromPen from "@/components/FooterFromPen"; // ⬅️ nouveau
+import FooterPen from "@/components/FooterPen"; // ✅ bon import
 
 export const metadata: Metadata = {
   title: "antn.studio — Anthony",
@@ -49,11 +48,11 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           <ChromeFrame>
             {children}
           </ChromeFrame>
-          {/* Footer du pen affiché PARTOUT */}
-          <FooterFromPen />
+
+          {/* Footer identique au projects-pen.html, affiché PARTOUT */}
+          <FooterPen />
         </ClientFade>
       </body>
     </html>
   );
 }
-// END PATCH
