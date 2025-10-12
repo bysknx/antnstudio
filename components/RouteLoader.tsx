@@ -1,31 +1,28 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
 import { usePathname } from "next/navigation";
-import LoadingAscii from "@/components/LoadingAscii";
+import { useEffect, useState } from "react";
+import LoadingAscii from "./LoadingAscii";
 
 /**
- * Affiche le loader ASCII ~900ms à CHAQUE changement d'URL (App Router).
- * Pas de flash au premier render (ignore la 1ère mount).
+ * Affiche le loader ASCII lors des transitions de route.
+ * `LoadingAscii` ne prend qu'une prop `force?: boolean`,
+ * donc on ne lui passe QUE ça.
  */
 export default function RouteLoader() {
   const pathname = usePathname();
   const [active, setActive] = useState(false);
-  const first = useRef(true);
-  const timer = useRef<number | null>(null);
 
   useEffect(() => {
-    if (first.current) {
-      first.current = false;
-      return;
-    }
+    // active le loader au changement de route
     setActive(true);
-    if (timer.current) window.clearTimeout(timer.current);
-    timer.current = window.setTimeout(() => setActive(false), 900);
-    return () => {
-      if (timer.current) window.clearTimeout(timer.current);
-    };
+    // laisse le composant gérer son fade interne ;
+    // on coupe après ~900ms
+    const t = setTimeout(() => setActive(false), 900);
+    return () => clearTimeout(t);
   }, [pathname]);
 
-  return <LoadingAscii mode="route" active={active} totalMs={900} />;
+  // Si tu préfères qu'il reste monté en permanence :
+  // return <LoadingAscii force={active} />;
+  return active ? <LoadingAscii force /> : null;
 }
