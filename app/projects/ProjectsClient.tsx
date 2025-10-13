@@ -25,8 +25,26 @@ export type VimeoItem = {
 
 type Props = {
   /** Items préchargés par la page serveur (`/api/vimeo`) */
-  initialItems: VimeoItem[];
+  initialItems?: VimeoItem[];
 };
+
+/* ===== helpers ===== */
+function normalize(it: VimeoItem): VimeoItem {
+  const parsed = parseVimeoTitle(it.title || it.name || "");
+  const niceTitle = parsed?.title
+    ? parsed.client
+      ? `${parsed.client} — ${parsed.title}`
+      : parsed.title
+    : it.title || it.name || "Untitled";
+
+  const year =
+    parsed?.year ??
+    it.year ??
+    (it.createdAt ? new Date(it.createdAt).getFullYear() : undefined) ??
+    (it.created_time ? new Date(it.created_time).getFullYear() : undefined);
+
+  return { ...it, title: niceTitle, year };
+}
 
 /* ========= Composant client ========= */
 export default function ProjectsClient({ initialItems }: Props) {
@@ -34,7 +52,7 @@ export default function ProjectsClient({ initialItems }: Props) {
   const search = useSearchParams();
   const year = search.get("year");
 
-  const [projects, setProjects] = useState<VimeoItem[] | null>(initialItems ?? []);
+  const [projects, setProjects] = useState<VimeoItem[] | null>(initialItems ?? null);
   const [iframeReady, setIframeReady] = useState(false);
   const [showIframe, setShowIframe] = useState(false);
 
@@ -47,9 +65,28 @@ export default function ProjectsClient({ initialItems }: Props) {
     iframeRef.current?.contentWindow?.postMessage(msg, "*");
   };
 
-  // Si pas d'items (ou vide), on refetch côté client
+  /** 1) Warm-start depuis sessionStorage si pas d’items */
   useEffect(() => {
-    if (initialItems && initialItems.length) return;
+    if (projects && projects.length) return;
+
+    try {
+      const cached = typeof window !== "undefined" ? sessionStorage.getItem("__VIMEO_PREFETCH") : null;
+      if (cached) {
+        const j = JSON.parse(cached);
+        const itemsRaw: VimeoItem[] = Array.isArray(j?.items) ? j.items : [];
+        if (itemsRaw.length) {
+          setProjects(itemsRaw.map(normalize));
+          return; // on a déjà de quoi peindre, on laissera un fetch rafraîchir après
+        }
+      }
+    } catch {
+      /* ignore */
+    }
+  }, [projects]);
+
+  /** 2) Si toujours rien, fetch côté client */
+  useEffect(() => {
+    if (projects && projects.length) return;
 
     let stop = false;
     (async () => {
@@ -57,23 +94,7 @@ export default function ProjectsClient({ initialItems }: Props) {
         const res = await fetch("/api/vimeo", { cache: "no-store" });
         const json = await res.json();
         const itemsRaw: VimeoItem[] = Array.isArray(json?.items) ? json.items : [];
-        const items = itemsRaw.map((it) => {
-          const parsed = parseVimeoTitle(it.title || it.name || "");
-          const niceTitle = parsed?.title
-            ? parsed.client
-              ? `${parsed.client} — ${parsed.title}`
-              : parsed.title
-            : it.title || it.name || "Untitled";
-          return {
-            ...it,
-            title: niceTitle,
-            year:
-              parsed?.year ??
-              it.year ??
-              (it.createdAt ? new Date(it.createdAt).getFullYear() : undefined) ??
-              (it.created_time ? new Date(it.created_time).getFullYear() : undefined),
-          };
-        });
+        const items = itemsRaw.map(normalize);
         if (!stop) setProjects(items);
       } catch {
         if (!stop) setProjects([]);
@@ -83,7 +104,7 @@ export default function ProjectsClient({ initialItems }: Props) {
     return () => {
       stop = true;
     };
-  }, [initialItems]);
+  }, [projects]);
 
   // Pousser le filtre année
   useEffect(() => {
