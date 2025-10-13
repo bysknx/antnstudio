@@ -10,19 +10,29 @@ type Props = {
 
 export default function FullBleedPlayer({ open, onClose, title, embed }: Props) {
   if (!open || !embed) return null;
+
   return (
-    <div className="fixed inset-0 z-[70]">
+    <div
+      className={`fixed inset-0 z-[80] transition-opacity duration-500 ${
+        open ? "opacity-100" : "opacity-0 pointer-events-none"
+      }`}
+    >
+      {/* Overlay sombre */}
+      <div className="absolute inset-0 bg-black/85 backdrop-blur-[2px]" />
+
+      {/* Bouton close */}
       <button
         onClick={onClose}
-        className="absolute right-4 top-4 z-[75] rounded-full bg-black/60 px-3 py-1.5 text-sm text-white"
+        className="absolute right-6 top-6 z-[85] rounded-full bg-black/70 px-4 py-1.5 text-sm font-medium text-white hover:bg-white hover:text-black transition-colors duration-200"
       >
         Close
       </button>
-      <div className="absolute inset-0 bg-black/80 backdrop-blur-sm" />
+
+      {/* Vidéo plein écran */}
       <div className="absolute inset-0 flex items-center justify-center p-4">
-        <div className="relative w-full h-full">
+        <div className="relative w-full h-full max-w-6xl mx-auto">
           <iframe
-            className="absolute inset-0 h-full w-full"
+            className="absolute inset-0 h-full w-full rounded-md"
             src={embed}
             title={title ?? "video"}
             allow="autoplay; fullscreen; picture-in-picture"
