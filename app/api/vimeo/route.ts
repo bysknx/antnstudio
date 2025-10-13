@@ -1,79 +1,41 @@
 // app/api/vimeo/route.ts
 import { NextResponse } from "next/server";
-import { fetchVimeoWorks } from "@/lib/vimeo";
+import { getVimeoItems } from "@/lib/vimeo";
 import { parseVimeoTitle } from "@/lib/parseVimeoTitle";
 
-export const runtime = "nodejs";
-export const dynamic = "force-dynamic";
 export const revalidate = 0;
 
-export async function GET(req: Request) {
-  const { searchParams } = new URL(req.url);
-  const debugFlag = searchParams.get("debug") === "1";
-
+export async function GET() {
   try {
-    const folderId = process.env.VIMEO_FOLDER_ID || undefined;
-    const teamId = process.env.VIMEO_TEAM_ID || undefined;
+    const raw = await getVimeoItems();
 
-    const { items, debug } = await fetchVimeoWorks({ folderId, teamId });
+    const items = (Array.isArray(raw?.items) ? raw.items : []).map((it: any) => {
+      const pretty = parseVimeoTitle(it?.title || it?.name || "");
 
-    // Tri desc par date
-    items.sort((a, b) => {
-      const da = a.createdAt ? Date.parse(a.createdAt) : 0;
-      const db = b.createdAt ? Date.parse(b.createdAt) : 0;
-      return db - da;
-    });
+      // Build the display title: "Client — Title" (no year prefix)
+      const display =
+        pretty?.title
+          ? pretty.client
+            ? `${pretty.client} — ${pretty.title}`
+            : pretty.title
+          : it?.title || it?.name || "Untitled";
 
-    // Normalisation propre des titres et années
-    const data = items.map((it: any) => {
-      const raw = it.title || it.name || "";
-      const pretty = parseVimeoTitle(raw);
+      // Try to keep a year, but never prepend it to title
+      const year =
+        it?.year ??
+        pretty?.year ??
+        (it?.createdAt ? new Date(it.createdAt).getFullYear() : undefined) ??
+        (it?.created_time ? new Date(it.created_time).getFullYear() : undefined);
+
       return {
         ...it,
-        title: pretty.display, // utilisé par l’iframe
-        year:
-          it.year ||
-          pretty.year ||
-          (it.created_time ? new Date(it.created_time).getFullYear() : null),
+        title: display,        // ✅ no more ".display"
+        year,
       };
     });
 
-    if (debugFlag) {
-      return NextResponse.json(
-        {
-          ok: true,
-          count: data.length,
-          env: {
-            token: !!process.env.VIMEO_TOKEN,
-            teamId: process.env.VIMEO_TEAM_ID || null,
-            folderId: process.env.VIMEO_FOLDER_ID || null,
-          },
-          tried: debug.tried,
-          sample: data.slice(0, 2),
-          items: data,
-        },
-        { headers: { "Cache-Control": "no-store" } }
-      );
-    }
-
-    // Réponse standard
-    return NextResponse.json(
-      { ok: true, items: data },
-      { headers: { "Cache-Control": "no-store" } }
-    );
-  } catch (e: any) {
-    return NextResponse.json(
-      {
-        ok: false,
-        items: [],
-        error: e?.message || String(e),
-        env: {
-          token: !!process.env.VIMEO_TOKEN,
-          teamId: process.env.VIMEO_TEAM_ID || null,
-          folderId: process.env.VIMEO_FOLDER_ID || null,
-        },
-      },
-      { status: 200, headers: { "Cache-Control": "no-store" } }
-    );
+    return NextResponse.json({ ok: true, count: items.length, items });
+  } catch (e) {
+    return NextResponse.json({ ok: false, items: [] }, { status: 200 });
   }
 }
