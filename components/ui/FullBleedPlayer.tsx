@@ -1,63 +1,68 @@
 "use client";
-import { useMemo } from "react";
+
+import { useEffect } from "react";
+
+type Props = {
+  open: boolean;
+  onClose: () => void;
+  title?: string;
+  poster?: string;
+  embed?: string; // vimeo/youtube url
+};
 
 export default function FullBleedPlayer({
   open,
   onClose,
   title,
-  embed,
   poster,
-}: {
-  open: boolean;
-  onClose: () => void;
-  title?: string;
-  embed?: string | null | undefined;
-  poster?: string | null | undefined;
-}) {
+  embed,
+}: Props) {
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === "Escape") onClose();
+    };
+    if (open) window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, [open, onClose]);
+
   if (!open) return null;
 
-  const src = useMemo(() => {
-    if (!embed) return null;
-    // assure autoplay/muted/controls off
-    const url = new URL(embed, typeof window !== "undefined" ? window.location.href : "https://example.org");
-    url.searchParams.set("autoplay", "1");
-    url.searchParams.set("muted", "1");
-    url.searchParams.set("playsinline", "1");
-    url.searchParams.set("controls", "0");
-    url.searchParams.set("pip", "1");
-    url.searchParams.set("transparent", "0");
-    url.searchParams.set("background", "1");
-    return url.toString();
-  }, [embed]);
+  // force autoplay; plein écran visuel
+  const src = embed
+    ? embed.includes("?")
+      ? `${embed}&autoplay=1&muted=0&title=0&byline=0&portrait=0&playsinline=1`
+      : `${embed}?autoplay=1&muted=0&title=0&byline=0&portrait=0&playsinline=1`
+    : undefined;
 
   return (
     <div
       role="dialog"
       aria-modal="true"
-      className="fixed inset-0 z-[60] bg-black/80 backdrop-blur-sm"
+      className="
+        fixed inset-0 z-[70] grid place-items-center
+        bg-black/90 backdrop-blur-[2px]
+      "
       onClick={onClose}
     >
-      <div
-        className="absolute left-1/2 top-1/2 w-[min(92vw,1200px)] -translate-x-1/2 -translate-y-1/2 aspect-video rounded-xl overflow-hidden shadow-2xl border border-white/10 bg-black"
-        onClick={(e) => e.stopPropagation()}
-      >
+      <div className="relative h-[min(90vh,100svh)] w-[min(92vw,178vh)]" onClick={(e) => e.stopPropagation()}>
         {src ? (
           <iframe
-            key={src}
             src={src}
-            title={title || "Video"}
-            className="absolute inset-0 h-full w-full"
-            allow="autoplay; fullscreen; picture-in-picture; clipboard-write; encrypted-media; web-share"
-            referrerPolicy="strict-origin-when-cross-origin"
+            title={title || "Player"}
+            allow="autoplay; fullscreen; picture-in-picture"
+            allowFullScreen
+            className="absolute inset-0 h-full w-full border-0"
           />
         ) : (
-          <div className="absolute inset-0 grid place-items-center text-zinc-200">
-            {poster ? <img src={poster} alt={title || "poster"} className="max-h-full object-contain" /> : "No source"}
-          </div>
+          <img
+            src={poster}
+            alt={title || "Poster"}
+            className="absolute inset-0 h-full w-full object-contain"
+          />
         )}
         <button
           onClick={onClose}
-          className="absolute top-3 right-3 rounded-full bg-white/10 px-3 py-1 text-white hover:bg-white/20"
+          className="absolute right-4 top-4 rounded-full bg-white/15 px-3 py-1 text-sm font-medium text-white hover:bg-white/25"
         >
           Close
         </button>
