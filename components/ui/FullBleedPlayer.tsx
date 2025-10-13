@@ -1,43 +1,35 @@
-// components/ui/FullBleedPlayer.tsx
 "use client";
 
 type Props = {
   open: boolean;
   onClose: () => void;
-  title?: string;
+  title?: string | null;
   poster?: string | null;
   embed?: string | null;
 };
 
 export default function FullBleedPlayer({ open, onClose, title, embed }: Props) {
-  if (!open) return null;
-
+  if (!open || !embed) return null;
   return (
-    <div className="fixed inset-0 z-[90]">
-      {/* backdrop */}
-      <button
-        aria-label="Close"
-        onClick={onClose}
-        className="absolute inset-0 bg-black/80 backdrop-blur-[2px]"
-      />
-      {/* iframe plein écran */}
-      <div className="absolute inset-0 z-[91] flex items-center justify-center">
-        <iframe
-          title={title || "video"}
-          src={embed || ""}
-          allow="autoplay; fullscreen; picture-in-picture"
-          allowFullScreen
-          className="w-full h-full"
-          style={{ border: 0 }}
-        />
-      </div>
-      {/* bouton close */}
+    <div className="fixed inset-0 z-[70]">
       <button
         onClick={onClose}
-        className="absolute top-3 right-3 z-[92] rounded-full bg-white/10 text-white px-3 py-1 text-sm hover:bg-white/20"
+        className="absolute right-4 top-4 z-[75] rounded-full bg-black/60 px-3 py-1.5 text-sm text-white"
       >
         Close
       </button>
+      <div className="absolute inset-0 bg-black/80 backdrop-blur-sm" />
+      <div className="absolute inset-0 flex items-center justify-center p-4">
+        <div className="relative w-full h-full">
+          <iframe
+            className="absolute inset-0 h-full w-full"
+            src={embed}
+            title={title ?? "video"}
+            allow="autoplay; fullscreen; picture-in-picture"
+            allowFullScreen
+          />
+        </div>
+      </div>
     </div>
   );
 }
