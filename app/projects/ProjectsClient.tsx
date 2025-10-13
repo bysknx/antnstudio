@@ -1,10 +1,11 @@
 "use client";
 
-import { useEffect, useRef, useState, Suspense } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useSearchParams } from "next/navigation";
 import FullBleedPlayer from "@/components/ui/FullBleedPlayer";
 import { parseVimeoTitle } from "@/lib/parseVimeoTitle";
 
+/* ========= Types ========= */
 type VimeoItem = {
   id: string;
   title?: string;
@@ -14,25 +15,15 @@ type VimeoItem = {
   thumb?: string;
   poster?: string;
   link?: string;
-  embed?: string;
-  src?: string;
-  videoSrc?: string;
+  embed?: string;      // URL d’embed Vimeo
+  src?: string;        // fallback
+  videoSrc?: string;   // fallback
   year?: number;
   createdAt?: string;
   created_time?: string;
 };
 
-export default function ProjectsPage() {
-  return (
-    <main className="relative min-h-[100svh]">
-      <Suspense fallback={null}>
-        <ProjectsIframe />
-      </Suspense>
-    </main>
-  );
-}
-
-function ProjectsIframe() {
+export default function ProjectsClient() {
   const iframeRef = useRef<HTMLIFrameElement>(null);
   const search = useSearchParams();
   const year = search.get("year");
@@ -41,6 +32,7 @@ function ProjectsIframe() {
   const [iframeReady, setIframeReady] = useState(false);
   const [showIframe, setShowIframe] = useState(false);
 
+  // Overlay player
   const [open, setOpen] = useState(false);
   const [current, setCurrent] = useState<VimeoItem | null>(null);
 
@@ -50,7 +42,7 @@ function ProjectsIframe() {
     iframeRef.current?.contentWindow?.postMessage(msg, "*");
   };
 
-  // fetch & parse
+  /* ========= Fetch & normalisation titres ========= */
   useEffect(() => {
     let stop = false;
     (async () => {
@@ -58,24 +50,36 @@ function ProjectsIframe() {
         const res = await fetch("/api/vimeo", { cache: "no-store" });
         const json = await res.json();
         const itemsRaw: VimeoItem[] = Array.isArray(json?.items) ? json.items : [];
-        // Titre propre: `Client — Titre` + année
+
         const items = itemsRaw.map((it) => {
           const parsed = parseVimeoTitle(it.title || it.name || "");
-          const niceTitle = parsed?.title
-            ? parsed.client
-              ? `${parsed.client} — ${parsed.title}`
-              : parsed.title
-            : (it.title || it.name || "Untitled");
+          // On utilise le champ `display` du parseur: "Client — Titre" (ou titre seul)
+          const niceTitle = parsed?.display || it.title || it.name || "Untitled";
+
+          // meilleure déduction d’année possible
+          const y =
+            parsed?.year ??
+            it.year ??
+            (it.createdAt ? new Date(it.createdAt).getFullYear() : undefined) ??
+            (it.created_time ? new Date(it.created_time).getFullYear() : undefined);
+
+          // poster robuste
+          const poster =
+            it.poster ||
+            it.thumbnail ||
+            (it as any)?.pictures?.sizes?.[((it as any)?.pictures?.sizes?.length ?? 0) - 1]?.link ||
+            it.picture ||
+            it.thumb ||
+            "";
+
           return {
             ...it,
             title: niceTitle,
-            year:
-              parsed?.year ??
-              it.year ??
-              (it.createdAt ? new Date(it.createdAt).getFullYear() : undefined) ??
-              (it.created_time ? new Date(it.created_time).getFullYear() : undefined),
+            year: y,
+            poster,
           };
         });
+
         if (!stop) setProjects(items);
       } catch {
         if (!stop) setProjects([]);
@@ -86,28 +90,30 @@ function ProjectsIframe() {
     };
   }, []);
 
-  // push filtre année
+  /* ========= Push filtre année ========= */
   useEffect(() => {
     if (!iframeReady || !year) return;
     post({ type: "SET_YEAR", value: year === "all" ? "all" : year });
   }, [year, iframeReady]);
 
-  // push projets
+  /* ========= Push projets ========= */
   useEffect(() => {
     if (!iframeReady || !projects) return;
     post({ type: "SET_PROJECTS", value: projects });
     if (year) post({ type: "SET_YEAR", value: year === "all" ? "all" : year });
   }, [projects, iframeReady, year]);
 
-  // écoute messages du pen
+  /* ========= Écoute messages venant du pen ========= */
   useEffect(() => {
     const onMessage = (e: MessageEvent) => {
       const data = e?.data;
       if (!data || typeof data !== "object") return;
+
       switch ((data as any).type) {
         case "IFRAME_READY": {
           setIframeReady(true);
-          // masque le texte parasite dans le pen
+
+          // Masquer le texte “project-title” du pen
           try {
             const doc = iframeRef.current?.contentDocument;
             if (doc) {
@@ -116,15 +122,18 @@ function ProjectsIframe() {
               doc.head.appendChild(style);
             }
           } catch {
-            /* ignore */
+            /* noop */
           }
-          // affiche l’iframe après 1 frame pour éviter le flash
+
+          // Afficher l’iframe (crossfade) après 1 frame pour éviter le flash de fond
           requestAnimationFrame(() => setShowIframe(true));
 
+          // Renvoi immédiat des données si déjà dispo
           if (projects) post({ type: "SET_PROJECTS", value: projects });
           if (year) post({ type: "SET_YEAR", value: year === "all" ? "all" : year });
           break;
         }
+
         case "OPEN_PLAYER": {
           const value: VimeoItem | undefined = (data as any).value;
           if (value) {
@@ -133,25 +142,28 @@ function ProjectsIframe() {
           }
           break;
         }
+
         case "REQUEST_PROJECTS": {
           if (projects) post({ type: "SET_PROJECTS", value: projects });
           break;
         }
+
         case "REQUEST_YEAR": {
           if (year) post({ type: "SET_YEAR", value: year === "all" ? "all" : year });
           break;
         }
+
         default:
           break;
       }
     };
+
     window.addEventListener("message", onMessage);
     return () => window.removeEventListener("message", onMessage);
   }, [projects, year]);
 
   return (
     <>
-      {/* on cache tant que non prêt pour éviter l’écran vide */}
       <iframe
         ref={iframeRef}
         src={src}
@@ -160,7 +172,7 @@ function ProjectsIframe() {
         }`}
         title="Projects Grid"
         onLoad={() => {
-          // même origine → on peut injecter
+          // même origine → on peut injecter un style
           try {
             const doc = iframeRef.current?.contentDocument;
             if (doc) {
@@ -168,7 +180,9 @@ function ProjectsIframe() {
               style.innerHTML = `.project-title{display:none!important}`;
               doc.head.appendChild(style);
             }
-          } catch {}
+          } catch {
+            /* noop */
+          }
           setIframeReady(true);
           if (projects) post({ type: "SET_PROJECTS", value: projects });
           if (year) post({ type: "SET_YEAR", value: year === "all" ? "all" : year });
