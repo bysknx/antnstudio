@@ -1,72 +1,43 @@
+// components/ui/FullBleedPlayer.tsx
 "use client";
-
-import { useEffect } from "react";
 
 type Props = {
   open: boolean;
   onClose: () => void;
   title?: string;
-  poster?: string;
-  embed?: string; // vimeo/youtube url
+  poster?: string | null;
+  embed?: string | null;
 };
 
-export default function FullBleedPlayer({
-  open,
-  onClose,
-  title,
-  poster,
-  embed,
-}: Props) {
-  useEffect(() => {
-    const onKey = (e: KeyboardEvent) => {
-      if (e.key === "Escape") onClose();
-    };
-    if (open) window.addEventListener("keydown", onKey);
-    return () => window.removeEventListener("keydown", onKey);
-  }, [open, onClose]);
-
+export default function FullBleedPlayer({ open, onClose, title, embed }: Props) {
   if (!open) return null;
 
-  // force autoplay; plein écran visuel
-  const src = embed
-    ? embed.includes("?")
-      ? `${embed}&autoplay=1&muted=0&title=0&byline=0&portrait=0&playsinline=1`
-      : `${embed}?autoplay=1&muted=0&title=0&byline=0&portrait=0&playsinline=1`
-    : undefined;
-
   return (
-    <div
-      role="dialog"
-      aria-modal="true"
-      className="
-        fixed inset-0 z-[70] grid place-items-center
-        bg-black/90 backdrop-blur-[2px]
-      "
-      onClick={onClose}
-    >
-      <div className="relative h-[min(90vh,100svh)] w-[min(92vw,178vh)]" onClick={(e) => e.stopPropagation()}>
-        {src ? (
-          <iframe
-            src={src}
-            title={title || "Player"}
-            allow="autoplay; fullscreen; picture-in-picture"
-            allowFullScreen
-            className="absolute inset-0 h-full w-full border-0"
-          />
-        ) : (
-          <img
-            src={poster}
-            alt={title || "Poster"}
-            className="absolute inset-0 h-full w-full object-contain"
-          />
-        )}
-        <button
-          onClick={onClose}
-          className="absolute right-4 top-4 rounded-full bg-white/15 px-3 py-1 text-sm font-medium text-white hover:bg-white/25"
-        >
-          Close
-        </button>
+    <div className="fixed inset-0 z-[90]">
+      {/* backdrop */}
+      <button
+        aria-label="Close"
+        onClick={onClose}
+        className="absolute inset-0 bg-black/80 backdrop-blur-[2px]"
+      />
+      {/* iframe plein écran */}
+      <div className="absolute inset-0 z-[91] flex items-center justify-center">
+        <iframe
+          title={title || "video"}
+          src={embed || ""}
+          allow="autoplay; fullscreen; picture-in-picture"
+          allowFullScreen
+          className="w-full h-full"
+          style={{ border: 0 }}
+        />
       </div>
+      {/* bouton close */}
+      <button
+        onClick={onClose}
+        className="absolute top-3 right-3 z-[92] rounded-full bg-white/10 text-white px-3 py-1 text-sm hover:bg-white/20"
+      >
+        Close
+      </button>
     </div>
   );
 }
