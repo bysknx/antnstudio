@@ -16,17 +16,25 @@ type Slide = {
   durationMs: number;
 };
 
+type HeroItem = {
+  id: string;
+  title?: string;
+  embed?: string;
+  duration?: number;
+};
+
 /** ---- Constantes ---- */
 const DEFAULT_DURATION_MS = 15000;
 const MAX_FEATURED = 6;
 const WHEEL_THROTTLE_MS = 1000;
 
 /** ---- Mapping API->slides ---- */
-function toSlides(items: VimeoItem[]): Slide[] {
+function toSlides(items: Array<Pick<HeroItem, "embed" | "title">>): Slide[] {
   return items
     .filter((it) => typeof it.embed === "string" && it.embed.length > 0)
     .slice(0, MAX_FEATURED)
     .map((it) => ({
+      // on force les flags d’autoplay inline + fond
       src: `${it.embed!}&muted=1&autoplay=1&playsinline=1&controls=0&pip=1&transparent=0&background=1`,
       alt: it.title ?? "Untitled",
       durationMs: DEFAULT_DURATION_MS,
@@ -35,9 +43,11 @@ function toSlides(items: VimeoItem[]): Slide[] {
 
 /** ---- Composant ---- */
 export default function HeroPlayer({
+  items,            // <-- NOUVEAU : items préchargés (prioritaires)
   onReady,
   readyTimeoutMs = 3500,
 }: {
+  items?: HeroItem[];               // <-- optionnel
   onReady?: () => void;
   readyTimeoutMs?: number;
 }) {
@@ -56,17 +66,22 @@ export default function HeroPlayer({
   const wheelLockRef = useRef<number>(0);
   const touchStartY = useRef<number | null>(null);
 
-  /** Fetch Vimeo items */
+  /** 1) Utiliser les items préchargés si fournis */
   useEffect(() => {
+    if (items && items.length) {
+      setSlides(toSlides(items));
+      setIndex(0);
+      return;
+    }
+    // Sinon fallback: fetch côté client (home sans préchargement)
     let stop = false;
     (async () => {
       try {
         const res = await fetch("/api/vimeo", { cache: "no-store" });
         const json = await res.json();
-        const items: VimeoItem[] = Array.isArray(json?.items) ? json.items : [];
+        const apiItems: VimeoItem[] = Array.isArray(json?.items) ? json.items : [];
         if (!stop) {
-          const mapped = toSlides(items);
-          setSlides(mapped);
+          setSlides(toSlides(apiItems));
           setIndex(0);
         }
       } catch (e) {
@@ -77,7 +92,8 @@ export default function HeroPlayer({
     return () => {
       stop = true;
     };
-  }, []);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [JSON.stringify(items?.map((i) => ({ id: i.id, embed: i.embed })))]);
 
   /** Lancer la progression pour le slide courant */
   const startProgress = useCallback(() => {
@@ -92,7 +108,7 @@ export default function HeroPlayer({
       setProgress(p);
       if (p >= 1) {
         setIndex((i) => (i + 1) % slides.length);
-        return; // le prochain cycle redémarre quand le prochain "play" arrive
+        return; // le prochain cycle redémarre à l’init du slide suivant
       }
       rafRef.current = requestAnimationFrame(tick);
     };
@@ -139,7 +155,7 @@ export default function HeroPlayer({
           await playerRef.current.setMuted(true);
           await playerRef.current.play();
         } catch {
-          // autoplay peut être bloqué: le timeout fera le job
+          // autoplay bloqué : le safety timeout fera le job
         }
 
         playerRef.current.on?.("play", () => {
@@ -264,6 +280,7 @@ export default function HeroPlayer({
           src={current.src}
           title={current.alt}
           allow="autoplay; fullscreen; picture-in-picture; encrypted-media; clipboard-write; web-share"
+          allowFullScreen
           referrerPolicy="strict-origin-when-cross-origin"
           loading="eager"
         />
