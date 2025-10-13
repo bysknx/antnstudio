@@ -6,7 +6,7 @@ import LoadingAscii from "@/components/LoadingAscii";
 import ClientFade from "@/components/ClientFade";
 import ChromeFrame from "@/components/ChromeFrame";
 import FooterMount from "@/components/FooterMount";
-import { Header } from "./header"; // ✅ on rend la nav partout
+import Header from "./header";
 
 export const metadata: Metadata = {
   title: "antn.studio — Anthony",
