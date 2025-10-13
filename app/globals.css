@@ -241,4 +241,10 @@ html[data-home="1"] #gl-layer { display: none; }
 .antn-footer .info-section{
   pointer-events: auto;
 }
-/* END PATCH */
+   @import url('https://fonts.cdnfonts.com/css/thegoodmonolith');
+
+.footer-pen-mono {
+  font-family: "TheGoodMonolith", monospace;
+  font-synthesis-weight: none;
+}
+
