@@ -172,6 +172,39 @@
     .project-title p .word{display:inline-block;font-size:36px;letter-spacing:-.03em;text-transform:uppercase}
 
     .links-section a{font-weight:700;font-size:13px}
+
+    /* ======= AJUSTEMENTS MERGÉS ======= */
+
+    /* header sous la nav Next mais au-dessus du fond */
+    .header { z-index: 60; }
+    /* panneau years au-dessus si nécessaire */
+    .legacy-years-panel { z-index: 70; }
+    /* pas de texte parasite au centre */
+    .project-title { display: none !important; }
+
+    /* Footer typographies & hover uniformisés */
+    .links-section a {
+      position: relative;
+      font-weight: 700;
+      font-size: 13px;
+      color: #fff;
+      text-decoration: none;
+      mix-blend-mode: difference;
+    }
+    .links-section a::after {
+      content: "";
+      position: absolute; inset: 0 0 0 auto;
+      width: 0; background: #fff; z-index: -1;
+      transition: width .3s cubic-bezier(.34,1.56,.64,1);
+    }
+    .links-section a:hover { color: #000; }
+    .links-section a:hover::after { width: 100%; }
+
+    .coordinates-section,
+    .info-section { font-family: "TheGoodMonolith", monospace; font-weight: 400; }
+
+    /* safety: la grille dessinée reste visible à travers */
+    body { overflow: hidden; }
   </style>
 </head>
 <body>
@@ -221,7 +254,6 @@
     if (embedFooter) {
       document.documentElement.setAttribute('data-embed-footer','1');
     }
-    // (le reste du code ne change pas)
 
     const { gsap, CustomEase, SplitType } = window;
     gsap.registerPlugin(CustomEase);
