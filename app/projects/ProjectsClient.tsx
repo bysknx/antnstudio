@@ -1,6 +1,7 @@
+// app/projects/ProjectsClient.tsx
 "use client";
 
-import { useEffect, useRef, useState, Suspense } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useSearchParams } from "next/navigation";
 import FullBleedPlayer from "@/components/ui/FullBleedPlayer";
 import { parseVimeoTitle } from "@/lib/parseVimeoTitle";
@@ -22,25 +23,48 @@ type VimeoItem = {
   created_time?: string;
 };
 
-export default function ProjectsClient() {
-  return (
-    <main className="relative min-h-[100svh]">
-      <Suspense fallback={null}>
-        <ProjectsIframe />
-      </Suspense>
-    </main>
-  );
+type Props = { initialItems: VimeoItem[] };
+
+function pickPoster(it: VimeoItem) {
+  return it.poster || it.thumbnail || it.picture || it.thumb || "";
 }
 
-function ProjectsIframe() {
+function normalize(items: VimeoItem[]): VimeoItem[] {
+  return (items || []).map((it) => {
+    const parsed = parseVimeoTitle(it.title || it.name || "");
+    const niceTitle = parsed?.title
+      ? parsed.client
+        ? `${parsed.client} — ${parsed.title}`
+        : parsed.title
+      : it.title || it.name || "Untitled";
+    const year =
+      parsed?.year ??
+      it.year ??
+      (it.createdAt ? new Date(it.createdAt).getFullYear() : undefined) ??
+      (it.created_time ? new Date(it.created_time).getFullYear() : undefined);
+
+    return {
+      ...it,
+      title: niceTitle,
+      year,
+      poster: pickPoster(it),
+      embed: it.embed || it.src || it.videoSrc, // keep any playable src
+    };
+  });
+}
+
+export default function ProjectsClient({ initialItems }: Props) {
   const iframeRef = useRef<HTMLIFrameElement>(null);
   const search = useSearchParams();
   const year = search.get("year");
 
-  const [projects, setProjects] = useState<VimeoItem[] | null>(null);
+  const [projects, setProjects] = useState<VimeoItem[] | null>(
+    normalize(initialItems ?? [])
+  );
   const [iframeReady, setIframeReady] = useState(false);
   const [showIframe, setShowIframe] = useState(false);
 
+  // Overlay player
   const [open, setOpen] = useState(false);
   const [current, setCurrent] = useState<VimeoItem | null>(null);
 
@@ -50,36 +74,17 @@ function ProjectsIframe() {
     iframeRef.current?.contentWindow?.postMessage(msg, "*");
   };
 
-  // fetch & parse: “Client — Titre”, année sous la vignette
+  // Refresh from API on mount (ensures latest + proper titles)
   useEffect(() => {
     let stop = false;
     (async () => {
       try {
         const res = await fetch("/api/vimeo", { cache: "no-store" });
         const json = await res.json();
-        const itemsRaw: VimeoItem[] = Array.isArray(json?.items) ? json.items : [];
-
-        const items = itemsRaw.map((it) => {
-          const parsed = parseVimeoTitle(it.title || it.name || "");
-          const nice =
-            parsed?.title
-              ? parsed.client
-                ? `${parsed.client} — ${parsed.title}`
-                : parsed.title
-              : it.title || it.name || "Untitled";
-
-          const yr =
-            parsed?.year ??
-            it.year ??
-            (it.createdAt ? new Date(it.createdAt).getFullYear() : undefined) ??
-            (it.created_time ? new Date(it.created_time).getFullYear() : undefined);
-
-          return { ...it, title: nice, year: yr };
-        });
-
+        const items: VimeoItem[] = normalize(Array.isArray(json?.items) ? json.items : []);
         if (!stop) setProjects(items);
       } catch {
-        if (!stop) setProjects([]);
+        if (!stop) setProjects((prev) => prev ?? []);
       }
     })();
     return () => {
@@ -87,55 +92,67 @@ function ProjectsIframe() {
     };
   }, []);
 
-  // filtre année -> pen
+  // push filter year
   useEffect(() => {
     if (!iframeReady || !year) return;
     post({ type: "SET_YEAR", value: year === "all" ? "all" : year });
   }, [year, iframeReady]);
 
-  // push projets
+  // push projects (and re-push year)
   useEffect(() => {
     if (!iframeReady || !projects) return;
     post({ type: "SET_PROJECTS", value: projects });
     if (year) post({ type: "SET_YEAR", value: year === "all" ? "all" : year });
   }, [projects, iframeReady, year]);
 
-  // écoute pen
+  // listen messages from pen
   useEffect(() => {
     const onMessage = (e: MessageEvent) => {
-      const data = e?.data as any;
+      const data = e?.data;
       if (!data || typeof data !== "object") return;
 
-      switch (data.type) {
-        case "IFRAME_READY":
+      switch ((data as any).type) {
+        case "IFRAME_READY": {
           setIframeReady(true);
+
+          // Hide the pen's center title (text parasite)
+          try {
+            const doc = iframeRef.current?.contentDocument;
+            if (doc) {
+              const style = doc.createElement("style");
+              style.innerHTML = `.project-title{display:none!important}`;
+              doc.head.appendChild(style);
+            }
+          } catch {}
+
+          // fade-in after one frame
           requestAnimationFrame(() => setShowIframe(true));
+
           if (projects) post({ type: "SET_PROJECTS", value: projects });
           if (year) post({ type: "SET_YEAR", value: year === "all" ? "all" : year });
-          break;
-        case "OPEN_PLAYER": {
-          const value: VimeoItem | undefined = data.value;
-          if (!value) break;
-          // force autoplay sur Vimeo si possible
-          const embedUrl =
-            value.embed || value.src || value.videoSrc || value.link || "";
-          const url = new URL(embedUrl, "https://player.vimeo.com");
-          url.searchParams.set("autoplay", "1");
-          url.searchParams.set("muted", "0");
-          setCurrent({ ...value, embed: url.toString() });
-          setOpen(true);
           break;
         }
-        case "REQUEST_PROJECTS":
+        case "OPEN_PLAYER": {
+          const value: VimeoItem | undefined = (data as any).value;
+          if (value) {
+            setCurrent(value);
+            setOpen(true);
+          }
+          break;
+        }
+        case "REQUEST_PROJECTS": {
           if (projects) post({ type: "SET_PROJECTS", value: projects });
           break;
-        case "REQUEST_YEAR":
+        }
+        case "REQUEST_YEAR": {
           if (year) post({ type: "SET_YEAR", value: year === "all" ? "all" : year });
           break;
+        }
         default:
           break;
       }
     };
+
     window.addEventListener("message", onMessage);
     return () => window.removeEventListener("message", onMessage);
   }, [projects, year]);
@@ -145,24 +162,19 @@ function ProjectsIframe() {
       <iframe
         ref={iframeRef}
         src={src}
-        title="Projects Grid"
         className={`h-[100svh] w-full border-0 block transition-opacity duration-300 ${
           showIframe ? "opacity-100" : "opacity-0"
         }`}
+        title="Projects Grid"
         onLoad={() => {
+          try {
+            const doc = iframeRef.current?.contentDocument;
+            if (doc) {
+              const style = doc.createElement("style");
+              style.innerHTML = `.project-title{display:none!important}`;
+              doc.head.appendChild(style);
+            }
+          } catch {}
           setIframeReady(true);
           if (projects) post({ type: "SET_PROJECTS", value: projects });
-          if (year) post({ type: "SET_YEAR", value: year === "all" ? "all" : year });
-        }}
-      />
-
-      <FullBleedPlayer
-        open={open}
-        onClose={() => setOpen(false)}
-        title={current?.title || current?.name}
-        poster={current?.poster || current?.thumbnail || current?.picture || current?.thumb}
-        embed={current?.embed || current?.src || current?.videoSrc}
-      />
-    </>
-  );
-}
+          if (year) post({ type: "SET_YEAR", value: year === "all" ? "
