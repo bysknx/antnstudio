@@ -1,6 +1,6 @@
 // app/api/vimeo/route.ts
 import { NextResponse } from "next/server";
-import { getVimeoItems } from "@/lib/vimeo";
+import getVimeoItems from "@/lib/vimeo";
 import { parseVimeoTitle } from "@/lib/parseVimeoTitle";
 
 export const revalidate = 0;
