@@ -5,7 +5,7 @@ import { useEffect, useRef, useState } from "react";
 /** TTL (1h) + clés de cache */
 const STORAGE_KEY_LAST = "antn_ascii_loader_last_seen";
 const CACHE_KEY_VIMEO = "antn_vimeo_cache_v1";
-const TTL_HOURS = 1;
+const TTL_HOURS = 0.25;
 
 /** Durées (ms) */
 const TOTAL_MS = 2200;
