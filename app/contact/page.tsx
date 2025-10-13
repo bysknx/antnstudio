@@ -1,104 +1,67 @@
+// app/contact/page.tsx
 import { ContactForm } from "@/components/ContactForm";
 
 export const dynamic = "force-static";
 
 export default function ContactPage() {
   return (
-    <main className="relative min-h-[100svh]">
-      {/* zone lisible : blur + assombrissement progressif mais on garde la matrice */}
-      <div
-        className="
-          pointer-events-none absolute inset-0 z-0
-          [mask-image:radial-gradient(ellipse_at_center,rgba(0,0,0,1),rgba(0,0,0,.65)60%,rgba(0,0,0,0)85%)]
-          bg-black/25
-          backdrop-blur-[2px]
-        "
-      />
+    <main className="relative mx-auto max-w-[1200px] px-6 pt-28 pb-36">
+      {/* assombrissement + blur subtile derrière la zone centrale */}
+      <div className="pointer-events-none absolute inset-0 z-0">
+        <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-[min(1100px,90vw)] h-[540px] rounded-3xl
+                        bg-black/25 backdrop-blur-[2px] [mask-image:radial-gradient(ellipse_at_center,black,transparent_70%)]" />
+      </div>
 
-      <section
-        className="
-          relative z-10 mx-auto grid min-h-[100svh] max-w-6xl grid-cols-1 items-center gap-10 px-6
-          py-24 md:grid-cols-2
-        "
-      >
-        {/* formulaire */}
-        <div className="rounded-2xl border border-white/10 bg-black/30 p-6 shadow-[0_0_0_1px_rgba(255,255,255,.04)]">
-          <h2 className="mb-4 text-lg font-semibold tracking-tight text-white">Contact</h2>
+      <section className="relative z-10 grid grid-cols-1 md:grid-cols-2 gap-10">
+        <div className="rounded-2xl border border-white/10 bg-black/20 p-6">
+          <h2 className="mb-4 text-lg font-semibold">Contact</h2>
           <ContactForm />
-          <p className="mt-4 text-xs text-white/60">
-            *Temporaire : on branchera un mailto ou Formspree/Resend.
-          </p>
         </div>
 
-        {/* about + CTA mail */}
-        <div className="rounded-2xl border border-white/10 bg-black/30 p-6 shadow-[0_0_0_1px_rgba(255,255,255,.04)]">
-          <h2 className="mb-4 text-lg font-semibold tracking-tight text-white">About.</h2>
-          <div className="space-y-4 text-[14px] leading-relaxed text-zinc-200">
-            <p>
-              « <strong>antn.studio</strong> » founded by <strong>Anthony</strong>, an independent director and project
-              lead from Paris.
-            </p>
-            <p>
-              Blending precision with emotion, the studio crafts <strong>cinematic visuals</strong>, brand films, and
-              digital experiences with a <strong>strong narrative core</strong>.
-            </p>
-            <p>
-              Each project is shaped with <strong>technical mastery</strong>, and driven by a search for{" "}
-              <strong>authenticity</strong> and <strong>impact</strong>.
-            </p>
-          </div>
+        <div className="rounded-2xl border border-white/10 bg-black/20 p-6">
+          <h2 className="mb-4 text-lg font-semibold">About.</h2>
+          <p className="text-sm leading-relaxed [--accent:theme(colors.white)]">
+            « <strong className="about-strong">antn.studio</strong> » founded by{" "}
+            <strong className="about-strong">Anthony</strong>, an independent{" "}
+            <strong className="about-strong">director</strong> and{" "}
+            <strong className="about-strong">project lead</strong> from Paris.
+            Blending <strong className="about-strong">precision</strong> with{" "}
+            <strong className="about-strong">emotion</strong>, the studio crafts{" "}
+            <strong className="about-strong">cinematic visuals</strong>, brand films, and digital
+            experiences with a <strong className="about-strong">strong narrative core</strong>.
+            Each project is shaped with <strong className="about-strong">technical mastery</strong>, and driven
+            by a search for <strong className="about-strong">authenticity</strong> and{" "}
+            <strong className="about-strong">impact</strong>.
+          </p>
 
           <div className="mt-6 flex items-center gap-3">
-            <span className="text-sm font-semibold text-zinc-300">LET’S CONNECT :</span>
-
-            {/* mail pill : remplissage blanc de gauche→droite en hover */}
+            <span className="text-xs tracking-widest uppercase">Let’s connect :</span>
             <a
               href="mailto:anthony@antn.studio"
               className="
-                relative overflow-hidden rounded-full border border-white/10 px-4 py-2 text-sm font-semibold
-                text-white transition-colors
-                before:absolute before:inset-0 before:-z-[1] before:translate-x-[-100%] before:bg-white
-                before:transition-transform before:duration-300 hover:text-black hover:before:translate-x-0
+                relative rounded-full px-3 py-1 text-sm font-semibold
+                text-white overflow-hidden
+                before:absolute before:inset-0 before:translate-x-full
+                before:bg-white before:transition-transform before:duration-300
+                hover:before:-translate-x-0
               "
+              style={{ WebkitTextFillColor: "currentColor" }}
             >
-              anthony@antn.studio
+              <span className="relative z-10 mix-blend-difference">anthony@antn.studio</span>
             </a>
           </div>
         </div>
-
-        {/* expériences : sous la fold, espacées et hover subtil */}
-        <div className="col-span-full mt-4 grid grid-cols-1 gap-5 md:grid-cols-3">
-          {[
-            {
-              k: 1,
-              pre: "antn.studio — 2019 → Present",
-              title: "CEO",
-            },
-            {
-              k: 2,
-              pre: "Freelance @ Jellysmack — 2022 → 2023",
-              title: "Edit Supervisor",
-            },
-            {
-              k: 3,
-              pre: "Freelance — 2023 → 2025",
-              title: "International Project Manager",
-            },
-          ].map((c) => (
-            <div
-              key={c.k}
-              className="
-                group rounded-2xl border border-white/10 bg-black/30 p-5
-                shadow-[0_0_0_1px_rgba(255,255,255,.04)]
-                transition-all hover:-translate-y-[2px] hover:bg-white/6
-              "
-            >
-              <div className="text-xs text-zinc-400">{c.pre}</div>
-              <div className="mt-2 text-[13px] font-semibold text-white">{c.title}</div>
-            </div>
-          ))}
-        </div>
       </section>
+
+      {/* expériences espacées en bas */}
+      <section className="relative z-10 mt-10 grid grid-cols-1 md:grid-cols-3 gap-6">
+        {/* …tes 3 cartes existantes… */}
+      </section>
+
+      <style>{`
+        .about-strong{ font-weight:700; transition: color .15s ease; }
+        .about-strong:hover{ color: #fff; text-decoration: underline; text-decoration-thickness: 1px; }
+      `}</style>
     </main>
   );
 }
