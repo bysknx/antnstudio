@@ -1,11 +1,12 @@
+// components/LoadingAscii.tsx
 "use client";
 
 import { useEffect, useRef, useState } from "react";
 
-/** TTL (1h) + clés de cache */
+/** TTL (15 min) + clés de cache */
 const STORAGE_KEY_LAST = "antn_ascii_loader_last_seen";
 const CACHE_KEY_VIMEO = "antn_vimeo_cache_v1";
-const TTL_HOURS = 0.25;
+const TTL_HOURS = 0.25; // 15 minutes
 
 /** Durées (ms) */
 const TOTAL_MS = 2200;
@@ -23,22 +24,46 @@ function shouldShow(): boolean {
   }
 }
 
-export default function LoadingAscii({
-  force = false,
-}: { force?: boolean } = {}) {
+/** retire le boot shell injecté en <body> (layout) */
+function hideBootShell() {
+  try {
+    // enlève l’overlay
+    const boot = document.getElementById("boot");
+    if (boot && boot.parentNode) boot.parentNode.removeChild(boot);
+    // libère la page principale
+    document.documentElement.removeAttribute("data-booting");
+    // stoppe la petite barre JS du shell si présente
+    const anyWin = window as any;
+    if (anyWin.__antnBootTick) {
+      clearInterval(anyWin.__antnBootTick);
+      anyWin.__antnBootTick = null;
+    }
+  } catch {
+    /* noop */
+  }
+}
+
+export default function LoadingAscii({ force = false }: { force?: boolean } = {}) {
   const [visible, setVisible] = useState(false);
   const [progress, setProgress] = useState(0);
+
   const rafRef = useRef<number | null>(null);
   const doneRef = useRef(false);
   const startRef = useRef(0);
   const loadedRef = useRef(false);
+  const progressRef = useRef(0); // évite l’ancienne valeur dans la closure
 
   useEffect(() => {
     const reduce =
       typeof window !== "undefined" &&
       window.matchMedia?.("(prefers-reduced-motion: reduce)").matches;
+
     const show = (force || shouldShow()) && !reduce;
-    if (!show) return;
+    if (!show) {
+      // si on ne montre pas l’ASCII, on doit quand même retirer le boot shell
+      hideBootShell();
+      return;
+    }
 
     setVisible(true);
     startRef.current = performance.now();
@@ -52,7 +77,9 @@ export default function LoadingAscii({
           const json = await res.json();
           sessionStorage.setItem(CACHE_KEY_VIMEO, JSON.stringify(json));
         }
-      } catch {}
+      } catch {
+        /* ignore */
+      }
     })();
 
     const onWindowLoad = () => {
@@ -62,20 +89,23 @@ export default function LoadingAscii({
 
     const tick = (now: number) => {
       const elapsed = now - startRef.current;
-      const timeTarget = Math.min(
-        0.9,
-        elapsed / Math.max(1, TOTAL_MS - FADE_OUT_MS)
-      );
+      const timeTarget = Math.min(0.9, elapsed / Math.max(1, TOTAL_MS - FADE_OUT_MS));
       const target = loadedRef.current ? 1 : timeTarget;
 
-      setProgress((p) => {
-        const next = p + (target - p) * 0.2;
-        return next > 0.999 ? 1 : next;
-      });
+      // easing discret vers la cible
+      const next = progressRef.current + (target - progressRef.current) * 0.2;
+      progressRef.current = next;
+      setProgress(next);
 
       if (!doneRef.current) {
-        if (elapsed >= TOTAL_MS || (loadedRef.current && progress >= 0.995)) {
+        const doneByTime = elapsed >= TOTAL_MS;
+        const doneByLoad = loadedRef.current && progressRef.current >= 0.995;
+
+        if (doneByTime || doneByLoad) {
           doneRef.current = true;
+          // Retire le boot shell immédiatement (on ne veut pas de double overlay)
+          hideBootShell();
+
           setTimeout(() => {
             setVisible(false);
             try {
@@ -87,13 +117,14 @@ export default function LoadingAscii({
         }
       }
     };
+
     rafRef.current = requestAnimationFrame(tick);
 
     return () => {
       window.removeEventListener("load", onWindowLoad);
       if (rafRef.current) cancelAnimationFrame(rafRef.current);
     };
-  }, [force, progress]);
+  }, [force]);
 
   if (!visible) return null;
 
