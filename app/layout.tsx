@@ -1,4 +1,4 @@
-// FILE: app/layout.tsx
+// app/layout.tsx
 import type { Metadata } from "next";
 import "./globals.css";
 
@@ -40,12 +40,18 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <link rel="dns-prefetch" href="https://player.vimeo.com" />
         <link rel="dns-prefetch" href="https://i.vimeocdn.com" />
         <link rel="dns-prefetch" href="https://f.vimeocdn.com" />
+
+        {/* Précharge le pen pour lisser l’ouverture */}
+        <link rel="preload" href="/projects-pen.html" as="document" />
+
+        {/* Précharge l’API Vimeo côté nav client (hint pour le navigateur) */}
+        <link rel="preload" href="/api/vimeo" as="fetch" crossOrigin="anonymous" />
       </head>
       <body className="overflow-x-hidden">
         {/* Loader ASCII (plein écran, z-max) */}
         <LoadingAscii />
 
-        {/* Header global au-dessus du contenu */}
+        {/* Header global (nav) */}
         <Header />
 
         {/* Transitions de page + chrome visuel */}
@@ -53,7 +59,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           <ChromeFrame>{children}</ChromeFrame>
         </ClientFade>
 
-        {/* Footer global issu du pen, monté partout (fixed via son propre style/portal) */}
+        {/* Footer global issu du pen (fixed via son propre style) */}
         <FooterMount />
       </body>
     </html>
