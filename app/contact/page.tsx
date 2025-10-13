@@ -1,37 +1,42 @@
+// app/contact/page.tsx
 import { ContactForm } from "@/components/ContactForm";
 
-/* HoverWord : souligné fluide + léger glow */
+/* === Mot “réactif” au hover === */
 function HoverWord({ children }: { children: React.ReactNode }) {
   return (
     <span className="group relative inline-block cursor-default transition-transform duration-200 hover:-translate-y-[1px]">
       <span className="relative z-10">{children}</span>
-      <span aria-hidden className="pointer-events-none absolute left-0 right-0 -bottom-0.5 h-[1.5px] origin-left scale-x-0 bg-white/80 transition-transform duration-200 ease-out group-hover:scale-x-100" />
-      <span aria-hidden className="pointer-events-none absolute inset-x-0 -bottom-1 h-2 rounded-full bg-white/10 opacity-0 blur-[2px] transition-opacity duration-200 group-hover:opacity-100" />
+      <span
+        aria-hidden
+        className="pointer-events-none absolute left-0 right-0 -bottom-0.5 h-[1.5px] origin-left scale-x-0 bg-white/80 transition-transform duration-200 ease-out group-hover:scale-x-100"
+      />
+      <span
+        aria-hidden
+        className="pointer-events-none absolute inset-x-0 -bottom-1 h-2 rounded-full bg-white/10 opacity-0 blur-[2px] transition-opacity duration-200 group-hover:opacity-100"
+      />
     </span>
   );
 }
 
+/* === Experiences === */
 const EXPERIENCES = [
   { title: "CEO", company: "antn.studio", dates: "2019 – Present", type: "" },
   { title: "Edit Supervisor", company: "Freelance @ Jellysmack", dates: "2022 – 2023", type: "" },
   { title: "International Project Manager", company: "Freelance", dates: "2023 – 2025", type: "" },
 ];
 
-export const dynamic = "force-static";
-
 export default function ContactPage() {
   return (
+    // ⬇️ Pas de bg/overlay ici : on laisse le canvas/matrice gérer le fond
     <main className="relative container mx-auto px-6 py-24 flex flex-col justify-between min-h-[100svh]">
-      {/* voile lisibilité : flou + assombrissement léger mais laisse les points */}
-      <div className="pointer-events-none absolute inset-8 rounded-[24px] bg-black/25 backdrop-blur-[2.5px]" />
-
-      <div className="relative z-10 flex flex-col lg:flex-row items-center justify-between gap-12 flex-grow">
-        {/* FORM */}
+      {/* Section principale */}
+      <div className="flex flex-col lg:flex-row items-center justify-between gap-12 flex-grow">
+        {/* Formulaire */}
         <div className="w-full max-w-md flex-shrink-0">
           <ContactForm className="glass-panel" />
         </div>
 
-        {/* ABOUT + MAIL */}
+        {/* About + Mail (sans bloc de fond) */}
         <section className="w-full lg:w-1/2 space-y-6 text-left">
           <div>
             <h2 className="text-2xl font-semibold text-zinc-100 mb-3">About.</h2>
@@ -51,9 +56,10 @@ export default function ContactPage() {
             </p>
           </div>
 
-          {/* CTA mail – remplissage blanc de DROITE → GAUCHE + texte qui devient noir */}
+          {/* Mail CTA sans fond noir */}
           <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4 pt-2">
             <span className="text-sm text-zinc-400">Let’s connect :</span>
+
             <a
               href="mailto:anthony@antn.studio"
               className="group relative inline-flex items-center overflow-hidden rounded-md border border-white/10 bg-zinc-900/40 px-5 py-2.5 text-sm font-medium text-zinc-100 backdrop-blur transition-colors"
@@ -61,21 +67,23 @@ export default function ContactPage() {
               <span className="relative z-10 transition-colors duration-300 group-hover:text-zinc-900">
                 anthony@antn.studio
               </span>
+              {/* Remplissage blanc de droite → gauche (comme le pen) */}
               <span
                 aria-hidden
                 className="absolute inset-0 -z-0 translate-x-[101%] bg-white transition-transform duration-300 ease-out group-hover:translate-x-0"
+                style={{ transformOrigin: "right center" }}
               />
             </a>
           </div>
         </section>
       </div>
 
-      {/* EXPERIENCES espacées */}
-      <section className="relative z-10 mt-24">
+      {/* Experiences (espacées) */}
+      <section className="mt-24">
         <h3 className="sr-only">Experiences</h3>
-        <ul className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+        <ul className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3 place-items-center">
           {EXPERIENCES.map((exp) => (
-            <li key={`${exp.company}-${exp.title}`} className="glass-panel rounded-2xl p-4">
+            <li key={`${exp.company}-${exp.title}`} className="glass-panel rounded-2xl p-4 w-full max-w-sm">
               <div className="mb-1 flex items-center justify-between text-xs text-zinc-400">
                 <span>{exp.company}</span>
                 <span>{exp.dates}</span>
