@@ -14,6 +14,9 @@ export default function FooterFromPen() {
       </div>
 
       <style jsx>{`
+        @import url('https://fonts.cdnfonts.com/css/thegoodmonolith');
+        @import url('https://fonts.cdnfonts.com/css/pp-neue-montreal');
+      
         :global(:root){
           --footer-dot: rgba(255,255,255,.08);
         }
