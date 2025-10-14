@@ -27,6 +27,34 @@ export default function LoadingAscii({ force = false }: { force?: boolean } = {}
   const armedRef = useRef(false); // évite double-armement
 
   useEffect(() => {
+    const dismantleBootShell = () => {
+      if (typeof window === "undefined") return;
+      try {
+        const w = window as Window & { __antnBootTick?: number };
+        if (typeof w.__antnBootTick === "number") {
+          window.clearInterval(w.__antnBootTick);
+          delete w.__antnBootTick;
+        }
+        const doc = window.document;
+        doc.documentElement.removeAttribute("data-booting");
+        const boot = doc.getElementById("boot");
+        if (boot) {
+          boot.style.transition = "opacity 180ms ease-out";
+          boot.style.opacity = "0";
+          window.setTimeout(() => boot.remove(), 220);
+        }
+        try {
+          localStorage.setItem("antn_ascii_loader_last_seen", String(Date.now()));
+        } catch {
+          /* ignore */
+        }
+      } catch {
+        /* ignore */
+      }
+    };
+
+    dismantleBootShell();
+
     // ne s’affiche qu’une fois / session, sauf force
     const reduce =
       typeof window !== "undefined" &&
