@@ -14,6 +14,7 @@ export default function GlCanvas({
   maxFps?: number;
 }) {
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
+  const ctxRef = useRef<CanvasRenderingContext2D | null>(null);
   const mouseRef = useRef({ x: 0, y: 0 });
   const dotsRef = useRef<
     Array<{ x: number; y: number; ox: number; oy: number; size: number }>
@@ -33,6 +34,7 @@ export default function GlCanvas({
 
     const ctx = canvas.getContext("2d");
     if (!ctx) return;
+    ctxRef.current = ctx;
 
     // Style: full screen fixed canvas, transparent background, no pointer interaction
     const style = canvas.style;
@@ -55,6 +57,9 @@ export default function GlCanvas({
     };
 
     function resize() {
+      const canvasEl = canvasRef.current;
+      if (!canvasEl) return;
+
       const w = window.innerWidth;
       const h = window.innerHeight;
       const nextRatio = getRatio();
@@ -67,10 +72,10 @@ export default function GlCanvas({
       }
 
       const { ratio } = state;
-      canvas.width = Math.floor(w * ratio);
-      canvas.height = Math.floor(h * ratio);
-      state.width = canvas.width;
-      state.height = canvas.height;
+      canvasEl.width = Math.floor(w * ratio);
+      canvasEl.height = Math.floor(h * ratio);
+      state.width = canvasEl.width;
+      state.height = canvasEl.height;
 
       const innerW = state.width - state.padding * 2 * ratio;
       const innerH = state.height - state.padding * 2 * ratio;
@@ -111,6 +116,8 @@ export default function GlCanvas({
     const frameInterval = 1000 / Math.max(1, maxFps);
 
     function render(now: number) {
+      if (!canvasRef.current) return;
+
       if (pausedRef.current) {
         rafRef.current = requestAnimationFrame(render);
         return;
@@ -121,6 +128,9 @@ export default function GlCanvas({
         return;
       }
       lastFrameRef.current = now;
+
+      const ctx = ctxRef.current;
+      if (!ctx) return;
 
       const { width, height, ratio, maxOffset } = state;
       ctx.clearRect(0, 0, width, height);
@@ -188,6 +198,7 @@ export default function GlCanvas({
       window.removeEventListener("resize", resize);
       window.removeEventListener("pointermove", onPointerMove);
       document.removeEventListener("visibilitychange", onVisChange);
+      ctxRef.current = null;
     };
   }, [spacing, padding, maxOffset, maxFps]);
 
