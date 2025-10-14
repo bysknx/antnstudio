@@ -216,28 +216,32 @@ export default function HeroPlayer({
     };
   }, [slides, index, onReady, readyTimeoutMs, startProgress]);
 
-  if (!slides.length) return null;
-  const current = slides[index];
+  const totalSlides = slides.length;
 
   /** Navigation manuelle */
-  const goTo = (i: number) => {
-    if (!slides.length) return;
-    if (rafRef.current) cancelAnimationFrame(rafRef.current);
-    setIndex(((i % slides.length) + slides.length) % slides.length);
-  };
+  const goTo = useCallback(
+    (i: number) => {
+      if (!totalSlides) return;
+      if (rafRef.current) cancelAnimationFrame(rafRef.current);
+      setIndex(((i % totalSlides) + totalSlides) % totalSlides);
+    },
+    [totalSlides],
+  );
 
   /** Wheel / swipe (throttle) */
   const step = useCallback(
     (dir: 1 | -1) => {
+      if (!totalSlides) return;
       const now = Date.now();
       if (now - wheelLockRef.current < WHEEL_THROTTLE_MS) return;
       wheelLockRef.current = now;
       goTo(index + dir);
     },
-    [index],
+    [index, totalSlides, goTo],
   );
 
   useEffect(() => {
+    if (!totalSlides) return;
     const el = document.getElementById("hero-root");
     if (!el) return;
 
@@ -271,7 +275,10 @@ export default function HeroPlayer({
       el.removeEventListener("touchstart", onTouchStart as any);
       el.removeEventListener("touchend", onTouchEnd as any);
     };
-  }, [step]);
+  }, [totalSlides, step]);
+
+  if (!totalSlides) return null;
+  const current = slides[index];
 
   /** UI */
   return (
