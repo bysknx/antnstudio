@@ -72,31 +72,50 @@ export async function fetchVimeoWorks(opts: {
   folderId?: string; // id “WORKS”
   teamId?: string; // id user/équipe (numérique)
 }) {
-  const token = env("VIMEO_TOKEN")!;
-  const userId = opts.teamId || env("VIMEO_TEAM_ID")!;
-  const projectId = opts.folderId || env("VIMEO_FOLDER_ID")!;
-  if (!projectId) throw new Error("VIMEO_FOLDER_ID manquant");
+  const token = env("VIMEO_TOKEN", true);
+  const userId = opts.teamId || env("VIMEO_TEAM_ID", true);
+  const projectId = opts.folderId || env("VIMEO_FOLDER_ID", true);
+  const missing: string[] = [];
+
+  if (!token) missing.push("VIMEO_TOKEN");
+  if (!userId) missing.push("VIMEO_TEAM_ID");
+  if (!projectId) missing.push("VIMEO_FOLDER_ID");
+
+  if (missing.length) {
+    if (process.env.NODE_ENV !== "production") {
+      console.warn(
+        `[fetchVimeoWorks] variables d'environnement manquantes: ${missing.join(
+          ", ",
+        )}. Retour de données vides.`,
+      );
+    }
+    return { items: [] as any[], debug: { missingEnv: missing } };
+  }
+
+  const tokenValue = token!;
+  const userIdValue = userId!;
+  const projectIdValue = projectId!;
 
   // 1) vidéos du projet principal
-  const { videos: directVideos, tried: triedA } = await tryMany(token, [
-    `/users/${userId}/projects/${projectId}/videos`,
-    `/me/projects/${projectId}/videos`,
-    `/users/${userId}/projects/${projectId}/items`,
-    `/me/projects/${projectId}/items`,
+  const { videos: directVideos, tried: triedA } = await tryMany(tokenValue, [
+    `/users/${userIdValue}/projects/${projectIdValue}/videos`,
+    `/me/projects/${projectIdValue}/videos`,
+    `/users/${userIdValue}/projects/${projectIdValue}/items`,
+    `/me/projects/${projectIdValue}/items`,
   ]);
 
   // 2) enfants (sous-dossiers)
   const { videos: fromChildren, tried: triedB } = await (async () => {
     const childTried: Record<string, number> = {};
     const children = await (async () => {
-      const { videos: dummy, tried } = await tryMany(token, [
-        `/users/${userId}/projects/${projectId}/children`,
-        `/me/projects/${projectId}/children`,
+      const { tried } = await tryMany(tokenValue, [
+        `/users/${userIdValue}/projects/${projectIdValue}/children`,
+        `/me/projects/${projectIdValue}/children`,
       ]);
       const firstOk = Object.entries(tried).find(([, n]) => n >= 0)?.[0];
       if (!firstOk) return [] as any[];
       childTried[firstOk] = -2;
-      const r = await req(firstOk, token);
+      const r = await req(firstOk, tokenValue);
       if (!r.ok) return [];
       const j = await r.json();
       return Array.isArray(j?.data) ? j.data : [];
@@ -106,10 +125,10 @@ export async function fetchVimeoWorks(opts: {
     for (const c of children) {
       const cid = String(c?.uri?.split?.("/")?.pop?.() ?? "");
       if (!cid) continue;
-      const { videos, tried } = await tryMany(token, [
-        `/users/${userId}/projects/${cid}/videos`,
+      const { videos, tried } = await tryMany(tokenValue, [
+        `/users/${userIdValue}/projects/${cid}/videos`,
         `/me/projects/${cid}/videos`,
-        `/users/${userId}/projects/${cid}/items`,
+        `/users/${userIdValue}/projects/${cid}/items`,
         `/me/projects/${cid}/items`,
       ]);
       Object.assign(childTried, tried);
