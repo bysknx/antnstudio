@@ -1,5 +1,9 @@
 // lib/parseVimeoTitle.ts
-export function parseVimeoTitle(input: string): { client?: string; title?: string; year?: number } {
+export function parseVimeoTitle(input: string): {
+  client?: string;
+  title?: string;
+  year?: number;
+} {
   if (!input) return {};
   // supprime un éventuel "YYYY " au début
   const stripped = input.replace(/^\s*(19|20)\d{2}\s*[-_]?/i, "").trim();

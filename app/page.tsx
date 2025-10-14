@@ -23,12 +23,11 @@ export default async function HomePage() {
 
   const normalized: Item[] = (items || []).map((it: any) => {
     const parsed = parseVimeoTitle(it?.title ?? "");
-    const display =
-      parsed?.title
-        ? parsed.client
-          ? `${parsed.client} — ${parsed.title}`
-          : parsed.title
-        : it?.title ?? "Untitled";
+    const display = parsed?.title
+      ? parsed.client
+        ? `${parsed.client} — ${parsed.title}`
+        : parsed.title
+      : (it?.title ?? "Untitled");
 
     return {
       id: String(it.id),
@@ -46,7 +45,7 @@ export default async function HomePage() {
     .sort(
       (a, b) =>
         new Date(b.createdAt || 0).getTime() -
-        new Date(a.createdAt || 0).getTime()
+        new Date(a.createdAt || 0).getTime(),
     )
     .slice(0, 5);
 

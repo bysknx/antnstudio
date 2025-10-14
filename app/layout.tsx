@@ -10,26 +10,35 @@ import Header from "./header";
 
 export const metadata: Metadata = {
   title: "antn.studio — Anthony",
-  description: "Front-end & DA minimale. Expériences web sobres, performantes, accessibles.",
+  description:
+    "Front-end & DA minimale. Expériences web sobres, performantes, accessibles.",
   metadataBase: new URL("https://antn.studio"),
   openGraph: {
     title: "antn.studio — Anthony",
-    description: "Front-end & DA minimale. Expériences web sobres, performantes, accessibles.",
+    description:
+      "Front-end & DA minimale. Expériences web sobres, performantes, accessibles.",
     url: "https://antn.studio",
     siteName: "antn.studio",
-    images: [{ url: "/cover.jpg", width: 1200, height: 630, alt: "antn.studio" }],
+    images: [
+      { url: "/cover.jpg", width: 1200, height: 630, alt: "antn.studio" },
+    ],
     type: "website",
   },
   twitter: {
     card: "summary_large_image",
     title: "antn.studio — Anthony",
-    description: "Front-end & DA minimale. Expériences web sobres, performantes, accessibles.",
+    description:
+      "Front-end & DA minimale. Expériences web sobres, performantes, accessibles.",
     images: ["/cover.jpg"],
   },
   icons: [{ rel: "icon", url: "/favicon.ico" }],
 };
 
-export default function RootLayout({ children }: { children: React.ReactNode }) {
+export default function RootLayout({
+  children,
+}: {
+  children: React.ReactNode;
+}) {
   return (
     <html lang="fr" className="dark">
       <head>
@@ -45,7 +54,12 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <link rel="preload" href="/projects-pen.html" as="document" />
 
         {/* Précharge l’API Vimeo côté nav client (hint pour le navigateur) */}
-        <link rel="preload" href="/api/vimeo" as="fetch" crossOrigin="anonymous" />
+        <link
+          rel="preload"
+          href="/api/vimeo"
+          as="fetch"
+          crossOrigin="anonymous"
+        />
       </head>
       <body className="overflow-x-hidden">
         {/* Boot shell: 1er paint = loader (TTL 15min). S’enlève dès que LoadingAscii termine. */}

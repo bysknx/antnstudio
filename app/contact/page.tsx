@@ -21,8 +21,18 @@ function HoverWord({ children }: { children: React.ReactNode }) {
 /* === Experiences === */
 const EXPERIENCES = [
   { title: "CEO", company: "antn.studio", dates: "2019 – Present", type: "" },
-  { title: "Edit Supervisor", company: "Freelance @ Jellysmack", dates: "2022 – 2023", type: "" },
-  { title: "International Project Manager", company: "Freelance", dates: "2023 – 2025", type: "" },
+  {
+    title: "Edit Supervisor",
+    company: "Freelance @ Jellysmack",
+    dates: "2022 – 2023",
+    type: "",
+  },
+  {
+    title: "International Project Manager",
+    company: "Freelance",
+    dates: "2023 – 2025",
+    type: "",
+  },
 ];
 
 export default function ContactPage() {
@@ -39,20 +49,29 @@ export default function ContactPage() {
         {/* About + Mail (sans bloc de fond) */}
         <section className="w-full lg:w-1/2 space-y-6 text-left">
           <div>
-            <h2 className="text-2xl font-semibold text-zinc-100 mb-3">About.</h2>
+            <h2 className="text-2xl font-semibold text-zinc-100 mb-3">
+              About.
+            </h2>
 
             <p className="text-[15px] leading-relaxed text-zinc-300/90 max-w-xl">
-              <strong className="font-semibold">« antn.studio »</strong> founded by Anthony, an independent director and
-              project lead from <HoverWord>Paris</HoverWord>. Blending <HoverWord>precision</HoverWord> with{" "}
-              <HoverWord>emotion</HoverWord>, the studio crafts <HoverWord>cinematic visuals</HoverWord>,{" "}
-              <HoverWord>brand films</HoverWord>, and <HoverWord>digital experiences</HoverWord> with a strong{" "}
-              <HoverWord>narrative core</HoverWord>. Each project is shaped with <HoverWord>technical mastery</HoverWord>,
-              and driven by a search for <HoverWord>authenticity</HoverWord> and <HoverWord>impact</HoverWord>.
+              <strong className="font-semibold">« antn.studio »</strong> founded
+              by Anthony, an independent director and project lead from{" "}
+              <HoverWord>Paris</HoverWord>. Blending{" "}
+              <HoverWord>precision</HoverWord> with{" "}
+              <HoverWord>emotion</HoverWord>, the studio crafts{" "}
+              <HoverWord>cinematic visuals</HoverWord>,{" "}
+              <HoverWord>brand films</HoverWord>, and{" "}
+              <HoverWord>digital experiences</HoverWord> with a strong{" "}
+              <HoverWord>narrative core</HoverWord>. Each project is shaped with{" "}
+              <HoverWord>technical mastery</HoverWord>, and driven by a search
+              for <HoverWord>authenticity</HoverWord> and{" "}
+              <HoverWord>impact</HoverWord>.
             </p>
 
             <p className="mt-3 text-[15px] leading-relaxed text-zinc-300/90 max-w-xl">
-              <HoverWord>Sensory</HoverWord>, <HoverWord>intentional</HoverWord>, <HoverWord>timeless</HoverWord> — antn.studio
-              turns ideas into <HoverWord>living imagery</HoverWord>.
+              <HoverWord>Sensory</HoverWord>, <HoverWord>intentional</HoverWord>
+              , <HoverWord>timeless</HoverWord> — antn.studio turns ideas into{" "}
+              <HoverWord>living imagery</HoverWord>.
             </p>
           </div>
 
@@ -83,13 +102,18 @@ export default function ContactPage() {
         <h3 className="sr-only">Experiences</h3>
         <ul className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3 place-items-center">
           {EXPERIENCES.map((exp) => (
-            <li key={`${exp.company}-${exp.title}`} className="glass-panel rounded-2xl p-4 w-full max-w-sm">
+            <li
+              key={`${exp.company}-${exp.title}`}
+              className="glass-panel rounded-2xl p-4 w-full max-w-sm"
+            >
               <div className="mb-1 flex items-center justify-between text-xs text-zinc-400">
                 <span>{exp.company}</span>
                 <span>{exp.dates}</span>
               </div>
               <div className="text-sm text-zinc-200">{exp.title}</div>
-              {exp.type ? <div className="mt-1 text-xs text-zinc-500">{exp.type}</div> : null}
+              {exp.type ? (
+                <div className="mt-1 text-xs text-zinc-500">{exp.type}</div>
+              ) : null}
             </li>
           ))}
         </ul>

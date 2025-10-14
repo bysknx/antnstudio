@@ -5,11 +5,11 @@ import { motion, AnimatePresence } from "motion/react";
 import clsx from "clsx";
 
 type YearsMenuProps = {
-  years: number[];                 // ex: [2025, 2024, 2023, ...]
-  active?: number | "all";         // année sélectionnée
+  years: number[]; // ex: [2025, 2024, 2023, ...]
+  active?: number | "all"; // année sélectionnée
   onSelect?: (value: number | "all") => void;
-  className?: string;              // optionnel pour l’alignement dans ta page
-  label?: string;                  // libellé du bouton (par défaut: "Years")
+  className?: string; // optionnel pour l’alignement dans ta page
+  label?: string; // libellé du bouton (par défaut: "Years")
 };
 
 export default function YearsMenu({
@@ -71,13 +71,21 @@ export default function YearsMenu({
           className="block h-2 w-2 rounded-full bg-zinc-100"
           animate={
             open && !reduced
-              ? { x: [-0, -12, 0], scaleX: [1, 2.4, 1], borderRadius: ["50%", "4px", "50%"] }
+              ? {
+                  x: [-0, -12, 0],
+                  scaleX: [1, 2.4, 1],
+                  borderRadius: ["50%", "4px", "50%"],
+                }
               : { x: 0, scaleX: 1, borderRadius: "50%" }
           }
           transition={
             reduced
               ? { duration: 0 }
-              : { duration: 0.28, times: [0, 0.35, 1], ease: ["easeOut", "easeInOut", "easeIn"] }
+              : {
+                  duration: 0.28,
+                  times: [0, 0.35, 1],
+                  ease: ["easeOut", "easeInOut", "easeIn"],
+                }
           }
         />
 
@@ -87,7 +95,10 @@ export default function YearsMenu({
             className="absolute inset-0 flex items-center justify-center"
             // "YEARS" (ou label) monte vers le haut quand open
             animate={{ y: open && !reduced ? -20 : 0 }}
-            transition={{ duration: reduced ? 0 : 0.22, ease: [0.25, 0.1, 0.25, 1] }}
+            transition={{
+              duration: reduced ? 0 : 0.22,
+              ease: [0.25, 0.1, 0.25, 1],
+            }}
           >
             {label.toUpperCase()}
           </motion.span>
@@ -96,7 +107,10 @@ export default function YearsMenu({
             className="absolute inset-0 flex items-center justify-center"
             // "CLOSE" vient du bas quand open
             animate={{ y: open && !reduced ? 0 : 20 }}
-            transition={{ duration: reduced ? 0 : 0.22, ease: [0.25, 0.1, 0.25, 1] }}
+            transition={{
+              duration: reduced ? 0 : 0.22,
+              ease: [0.25, 0.1, 0.25, 1],
+            }}
           >
             CLOSE
           </motion.span>
@@ -111,7 +125,10 @@ export default function YearsMenu({
             initial={{ opacity: 0, y: 6, filter: "blur(10px)" }}
             animate={{ opacity: 1, y: 0, filter: "blur(0px)" }}
             exit={{ opacity: 0, y: 4, filter: "blur(8px)" }}
-            transition={{ duration: reduced ? 0 : 0.22, ease: [0.25, 0.1, 0.25, 1] }}
+            transition={{
+              duration: reduced ? 0 : 0.22,
+              ease: [0.25, 0.1, 0.25, 1],
+            }}
             className="absolute left-0 z-40 mt-3 w-[min(92vw,560px)] rounded-2xl border border-white/10 bg-zinc-900/80 p-3 shadow-[inset_0_0_0.5px_rgba(255,255,255,.25),0_8px_30px_rgba(0,0,0,.35)] backdrop-blur-xl"
           >
             <div className="px-1 pb-1 text-xs font-semibold uppercase tracking-wide text-zinc-400">
@@ -158,7 +175,7 @@ function YearChip({
         "border border-white/10",
         active
           ? "bg-white/15 text-zinc-50"
-          : "bg-zinc-800/40 text-zinc-300 hover:bg-zinc-800/70"
+          : "bg-zinc-800/40 text-zinc-300 hover:bg-zinc-800/70",
       )}
     >
       {label}

@@ -27,24 +27,33 @@ export default function SiteFooter() {
         </div>
 
         {/* Centre : liens sociaux */}
-        <div className="links-section flex items-center gap-6 pointer-events-auto" id="socials">
+        <div
+          className="links-section flex items-center gap-6 pointer-events-auto"
+          id="socials"
+        >
           <a
             className="hover:text-white transition-colors"
-            href="https://instagram.com/antnstudio" target="_blank" rel="noreferrer"
+            href="https://instagram.com/antnstudio"
+            target="_blank"
+            rel="noreferrer"
           >
             Instagram
           </a>
           <span className="opacity-40">/</span>
           <a
             className="hover:text-white transition-colors"
-            href="https://x.com/antnstudio" target="_blank" rel="noreferrer"
+            href="https://x.com/antnstudio"
+            target="_blank"
+            rel="noreferrer"
           >
             X / Twitter
           </a>
           <span className="opacity-40">/</span>
           <a
             className="hover:text-white transition-colors"
-            href="https://linkedin.com/in/antnstudio" target="_blank" rel="noreferrer"
+            href="https://linkedin.com/in/antnstudio"
+            target="_blank"
+            rel="noreferrer"
           >
             LinkedIn
           </a>

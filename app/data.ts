@@ -18,7 +18,7 @@ export async function featuredSlidesForHero(limit = 6) {
     .filter(
       (it: any) =>
         typeof it?.featuredOrder === "number" ||
-        /(^|\W)featured(\W|$)/i.test(it?.title || it?.name || "")
+        /(^|\W)featured(\W|$)/i.test(it?.title || it?.name || ""),
     )
     .sort((a: any, b: any) => {
       const ao = a?.featuredOrder ?? Number.POSITIVE_INFINITY;

@@ -17,12 +17,11 @@ export async function GET(req: Request) {
     const mapped = items.map((it) => {
       const parsed = parseVimeoTitle(it.title || "");
 
-      const display =
-        parsed?.title
-          ? parsed.client
-            ? `${parsed.client} — ${parsed.title}`
-            : parsed.title
-          : it.title || "Untitled";
+      const display = parsed?.title
+        ? parsed.client
+          ? `${parsed.client} — ${parsed.title}`
+          : parsed.title
+        : it.title || "Untitled";
 
       const year =
         parsed?.year ??
@@ -31,16 +30,18 @@ export async function GET(req: Request) {
 
       return {
         ...it,
-        title: display,   // utilisé par l’iframe/clients
-        year,             // année isolée
+        title: display, // utilisé par l’iframe/clients
+        year, // année isolée
       };
     });
 
-    return NextResponse.json(debugWanted ? { items: mapped, __debug: debug } : { items: mapped });
+    return NextResponse.json(
+      debugWanted ? { items: mapped, __debug: debug } : { items: mapped },
+    );
   } catch (e: any) {
     return NextResponse.json(
       { items: [], error: e?.message ?? "Vimeo fetch failed" },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }

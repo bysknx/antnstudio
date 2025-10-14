@@ -20,7 +20,9 @@ function env(name: string, optional = false): string | undefined {
 
 async function listAll(token: string, firstPath: string) {
   const out: any[] = [];
-  let url: string | null = firstPath.startsWith("http") ? firstPath : `${API}${firstPath}`;
+  let url: string | null = firstPath.startsWith("http")
+    ? firstPath
+    : `${API}${firstPath}`;
 
   while (url) {
     const r = await req(url, token);

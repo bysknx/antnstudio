@@ -43,7 +43,9 @@ export default function Nav() {
               focus:outline-none focus-visible:ring-2 focus-visible:ring-white/30
             "
           >
-            <span className="opacity-90 group-hover:opacity-100">antn.studio</span>
+            <span className="opacity-90 group-hover:opacity-100">
+              antn.studio
+            </span>
           </Link>
 
           {/* Desktop links */}

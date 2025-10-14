@@ -4,7 +4,9 @@ export default function NotFound() {
   return (
     <main className="grid-c py-32">
       <h1 className="text-3xl font-semibold text-zinc-100">Page introuvable</h1>
-      <p className="mt-2 text-zinc-400">Le contenu demandé n’existe pas (ou plus).</p>
+      <p className="mt-2 text-zinc-400">
+        Le contenu demandé n’existe pas (ou plus).
+      </p>
       <div className="mt-6">
         <Link
           href="/"

@@ -14,12 +14,10 @@ export default function HoverWord({
       className={clsx(
         "relative inline-block cursor-default transition-transform duration-200",
         "hover:-translate-y-[1px]",
-        className
+        className,
       )}
     >
-      <span className="relative z-10">
-        {children}
-      </span>
+      <span className="relative z-10">{children}</span>
       {/* souligné qui se dévoile */}
       <span
         aria-hidden

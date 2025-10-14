@@ -11,7 +11,7 @@
    Compat Tailwind v4 : border-color
 ================================== */
 @layer base {
-  * ,
+  *,
   ::after,
   ::before,
   ::backdrop,
@@ -50,15 +50,23 @@
   h3 {
     line-height: 1.15;
   }
-  h1 { margin: 0 0 1rem; }
+  h1 {
+    margin: 0 0 1rem;
+  }
   h2,
-  h3 { margin: 0 0 0.75rem; }
+  h3 {
+    margin: 0 0 0.75rem;
+  }
 
   /* Fond & texte via Tailwind (override propre) */
-  body { @apply bg-zinc-950 text-zinc-200; }
+  body {
+    @apply bg-zinc-950 text-zinc-200;
+  }
 
   /* Wrapper page (z-index / flow) */
-  .page { position: relative; }
+  .page {
+    position: relative;
+  }
 }
 
 /* ===========================
@@ -97,8 +105,7 @@
   .vignette {
     position: absolute;
     inset: 0;
-    background:
-      radial-gradient(
+    background: radial-gradient(
         600px 400px at 70% 15%,
         rgba(255, 255, 255, 0.06),
         transparent 60%
@@ -124,11 +131,19 @@
     margin-inline: auto;
     width: 100%;
   }
-  .shell-lg { max-width: 1400px; }
+  .shell-lg {
+    max-width: 1400px;
+  }
 
-  .stack-24 > * + * { margin-top: 6rem; }
-  .stack-16 > * + * { margin-top: 4rem; }
-  .stack-12 > * + * { margin-top: 3rem; }
+  .stack-24 > * + * {
+    margin-top: 6rem;
+  }
+  .stack-16 > * + * {
+    margin-top: 4rem;
+  }
+  .stack-12 > * + * {
+    margin-top: 3rem;
+  }
 }
 
 /* ===================
@@ -149,7 +164,8 @@
 
   .ascii-block {
     margin: 0;
-    font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, "Courier New", monospace;
+    font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, "Courier New",
+      monospace;
     font-size: clamp(10px, 1.3vw, 14px);
     line-height: 1.15;
     letter-spacing: 0.5px;
@@ -160,7 +176,13 @@
   }
 
   .ascii-sub {
-    font: 11px/1.1 ui-monospace, SFMono-Regular, Menlo, Monaco, "Courier New", monospace;
+    font:
+      11px/1.1 ui-monospace,
+      SFMono-Regular,
+      Menlo,
+      Monaco,
+      "Courier New",
+      monospace;
     color: rgba(229, 231, 235, 0.6);
     opacity: 0;
     animation: asciiBlink 0.9s 0.45s steps(2, end) 3 forwards;
@@ -168,25 +190,50 @@
 }
 
 @keyframes asciiScan {
-  0% { transform: translateY(6px); filter: blur(6px); opacity: 0; }
-  55% { opacity: 0.9; }
-  100% { transform: translateY(0); filter: blur(0); opacity: 1; }
+  0% {
+    transform: translateY(6px);
+    filter: blur(6px);
+    opacity: 0;
+  }
+  55% {
+    opacity: 0.9;
+  }
+  100% {
+    transform: translateY(0);
+    filter: blur(0);
+    opacity: 1;
+  }
 }
 
 @keyframes asciiBlink {
-  0%, 49% { opacity: 0; }
-  50%, 100% { opacity: 0.7; }
+  0%,
+  49% {
+    opacity: 0;
+  }
+  50%,
+  100% {
+    opacity: 0.7;
+  }
 }
 
 @keyframes asciiFadeOut {
-  0% { background: transparent; }
-  100% { background: rgba(0, 0, 0, 0.96); }
+  0% {
+    background: transparent;
+  }
+  100% {
+    background: rgba(0, 0, 0, 0.96);
+  }
 }
 
 /* prefers-reduced-motion: couper les anims */
 @media (prefers-reduced-motion: reduce) {
-  .ascii-block { animation: none !important; }
-  .ascii-sub { animation: none !important; opacity: 0.7; }
+  .ascii-block {
+    animation: none !important;
+  }
+  .ascii-sub {
+    animation: none !important;
+    opacity: 0.7;
+  }
 }
 
 /* ==================
@@ -195,7 +242,7 @@
 @layer utilities {
   /* Carte “liquid glass” (sobre, non bleutée) */
   .glass-panel {
-    background: rgba(24, 24, 27, 0.6);        /* zinc-900 ~ */
+    background: rgba(24, 24, 27, 0.6); /* zinc-900 ~ */
     -webkit-backdrop-filter: blur(10px);
     backdrop-filter: blur(10px);
     border: 1px solid rgba(255, 255, 255, 0.06);
@@ -224,27 +271,30 @@
 
 /* ===== START PATCH: chrome hidden during ASCII loader & hide canvas on home ===== */
 /* Cache toute l’UI (nav, canvas, contenu) pendant le loader ASCII */
-html[data-loading="1"] .chrome { visibility: hidden; }
+html[data-loading="1"] .chrome {
+  visibility: hidden;
+}
 
 /* Sur la home, pas de GlCanvas/dot-matrix derrière le player */
-html[data-home="1"] #gl-layer { display: none; }
+html[data-home="1"] #gl-layer {
+  display: none;
+}
 /* ===== END PATCH ===== */
 
 /* START PATCH: SiteFooter — texte nu (pas de ligne, pas de fond) */
 /* On garde uniquement la gestion des interactions. */
-.antn-footer{
+.antn-footer {
   /* pas de background, pas de bordure, pas de blur */
 }
 .antn-footer a,
 .antn-footer .links-section,
 .antn-footer .coordinates-section,
-.antn-footer .info-section{
+.antn-footer .info-section {
   pointer-events: auto;
 }
-   @import url('https://fonts.cdnfonts.com/css/thegoodmonolith');
+@import url("https://fonts.cdnfonts.com/css/thegoodmonolith");
 
 .footer-pen-mono {
   font-family: "TheGoodMonolith", monospace;
   font-synthesis-weight: none;
 }
-

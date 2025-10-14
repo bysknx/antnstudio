@@ -30,7 +30,9 @@ export default async function ProjectPage({ params }: PageProps) {
   const { slug } = await params;
 
   const data = await getProjects();
-  const items: any[] = Array.isArray((data as any)?.items) ? (data as any).items : [];
+  const items: any[] = Array.isArray((data as any)?.items)
+    ? (data as any).items
+    : [];
 
   // match par slug(title) OU par id
   const project =
@@ -40,10 +42,13 @@ export default async function ProjectPage({ params }: PageProps) {
   if (!project) notFound();
 
   const title: string = project.title || project.name || "Untitled";
-  const thumb: string | undefined = project.thumbnail || project.picture || project.thumb || "";
+  const thumb: string | undefined =
+    project.thumbnail || project.picture || project.thumb || "";
   const year: number =
     project.year ||
-    new Date(project.createdAt || project.created_time || Date.now()).getFullYear();
+    new Date(
+      project.createdAt || project.created_time || Date.now(),
+    ).getFullYear();
   const vimeoUrl: string = project.vimeoUrl || project.link || "#";
 
   return (

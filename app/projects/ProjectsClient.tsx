@@ -52,7 +52,9 @@ export default function ProjectsClient({ initialItems }: Props) {
   const search = useSearchParams();
   const year = search.get("year");
 
-  const [projects, setProjects] = useState<VimeoItem[] | null>(initialItems ?? null);
+  const [projects, setProjects] = useState<VimeoItem[] | null>(
+    initialItems ?? null,
+  );
   const [iframeReady, setIframeReady] = useState(false);
   const [showIframe, setShowIframe] = useState(false);
 
@@ -70,7 +72,10 @@ export default function ProjectsClient({ initialItems }: Props) {
     if (projects && projects.length) return;
 
     try {
-      const cached = typeof window !== "undefined" ? sessionStorage.getItem("__VIMEO_PREFETCH") : null;
+      const cached =
+        typeof window !== "undefined"
+          ? sessionStorage.getItem("__VIMEO_PREFETCH")
+          : null;
       if (cached) {
         const j = JSON.parse(cached);
         const itemsRaw: VimeoItem[] = Array.isArray(j?.items) ? j.items : [];
@@ -93,7 +98,9 @@ export default function ProjectsClient({ initialItems }: Props) {
       try {
         const res = await fetch("/api/vimeo", { cache: "no-store" });
         const json = await res.json();
-        const itemsRaw: VimeoItem[] = Array.isArray(json?.items) ? json.items : [];
+        const itemsRaw: VimeoItem[] = Array.isArray(json?.items)
+          ? json.items
+          : [];
         const items = itemsRaw.map(normalize);
         if (!stop) setProjects(items);
       } catch {
@@ -143,7 +150,8 @@ export default function ProjectsClient({ initialItems }: Props) {
           requestAnimationFrame(() => setShowIframe(true));
 
           if (projects) post({ type: "SET_PROJECTS", value: projects });
-          if (year) post({ type: "SET_YEAR", value: year === "all" ? "all" : year });
+          if (year)
+            post({ type: "SET_YEAR", value: year === "all" ? "all" : year });
           break;
         }
         case "OPEN_PLAYER": {
@@ -159,7 +167,8 @@ export default function ProjectsClient({ initialItems }: Props) {
           break;
         }
         case "REQUEST_YEAR": {
-          if (year) post({ type: "SET_YEAR", value: year === "all" ? "all" : year });
+          if (year)
+            post({ type: "SET_YEAR", value: year === "all" ? "all" : year });
           break;
         }
         default:
@@ -191,7 +200,8 @@ export default function ProjectsClient({ initialItems }: Props) {
           } catch {}
           setIframeReady(true);
           if (projects) post({ type: "SET_PROJECTS", value: projects });
-          if (year) post({ type: "SET_YEAR", value: year === "all" ? "all" : year });
+          if (year)
+            post({ type: "SET_YEAR", value: year === "all" ? "all" : year });
         }}
       />
 
@@ -199,7 +209,12 @@ export default function ProjectsClient({ initialItems }: Props) {
         open={open}
         onClose={() => setOpen(false)}
         title={current?.title || current?.name}
-        poster={current?.poster || current?.thumbnail || current?.picture || current?.thumb}
+        poster={
+          current?.poster ||
+          current?.thumbnail ||
+          current?.picture ||
+          current?.thumb
+        }
         embed={current?.embed || current?.src || current?.videoSrc}
       />
     </>

@@ -4,7 +4,7 @@
 import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 
-const SEEN_KEY = "antn_ascii_loader_seen";       // once per session
+const SEEN_KEY = "antn_ascii_loader_seen"; // once per session
 const CACHE_KEY_VIMEO = "antn_vimeo_cache_v1";
 
 const TOTAL_MS = 2200;
@@ -21,7 +21,9 @@ function shouldShowOncePerSession(): boolean {
   }
 }
 
-export default function LoadingAscii({ force = false }: { force?: boolean } = {}) {
+export default function LoadingAscii({
+  force = false,
+}: { force?: boolean } = {}) {
   const router = useRouter();
 
   const [visible, setVisible] = useState(false);
@@ -66,7 +68,10 @@ export default function LoadingAscii({ force = false }: { force?: boolean } = {}
 
     const tick = (now: number) => {
       const elapsed = now - startRef.current;
-      const timeRamp = Math.min(0.9, elapsed / Math.max(1, TOTAL_MS - FADE_OUT_MS));
+      const timeRamp = Math.min(
+        0.9,
+        elapsed / Math.max(1, TOTAL_MS - FADE_OUT_MS),
+      );
       const target = loadedRef.current ? 1 : timeRamp;
 
       setProgress((p) => {
@@ -97,7 +102,10 @@ export default function LoadingAscii({ force = false }: { force?: boolean } = {}
   return (
     <div
       aria-hidden
-      style={{ ["--in" as any]: `${FADE_IN_MS}ms`, ["--out" as any]: `${FADE_OUT_MS}ms` }}
+      style={{
+        ["--in" as any]: `${FADE_IN_MS}ms`,
+        ["--out" as any]: `${FADE_OUT_MS}ms`,
+      }}
       className="fixed inset-0 z-[9999] overflow-hidden bg-black text-zinc-100 animate-[antnFadeIn_var(--in)_ease-out_forwards]"
     >
       {/* subtle grain + scanlines (no static dots to avoid double matrix) */}
@@ -107,7 +115,7 @@ export default function LoadingAscii({ force = false }: { force?: boolean } = {}
       <div className="absolute inset-0 grid place-items-center">
         <div className="px-6">
           <pre className="select-none whitespace-pre leading-[1.05] tracking-[0.02em] text-[min(6vw,24px)] font-mono mb-6">
-{String.raw`
+            {String.raw`
                          ░██               
                          ░██               
  ░██████   ░████████  ░████████ ░████████ 
@@ -125,10 +133,15 @@ export default function LoadingAscii({ force = false }: { force?: boolean } = {}
             <span className="inline-block h-[12px] w-[160px] align-middle overflow-hidden border border-white/40 bg-black/40">
               <span
                 className="block h-full bg-emerald-400/90 [background-image:repeating-linear-gradient(90deg,rgba(0,0,0,.18)_0_6px,transparent_6px_12px)]"
-                style={{ width: `${Math.round(progress * 100)}%`, transition: "width 120ms linear" }}
+                style={{
+                  width: `${Math.round(progress * 100)}%`,
+                  transition: "width 120ms linear",
+                }}
               />
             </span>
-            <span className="ml-2 tabular-nums">{Math.round(progress * 100)}%</span>
+            <span className="ml-2 tabular-nums">
+              {Math.round(progress * 100)}%
+            </span>
           </div>
         </div>
       </div>
@@ -140,8 +153,22 @@ export default function LoadingAscii({ force = false }: { force?: boolean } = {}
       />
 
       <style jsx global>{`
-        @keyframes antnFadeIn { from { opacity: 0 } to { opacity: 1 } }
-        @keyframes antnFadeOut { from { opacity: 1 } to { opacity: 0 } }
+        @keyframes antnFadeIn {
+          from {
+            opacity: 0;
+          }
+          to {
+            opacity: 1;
+          }
+        }
+        @keyframes antnFadeOut {
+          from {
+            opacity: 1;
+          }
+          to {
+            opacity: 0;
+          }
+        }
       `}</style>
     </div>
   );

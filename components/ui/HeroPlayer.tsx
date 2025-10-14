@@ -6,12 +6,12 @@ import { useCallback, useEffect, useRef, useState } from "react";
 type VimeoItem = {
   id: string;
   title?: string;
-  embed?: string;     // fourni par /api/vimeo
-  duration?: number;  // secondes si dispo
+  embed?: string; // fourni par /api/vimeo
+  duration?: number; // secondes si dispo
 };
 
 type Slide = {
-  src: string;        // URL d’embed vimeo complet (avec query)
+  src: string; // URL d’embed vimeo complet (avec query)
   alt: string;
   durationMs: number;
 };
@@ -43,11 +43,11 @@ function toSlides(items: Array<Pick<HeroItem, "embed" | "title">>): Slide[] {
 
 /** ---- Composant ---- */
 export default function HeroPlayer({
-  items,            // <-- NOUVEAU : items préchargés (prioritaires)
+  items, // <-- NOUVEAU : items préchargés (prioritaires)
   onReady,
   readyTimeoutMs = 3500,
 }: {
-  items?: HeroItem[];               // <-- optionnel
+  items?: HeroItem[]; // <-- optionnel
   onReady?: () => void;
   readyTimeoutMs?: number;
 }) {
@@ -79,7 +79,9 @@ export default function HeroPlayer({
       try {
         const res = await fetch("/api/vimeo", { cache: "no-store" });
         const json = await res.json();
-        const apiItems: VimeoItem[] = Array.isArray(json?.items) ? json.items : [];
+        const apiItems: VimeoItem[] = Array.isArray(json?.items)
+          ? json.items
+          : [];
         if (!stop) {
           setSlides(toSlides(apiItems));
           setIndex(0);
@@ -127,7 +129,8 @@ export default function HeroPlayer({
       if (rafRef.current) cancelAnimationFrame(rafRef.current);
 
       // Filet si aucun "play" ne vient
-      if (safetyTimeoutRef.current) window.clearTimeout(safetyTimeoutRef.current);
+      if (safetyTimeoutRef.current)
+        window.clearTimeout(safetyTimeoutRef.current);
       safetyTimeoutRef.current = window.setTimeout(() => {
         if (!cancelled) {
           setVisible(true);
@@ -160,7 +163,8 @@ export default function HeroPlayer({
 
         playerRef.current.on?.("play", () => {
           if (cancelled) return;
-          if (safetyTimeoutRef.current) window.clearTimeout(safetyTimeoutRef.current);
+          if (safetyTimeoutRef.current)
+            window.clearTimeout(safetyTimeoutRef.current);
           setVisible(true);
           if (!firstPlaySentRef.current) {
             firstPlaySentRef.current = true;
@@ -172,7 +176,8 @@ export default function HeroPlayer({
         playerRef.current.on?.("error", (err: any) => {
           console.warn("[Hero] Vimeo error:", err);
           if (cancelled) return;
-          if (safetyTimeoutRef.current) window.clearTimeout(safetyTimeoutRef.current);
+          if (safetyTimeoutRef.current)
+            window.clearTimeout(safetyTimeoutRef.current);
           setVisible(true);
           if (!firstPlaySentRef.current) {
             firstPlaySentRef.current = true;
@@ -184,7 +189,8 @@ export default function HeroPlayer({
       } catch (e) {
         console.warn("[Hero] player init failed:", e);
         if (!cancelled) {
-          if (safetyTimeoutRef.current) window.clearTimeout(safetyTimeoutRef.current);
+          if (safetyTimeoutRef.current)
+            window.clearTimeout(safetyTimeoutRef.current);
           setVisible(true);
           if (!firstPlaySentRef.current) {
             firstPlaySentRef.current = true;
@@ -200,7 +206,8 @@ export default function HeroPlayer({
     return () => {
       cancelled = true;
       if (rafRef.current) cancelAnimationFrame(rafRef.current);
-      if (safetyTimeoutRef.current) window.clearTimeout(safetyTimeoutRef.current);
+      if (safetyTimeoutRef.current)
+        window.clearTimeout(safetyTimeoutRef.current);
       try {
         playerRef.current?.off?.("play");
         playerRef.current?.off?.("error");
@@ -268,7 +275,10 @@ export default function HeroPlayer({
 
   /** UI */
   return (
-    <section id="hero-root" className="relative h-[100svh] w-full overflow-hidden bg-black">
+    <section
+      id="hero-root"
+      className="relative h-[100svh] w-full overflow-hidden bg-black"
+    >
       {/* Media plein écran */}
       <div className="absolute inset-0">
         <iframe

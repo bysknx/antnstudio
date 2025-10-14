@@ -259,67 +259,40 @@
     gsap.registerPlugin(CustomEase);
     CustomEase.create("hop","0.9,0,0.1,1");
 
-    /* ===== Data ===== */
-    let PROJECTS = []; // { id, title, year, image, poster?, embed?, src?, videoSrc?, link? }
+    let PROJECTS = [];
     let HAS_PARENT_DATA = false;
     let REQUESTED_PARENT = false;
+    let current = null;
 
-    // parsing année depuis le titre
-    function yearFromTitle(t){
-      if(!t || typeof t !== "string") return null;
-      const m = t.match(/(?:^|\D)(20\d{2}|19\d{2})(?:\D|$)/);
-      const y = m ? parseInt(m[1],10) : null;
-      if(y && y>=1900 && y<=2100) return y;
-      return null;
-    }
+    // Sanity: limite la taille du dataset pour ne pas exploser la mémoire
+    const MAX_ITEMS = 80;
 
-    // --- PATCH: on préserve les champs vidéo & poster ---
-    function pickPoster(it){
-      return (
-        it.poster ||
-        it.thumbnail ||
-        (it.pictures && it.pictures.sizes && it.pictures.sizes.length
-          ? it.pictures.sizes[it.pictures.sizes.length - 1].link
-          : null) ||
-        it.picture ||
-        it.thumb ||
-        ""
-      );
-    }
+    /* Format: {
+        id, title, year, image, videoSrc, duration, client,...
+     }
+    */
 
-    function normalize(list){
-      return (Array.isArray(list) ? list : []).map(it => {
-        const title = it.title || it.name || "Untitled";
-        const yFromTitle = yearFromTitle(title);
-        const created = it.createdAt || it.created_time || null;
-        const yFromDate = created ? new Date(created).getFullYear() : (it.year || null);
-
-        return {
-          id: String(it.id ?? (it.uri && it.uri.split("/").pop()) ?? title),
+    function normalize(raw){
+      if(!Array.isArray(raw)) return [];
+      const unique = new Map();
+      raw.forEach(item=>{
+        if(!item) return;
+        const id = item.id || item.uri || item.link;
+        if(!id) return;
+        const title = item.title || item.name || "Untitled";
+        const image = item.picture || item.thumbnail || item.poster || item.thumb || (item.pictures && item.pictures.sizes?.pop()?.link_with_play_button);
+        const embed = item.embed || item.embedHtml || item.embed?.html || item.player_embed_url;
+        const year = item.year || (item.release_time && new Date(item.release_time).getFullYear()) || (item.created_at && new Date(item.created_at).getFullYear());
+        unique.set(id, {
+          id,
           title,
-          year: yFromTitle ?? yFromDate ?? new Date().getFullYear(),
-          image: pickPoster(it),
-
-          // champs conservés pour le parent
-          poster: pickPoster(it),
-          embed: it.embed || (it.player && it.player.embed_url) || null,
-          src: it.src || null,
-          videoSrc: it.videoSrc || null,
-          link: it.link || null,
-        };
+          image,
+          embed,
+          year,
+          duration: item.duration || item.stats?.plays || null,
+        });
       });
-    }
-
-    async function loadProjects(){
-      if (HAS_PARENT_DATA) return;
-      try{
-        const res = await fetch("/api/vimeo", { cache:"no-store" });
-        const json = await res.json();
-        const items = normalize(json?.items);
-        PROJECTS = items.filter(p => !!p.image);
-      }catch(e){
-        PROJECTS = [];
-      }
+      return Array.from(unique.values()).slice(0, MAX_ITEMS);
     }
 
     const SOCIALS = [
@@ -378,136 +351,161 @@
     }
     function updateYearButtons(){
       yearsEl.querySelectorAll(".year-btn").forEach(btn=>{
-        btn.setAttribute("aria-pressed", String(btn.textContent === String(activeYear)));
+        const pressed = btn.textContent === activeYear;
+        btn.setAttribute("aria-pressed", String(pressed));
       });
-    }
-    function setActiveYear(label){
-      activeYear = label;
-      document.documentElement.setAttribute("data-year", String(label).toLowerCase());
-      resetAndRebuild();
-      updateYearButtons();
-      // PATCH: informer le parent du filtre en cours si besoin
-      window.parent?.postMessage({ type: "REQUEST_YEAR_ACK", value: activeYear === "All" ? "all" : activeYear }, "*");
     }
 
     function openYears(){
       yearsWrap.classList.add("open");
-      yearsToggle.setAttribute("aria-expanded","true");
+      yearsToggle.setAttribute("aria-expanded", "true");
     }
     function closeYears(){
       yearsWrap.classList.remove("open");
-      yearsToggle.setAttribute("aria-expanded","false");
+      yearsToggle.setAttribute("aria-expanded", "false");
     }
+
     yearsToggle.addEventListener("click", ()=>{
-      yearsWrap.classList.toggle("open");
-      yearsToggle.setAttribute("aria-expanded", yearsWrap.classList.contains("open"));
+      if(yearsWrap.classList.contains("open")) closeYears();
+      else openYears();
     });
     yearsClose.addEventListener("click", closeYears);
 
     function currentList(){
-      if(activeYear==="All") return PROJECTS;
-      const y = parseInt(activeYear,10);
-      return PROJECTS.filter(p => p.year === y);
+      if(activeYear === "All") return PROJECTS;
+      return PROJECTS.filter(p => String(p.year) === activeYear);
     }
 
-    /* ===== Grille / rendu infini ===== */
-    const itemSizes = [
-      { width: settings.baseWidth, height: settings.smallHeight },
-      { width: settings.baseWidth, height: settings.largeHeight }
-    ];
-    const cellWidth = settings.baseWidth + 65;
-    const cellHeight = Math.max(settings.smallHeight, settings.largeHeight) + 65;
-    let columns = 4;
+    function setActiveYear(year){
+      activeYear = year;
+      updateYearButtons();
+      rebuildIfNeeded();
+    }
 
-    let isDragging=false,startX,startY,targetX=0,targetY=0,currentX=0,currentY=0,dragVX=0,dragVY=0,lastDrag=0;
-    let mouseHasMoved=false,visibleItems=new Set(),lastUpdate=0,lastX=0,lastY=0;
+    /* ===== Grid placement ===== */
+    let viewWidth = window.innerWidth;
+    let viewHeight = window.innerHeight;
+    let ratio = viewWidth/viewHeight;
 
-    function getItemSize(row,col){ const idx = Math.abs((row*columns+col)%itemSizes.length); return itemSizes[idx]; }
-    function getItemId(col,row){ return `${col},${row}`; }
-    function getItemPos(col,row){ return { x: col*cellWidth, y: row*cellHeight }; }
+    let lastX = 0, lastY = 0;
+    let targetX = 0, targetY = 0;
+    let currentX = 0, currentY = 0;
+    let dragVX = 0, dragVY = 0;
+    let lastDrag = 0;
+    let isDragging = false;
+    let mouseHasMoved = false;
+    let startX = 0, startY = 0;
+
+    const visibleItems = new Set();
+    const ITEMS = {};
+
+    function itemSize(){
+      const w = settings.baseWidth;
+      const h = ratio > 1.2 ? settings.largeHeight : settings.smallHeight;
+      return { w, h };
+    }
+
+    function snap(n){ return Math.round(n / settings.itemGap) * settings.itemGap; }
+
+    function placeItem(item, index, list){
+      const { w, h } = itemSize();
+      const col = index % 4;
+      const row = Math.floor(index / 4);
+      const x = col * (w + settings.itemGap);
+      const y = row * (h + settings.itemGap);
+
+      item.x = x;
+      item.y = y;
+
+      const el = createOrReuse(item, list.length);
+      el.style.transform = `translate(${x}px, ${y}px)`;
+      el.style.width = `${w}px`;
+      el.style.height = `${h}px`;
+    }
+
+    function createOrReuse(item, total){
+      let el = document.getElementById(item.id);
+      if(!el){
+        el = document.createElement("div");
+        el.className = "item";
+        el.id = item.id;
+        el.innerHTML = `
+          <div class="item-image-container">
+            <img src="${item.image || "https://placehold.co/600x400?text=No+Image"}" alt="${item.title}" loading="lazy" />
+          </div>
+          <div class="item-caption">
+            <div class="item-name">${item.title}</div>
+            <div class="item-number">${item.year || "—"}</div>
+          </div>
+        `;
+        el.addEventListener("click", ()=>{
+          window.parent?.postMessage({ type: "OPEN_PLAYER", value: item }, "*");
+        });
+        canvas.appendChild(el);
+      }
+      el.dataset.total = total;
+      return el;
+    }
 
     function updateVisibleItems(){
       const list = currentList();
-      const itemCount = list.length || 1;
-      if(!itemCount) return;
+      const { w, h } = itemSize();
+      const cols = Math.max(1, Math.floor(viewWidth / (w + settings.itemGap)) + settings.bufferZone);
+      const rows = Math.max(1, Math.floor(viewHeight / (h + settings.itemGap)) + settings.bufferZone);
 
-      const buffer = 3;
-      const vw = innerWidth*(1+buffer), vh = innerHeight*(1+buffer);
-      const startCol = Math.floor((-currentX - vw/2)/cellWidth);
-      const endCol   = Math.ceil((-currentX + vw*1.5)/cellWidth);
-      const startRow = Math.floor((-currentY - vh/2)/cellHeight);
-      const endRow   = Math.ceil((-currentY + vh*1.5)/cellHeight);
+      const needed = new Set();
+      const baseCol = Math.floor(-targetX / (w + settings.itemGap));
+      const baseRow = Math.floor(-targetY / (h + settings.itemGap));
 
-      const currentSet = new Set();
+      let index = 0;
+      for(let r = -1; r < rows; r++){
+        for(let c = -1; c < cols; c++){
+          const col = baseCol + c;
+          const row = baseRow + r;
+          const idx = row * 4 + col;
+          if(idx < 0 || idx >= list.length) continue;
+          const item = list[idx];
+          if(!item) continue;
 
-      for(let row=startRow; row<=endRow; row++){
-        for(let col=startCol; col<=endCol; col++){
-          const id = getItemId(col,row); currentSet.add(id);
-          if(visibleItems.has(id)) continue;
-
-          const size = getItemSize(row,col);
-          const pos = getItemPos(col,row);
-          const idx = Math.abs((row*columns+col) % itemCount);
-          const proj = list[idx];
-
-          const item = document.createElement("div");
-          item.className="item"; item.id=id;
-          item.style.width = `${size.width}px`;
-          item.style.height = `${size.height}px`;
-          item.style.left = `${pos.x}px`;
-          item.style.top  = `${pos.y}px`;
-          item.dataset.width = size.width;
-          item.dataset.height = size.height;
-          item.dataset.year = String(proj.year);
-
-          const imageContainer = document.createElement("div");
-          imageContainer.className = "item-image-container";
-          const img = document.createElement("img");
-          img.src = proj.image || "";
-          img.alt = proj.title;
-          imageContainer.appendChild(img); item.appendChild(imageContainer);
-
-          const caption = document.createElement("div");
-          caption.className = "item-caption";
-          const name = document.createElement("div"); name.className="item-name"; name.textContent = proj.title;
-          const number = document.createElement("div"); number.className="item-number"; number.textContent = String(proj.year);
-          caption.appendChild(name); caption.appendChild(number); item.appendChild(caption);
-
-          // PATCH: clic => notifie le parent d’ouvrir le player
-          item.addEventListener("click", () => {
-            if(mouseHasMoved||isDragging) return;
-            const payload = {
-              id: proj.id,
-              title: proj.title,
-              poster: proj.poster || proj.image,
-              embed: proj.embed || proj.src || proj.videoSrc || null,
-              link: proj.link || null,
-              year: proj.year
-            };
-            window.parent?.postMessage({ type: "OPEN_PLAYER", value: payload }, "*");
-          });
-
-          canvas.appendChild(item); visibleItems.add(id);
+          needed.add(item.id);
+          placeItem(item, idx, list);
         }
       }
 
-      // cleanup
-      visibleItems.forEach((id)=>{
-        if(!currentSet.has(id)){
+      visibleItems.forEach(id=>{
+        if(!needed.has(id)){
           const el = document.getElementById(id);
-          if(el && el.parentNode===canvas) canvas.removeChild(el);
+          if(el && el.parentNode === canvas) canvas.removeChild(el);
           visibleItems.delete(id);
         }
       });
+
+      needed.forEach(id=> visibleItems.add(id));
+    }
+
+    let ticking = false;
+    function rebuildIfNeeded(){
+      if(!ticking){
+        ticking = true;
+        requestAnimationFrame(()=>{
+          updateVisibleItems();
+          ticking = false;
+        });
+      }
     }
 
     function animate(){
-      const e = settings.dragEase;
-      currentX += (targetX-currentX)*e;
-      currentY += (targetY-currentY)*e;
-      canvas.style.transform = `translate(${currentX}px,${currentY}px)`;
-      const now = Date.now(), dist = Math.hypot(currentX-lastX,currentY-lastY);
-      if(dist>100 || now-lastUpdate>120){ updateVisibleItems(); lastX=currentX; lastY=currentY; lastUpdate=now; }
+      currentX += (targetX - currentX) * settings.dragEase;
+      currentY += (targetY - currentY) * settings.dragEase;
+
+      canvas.style.transform = `translate(${currentX}px, ${currentY}px)`;
+      const diffX = Math.abs(currentX - lastX);
+      const diffY = Math.abs(currentY - lastY);
+      if(diffX > 0.2 || diffY > 0.2){
+        updateVisibleItems();
+        lastX = currentX;
+        lastY = currentY;
+      }
       requestAnimationFrame(animate);
     }
 

@@ -8,7 +8,11 @@ import { usePathname } from "next/navigation";
  * - Aucune lib externe
  * - 280 ms par défaut
  */
-export default function ClientFade({ children }: { children: React.ReactNode }) {
+export default function ClientFade({
+  children,
+}: {
+  children: React.ReactNode;
+}) {
   const pathname = usePathname();
   const ref = useRef<HTMLDivElement | null>(null);
 
@@ -28,9 +32,5 @@ export default function ClientFade({ children }: { children: React.ReactNode }) 
     return () => cancelAnimationFrame(id);
   }, [pathname]);
 
-  return (
-    <div ref={ref}>
-      {children}
-    </div>
-  );
+  return <div ref={ref}>{children}</div>;
 }

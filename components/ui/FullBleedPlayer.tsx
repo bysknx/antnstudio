@@ -8,7 +8,12 @@ type Props = {
   embed?: string | null;
 };
 
-export default function FullBleedPlayer({ open, onClose, title, embed }: Props) {
+export default function FullBleedPlayer({
+  open,
+  onClose,
+  title,
+  embed,
+}: Props) {
   if (!open || !embed) return null;
 
   return (

@@ -17,9 +17,12 @@ export default async function sitemap() {
       ? process.env.VERCEL_PROJECT_PRODUCTION_URL
       : `https://${process.env.VERCEL_PROJECT_PRODUCTION_URL || "localhost:3000"}`;
 
-  const res = await fetch(`${process.env.NEXT_PUBLIC_BASE_URL ?? ""}/api/vimeo`, {
-    cache: "no-store",
-  }).catch(() => null);
+  const res = await fetch(
+    `${process.env.NEXT_PUBLIC_BASE_URL ?? ""}/api/vimeo`,
+    {
+      cache: "no-store",
+    },
+  ).catch(() => null);
 
   const json = res && res.ok ? await res.json() : { items: [] as any[] };
   const items: any[] = Array.isArray(json?.items) ? json.items : [];
@@ -38,8 +41,16 @@ export default async function sitemap() {
   // pages statiques
   const statics = [
     { url: `${base}/`, priority: 1, changeFrequency: "weekly" as const },
-    { url: `${base}/projects`, priority: 0.8, changeFrequency: "weekly" as const },
-    { url: `${base}/contact`, priority: 0.4, changeFrequency: "monthly" as const },
+    {
+      url: `${base}/projects`,
+      priority: 0.8,
+      changeFrequency: "weekly" as const,
+    },
+    {
+      url: `${base}/contact`,
+      priority: 0.4,
+      changeFrequency: "monthly" as const,
+    },
   ];
 
   return [...statics, ...projectUrls];

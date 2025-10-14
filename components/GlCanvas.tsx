@@ -14,7 +14,14 @@ export default function GlCanvas({
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
   const mouseRef = useRef({ x: 0, y: 0 });
   const dotsRef = useRef<
-    Array<{ x: number; y: number; ox: number; oy: number; size: number; angle: number }>
+    Array<{
+      x: number;
+      y: number;
+      ox: number;
+      oy: number;
+      size: number;
+      angle: number;
+    }>
   >([]);
   const rafRef = useRef<number | null>(null);
 
@@ -55,10 +62,21 @@ export default function GlCanvas({
 
       dotsRef.current = [];
       for (let i = 0; i < state.cols; i++) {
-        const x = Math.floor(((innerW / (state.cols - 1 || 1)) * i + state.padding * ratio));
+        const x = Math.floor(
+          (innerW / (state.cols - 1 || 1)) * i + state.padding * ratio,
+        );
         for (let j = 0; j < state.rows; j++) {
-          const y = Math.floor(((innerH / (state.rows - 1 || 1)) * j + state.padding * ratio));
-          dotsRef.current.push({ x, y, ox: x, oy: y, size: 1 * ratio, angle: 0 });
+          const y = Math.floor(
+            (innerH / (state.rows - 1 || 1)) * j + state.padding * ratio,
+          );
+          dotsRef.current.push({
+            x,
+            y,
+            ox: x,
+            oy: y,
+            size: 1 * ratio,
+            angle: 0,
+          });
         }
       }
     }
@@ -68,19 +86,30 @@ export default function GlCanvas({
       mouseRef.current.y = e.clientY * ratio;
     }
 
-    function getAngle(a: { x: number; y: number }, b: { x: number; y: number }) {
+    function getAngle(
+      a: { x: number; y: number },
+      b: { x: number; y: number },
+    ) {
       const dx = b.x - a.x;
       const dy = b.y - a.y;
       return (Math.atan2(dy, dx) / Math.PI) * 180;
     }
 
-    function getDistance(a: { x: number; y: number }, b: { x: number; y: number }) {
+    function getDistance(
+      a: { x: number; y: number },
+      b: { x: number; y: number },
+    ) {
       const dx = a.x - b.x;
       const dy = a.y - b.y;
       return Math.sqrt(dx * dx + dy * dy);
     }
 
-    function circle(context: CanvasRenderingContext2D, x: number, y: number, r: number) {
+    function circle(
+      context: CanvasRenderingContext2D,
+      x: number,
+      y: number,
+      r: number,
+    ) {
       context.beginPath();
       context.arc(x, y, r, 0, Math.PI * 2, false);
       context.closePath();

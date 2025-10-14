@@ -13,7 +13,10 @@ export default function PreloadVimeo() {
         const res = await fetch("/api/vimeo", { cache: "no-store" });
         const json = await res.json();
         if (!ignore) {
-          sessionStorage.setItem("__VIMEO_PREFETCH", JSON.stringify(json || {}));
+          sessionStorage.setItem(
+            "__VIMEO_PREFETCH",
+            JSON.stringify(json || {}),
+          );
         }
       } catch {
         /* ignore */

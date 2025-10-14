@@ -19,7 +19,7 @@ export default function TopProgress() {
         if (ref.current) {
           ref.current.style.transform = `scaleX(${Math.min(
             1,
-            Math.max(0, ratio)
+            Math.max(0, ratio),
           )})`;
         }
         ticking = false;
