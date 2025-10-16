@@ -45,6 +45,7 @@ export default function FooterFromPen() {
           pointer-events: auto;
           font-weight: 400;
           letter-spacing: 0.05em;
+          text-transform: uppercase;
         }
         .links-section {
           grid-column: 5 / span 4;
@@ -59,7 +60,7 @@ export default function FooterFromPen() {
             "Segoe UI",
             sans-serif;
           font-size: 13px;
-          font-weight: 600;
+          font-weight: 700;
         }
         .links-section a {
           position: relative;
@@ -89,6 +90,7 @@ export default function FooterFromPen() {
           pointer-events: auto;
           font-weight: 400;
           letter-spacing: 0.05em;
+          text-transform: uppercase;
         }
         @media (max-width: 900px) {
           .coordinates-section {

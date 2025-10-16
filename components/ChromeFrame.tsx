@@ -1,4 +1,3 @@
-// components/ChromeFrame.tsx
 "use client";
 
 import { PropsWithChildren } from "react";
@@ -8,11 +7,11 @@ import GlCanvas from "@/components/GlCanvas";
 export default function ChromeFrame({ children }: PropsWithChildren) {
   const pathname = usePathname();
   const isHome = pathname === "/";
-  const hideStaticDots = pathname === "/contact"; // ⬅️ pas de grille fixe sur /contact
+  const hideStaticDots = pathname === "/contact" || pathname === "/";
 
   return (
     <div className="relative min-h-[100svh] bg-[#0b0b0b] z-0">
-      {/* Grille de points (fixe, sobre) — masquée sur /contact */}
+      {/* Grille de points fixe : uniquement hors home/contact */}
       {!hideStaticDots && (
         <div
           data-static-dots
@@ -26,7 +25,7 @@ export default function ChromeFrame({ children }: PropsWithChildren) {
         />
       )}
 
-      {/* Couche FX (hors home pour éviter tout flash avant hydratation) */}
+      {/* Couche FX (uniquement hors home pour eviter tout flash) */}
       {!isHome && (
         <div id="gl-layer" className="pointer-events-none fixed inset-0 z-0">
           <GlCanvas />
@@ -35,7 +34,7 @@ export default function ChromeFrame({ children }: PropsWithChildren) {
         </div>
       )}
 
-      {/* Contenu au-dessus */}
+      {/* Contenu */}
       <div className="relative z-10">{children}</div>
     </div>
   );

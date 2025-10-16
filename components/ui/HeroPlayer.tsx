@@ -13,6 +13,8 @@ type Slide = {
   src: string;
   alt: string;
   durationMs: number;
+  durationSeconds?: number;
+  vimeoId?: string;
 };
 
 type HeroItem = {
@@ -26,7 +28,8 @@ const DEFAULT_DURATION_MS = 15000;
 const MAX_FEATURED = 6;
 const WHEEL_THROTTLE_MS = 1000;
 
-function buildSlide(embed?: string, title?: string): Slide | null {
+function buildSlide(item: HeroItem): Slide | null {
+  const { embed, title, duration } = item;
   if (!embed || typeof embed !== "string") return null;
   try {
     const url = new URL(embed.trim(), "https://player.vimeo.com");
@@ -45,20 +48,26 @@ function buildSlide(embed?: string, title?: string): Slide | null {
     set("byline", "0");
     set("portrait", "0");
     set("transparent", "0");
-    params.delete("background");
+    set("background", "1");
     return {
       src: url.toString(),
       alt: title ?? "Untitled",
-      durationMs: DEFAULT_DURATION_MS,
+      durationMs:
+        typeof duration === "number" && duration > 0
+          ? duration * 1000
+          : DEFAULT_DURATION_MS,
+      durationSeconds:
+        typeof duration === "number" && duration > 0 ? duration : undefined,
+      vimeoId: url.pathname.split("/").filter(Boolean).pop(),
     };
   } catch {
     return null;
   }
 }
 
-function toSlides(items: Array<Pick<HeroItem, "embed" | "title">>): Slide[] {
+function toSlides(items: HeroItem[]): Slide[] {
   return items
-    .map((it) => buildSlide(it.embed, it.title))
+    .map((it) => buildSlide(it))
     .filter((slide): slide is Slide => Boolean(slide))
     .slice(0, MAX_FEATURED);
 }
@@ -114,7 +123,15 @@ export default function HeroPlayer({
       stop = true;
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [JSON.stringify(items?.map((i) => ({ id: i.id, embed: i.embed })))]);
+  }, [
+    JSON.stringify(
+      items?.map((i) => ({
+        id: i.id,
+        embed: i.embed,
+        duration: i.duration,
+      })),
+    ),
+  ]);
 
   const startProgress = useCallback(() => {
     if (!slides.length) return;
@@ -301,6 +318,31 @@ export default function HeroPlayer({
   if (!totalSlides) return null;
   const current = slides[index];
 
+  const runtimeSeconds =
+    current.durationSeconds ?? Math.round(current.durationMs / 1000);
+  const minutes = Math.floor(runtimeSeconds / 60)
+    .toString()
+    .padStart(2, "0");
+  const seconds = Math.floor(runtimeSeconds % 60)
+    .toString()
+    .padStart(2, "0");
+  const stats = [
+    { label: "Now Playing", value: current.alt },
+    {
+      label: "Duration",
+      value: `${minutes}:${seconds}`,
+    },
+    {
+      label: "Slide",
+      value: `${index + 1} / ${totalSlides}`,
+    },
+    { label: "Loop", value: "Enabled" },
+    { label: "Autoplay", value: "Muted" },
+    current.vimeoId
+      ? { label: "Vimeo ID", value: current.vimeoId }
+      : null,
+  ].filter(Boolean) as { label: string; value: string }[];
+
   return (
     <section
       id="hero-root"
@@ -310,7 +352,8 @@ export default function HeroPlayer({
         <iframe
           key={index}
           ref={iframeRef}
-          className={`absolute inset-0 h-full w-full transition-opacity duration-300 ${
+          data-cover
+          className={`hero-iframe transition-opacity duration-300 ${
             visible ? "opacity-100" : "opacity-0"
           }`}
           src={current.src}
@@ -356,8 +399,19 @@ export default function HeroPlayer({
         })}
       </div>
 
-      <div className="pointer-events-none absolute left-6 bottom-[7rem] sm:bottom-[7.5rem] text-white/70 text-xs tracking-wide">
-        {current.alt}
+      <div className="pointer-events-none absolute inset-x-0 bottom-[6.5rem] flex justify-center px-6 sm:bottom-[7rem]">
+        <div className="pointer-events-auto w-full max-w-xl rounded-lg border border-white/12 bg-black/65 px-5 py-4 text-xs text-white/75 backdrop-blur-sm">
+          <ul className="grid gap-y-2 gap-x-6 sm:grid-cols-2">
+            {stats.map((entry) => (
+              <li key={entry.label} className="flex flex-col gap-[2px]">
+                <span className="text-[10px] uppercase tracking-[0.18em] text-white/45">
+                  {entry.label}
+                </span>
+                <span className="text-sm text-white/85">{entry.value}</span>
+              </li>
+            ))}
+          </ul>
+        </div>
       </div>
     </section>
   );
