@@ -1,4 +1,4 @@
-// app/layout.tsx
+﻿// app/layout.tsx
 import type { Metadata } from "next";
 import "./globals.css";
 
@@ -9,14 +9,14 @@ import FooterMount from "@/components/FooterMount";
 import Header from "./header";
 
 export const metadata: Metadata = {
-  title: "antn.studio — Anthony",
+  title: "antn.studio â€” Anthony",
   description:
-    "Front-end & DA minimale. Expériences web sobres, performantes, accessibles.",
+    "Front-end & DA minimale. ExpÃ©riences web sobres, performantes, accessibles.",
   metadataBase: new URL("https://antn.studio"),
   openGraph: {
-    title: "antn.studio — Anthony",
+    title: "antn.studio â€” Anthony",
     description:
-      "Front-end & DA minimale. Expériences web sobres, performantes, accessibles.",
+      "Front-end & DA minimale. ExpÃ©riences web sobres, performantes, accessibles.",
     url: "https://antn.studio",
     siteName: "antn.studio",
     images: [{ url: "/cover.jpg", width: 1200, height: 630, alt: "antn.studio" }],
@@ -24,9 +24,9 @@ export const metadata: Metadata = {
   },
   twitter: {
     card: "summary_large_image",
-    title: "antn.studio — Anthony",
+    title: "antn.studio â€” Anthony",
     description:
-      "Front-end & DA minimale. Expériences web sobres, performantes, accessibles.",
+      "Front-end & DA minimale. ExpÃ©riences web sobres, performantes, accessibles.",
     images: ["/cover.jpg"],
   },
   icons: [{ rel: "icon", url: "/favicon.ico" }],
@@ -44,14 +44,14 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <link rel="dns-prefetch" href="https://i.vimeocdn.com" />
         <link rel="dns-prefetch" href="https://f.vimeocdn.com" />
 
-        {/* Précharge le pen pour lisser l’ouverture */}
+        {/* PrÃ©charge le pen pour lisser lâ€™ouverture */}
         <link rel="preload" href="/projects-pen.html" as="document" />
 
-        {/* Précharge l’API Vimeo côté nav client (hint pour le navigateur) */}
+        {/* PrÃ©charge lâ€™API Vimeo cÃ´tÃ© nav client (hint pour le navigateur) */}
         <link rel="preload" href="/api/vimeo" as="fetch" crossOrigin="anonymous" />
       </head>
       <body className="overflow-x-hidden">
-        {/* Boot shell : 1er paint = écran loader. Masque tout le reste jusqu'à disparition. */}
+        {/* Boot shell : 1er paint = Ã©cran loader. Masque tout le reste jusqu'Ã  disparition. */}
         <script
           dangerouslySetInnerHTML={{
             __html: `(function () {
@@ -60,16 +60,27 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
     var k = "antn_ascii_loader_last_seen";
     var last = +localStorage.getItem(k);
     var should = !last || (Date.now() - last) > TTL;
-    if (!should) return;
+    if (!should) {
+      document.documentElement.removeAttribute("data-app-loading");
+      return;
+    }
 
     document.documentElement.setAttribute("data-booting", "");
+    document.documentElement.setAttribute("data-app-loading", "visible");
 
     var css = "position:fixed;inset:0;background:#000;color:#e5e7eb;z-index:2147483647;display:grid;place-items:center;font-family:ui-monospace,SFMono-Regular,Menlo,Monaco,Consolas,\\\"Liberation Mono\\\",\\\"Courier New\\\",monospace";
     var box = document.createElement("div");
     box.id = "boot";
     box.style.cssText = css;
+    var art = [
+      "      ___        _            _        _           ",
+      "     / _ \\\\ _   _| |_ ___  ___| |_ __ _| |_ ___  _ __ ",
+      "    / /_)/ | | | __/ _ \\\\/ __| __/ _` | __/ _ \\\\| '__|",
+      "   / ___/| |_| | ||  __/\\\\__ \\\\ || (_| | || (_) | |   ",
+      "   \\\\/     \\\\__,_|\\\\__\\\\___||___/\\\\__\\\\__,_|\\\\__\\\\___/|_|   "
+    ].join("\\n");
     box.innerHTML = '<div style="padding:24px;text-align:left">'+
-      '<pre style="margin:0;line-height:1.05;letter-spacing:.02em;font-size:clamp(14px,6vw,24px);opacity:.95">                         ░██               \\n                         ░██               \\n ░██████   ░████████  ░████████ ░████████ \\n      ░██  ░██    ░██    ░██    ░██    ░██\\n ░███████  ░██    ░██    ░██    ░██    ░██\\n░██   ░██  ░██    ░██    ░██    ░██    ░██\\n ░█████░██ ░██    ░██     ░████ ░██    ░██\\n                                          \\n                                          </pre>'+
+      '<pre style="margin:0;line-height:1.05;letter-spacing:.02em;font-size:clamp(14px,6vw,24px);opacity:.95">'+ art + '\\n\\n</pre>'+
       '<div style="margin-top:16px;font-size:12px;opacity:.9">booting interface '+
       '<span style="display:inline-block;vertical-align:middle;height:12px;width:160px;overflow:hidden;border:1px solid rgba(255,255,255,.4);background:rgba(0,0,0,.4)"><span id="bootBar" style="display:block;height:100%;width:0;background:rgba(16,185,129,.9);background-image:repeating-linear-gradient(90deg,rgba(0,0,0,.18) 0 6px,transparent 6px 12px);transition:width 120ms linear"></span></span>'+
       ' <span id="bootPct" style="font-variant-numeric:tabular-nums">0%</span></div>'+
@@ -94,7 +105,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           }}
         />
 
-        {/* Loader ASCII (plein écran, z-max) */}
+        {/* Loader ASCII (plein Ã©cran, z-max) */}
         <LoadingAscii />
 
         {/* Header global (nav) */}
@@ -111,3 +122,4 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
     </html>
   );
 }
+

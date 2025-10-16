@@ -1,10 +1,10 @@
 // components/LoadingAscii.tsx
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 
-const SEEN_KEY = "antn_ascii_loader_seen";      // 1 fois par session
+const SEEN_KEY = "antn_ascii_loader_seen"; // 1 fois par session
 const CACHE_KEY_VIMEO = "antn_vimeo_cache_v1";
 
 const TOTAL_MS = 2200;
@@ -13,18 +13,52 @@ const FADE_OUT_MS = 260;
 // filet global : si tout va mal, on ferme en ~4s
 const ABSOLUTE_TIMEOUT_MS = 4000;
 
+type Stage = "hidden" | "visible" | "fading";
+
+const ASCII_ART = String.raw`
+      ___        _            _        _           
+     / _ \ _   _| |_ ___  ___| |_ __ _| |_ ___  _ __ 
+    / /_)/ | | | __/ _ \/ __| __/ _\` | __/ _ \| '__|
+   / ___/| |_| | ||  __/\__ \ || (_| | || (_) | |   
+   \/     \__,_|\__\___||___/\__\__,_|\__\___/|_|   
+`;
+
 export default function LoadingAscii({ force = false }: { force?: boolean } = {}) {
   const router = useRouter();
 
-  const [visible, setVisible] = useState(false);
+  const [stage, setStage] = useState<Stage>("hidden");
   const [progress, setProgress] = useState(0);
 
   const rafRef = useRef<number | null>(null);
   const hardRef = useRef<number | null>(null);
+  const fadeTimerRef = useRef<number | null>(null);
   const doneRef = useRef(false);
   const startRef = useRef(0);
   const loadedRef = useRef(false);
-  const armedRef = useRef(false); // évite double-armement
+  const armedRef = useRef(false); // evite double-armement
+
+  const applyStageToRoot = useCallback((value: Stage) => {
+    if (typeof document === "undefined") return;
+    const root = document.documentElement;
+    if (value === "hidden") root.removeAttribute("data-app-loading");
+    else root.setAttribute("data-app-loading", value);
+  }, []);
+
+  const requestClose = useCallback(() => {
+    if (typeof window === "undefined") return;
+    if (doneRef.current) return;
+    doneRef.current = true;
+    if (fadeTimerRef.current) {
+      window.clearTimeout(fadeTimerRef.current);
+      fadeTimerRef.current = null;
+    }
+    setStage("fading");
+    applyStageToRoot("fading");
+    fadeTimerRef.current = window.setTimeout(() => {
+      setStage("hidden");
+      applyStageToRoot("hidden");
+    }, FADE_OUT_MS + 140);
+  }, [applyStageToRoot]);
 
   useEffect(() => {
     const dismantleBootShell = () => {
@@ -55,7 +89,7 @@ export default function LoadingAscii({ force = false }: { force?: boolean } = {}
 
     dismantleBootShell();
 
-    // ne s’affiche qu’une fois / session, sauf force
+    // ne s'affiche qu'une fois / session, sauf force
     const reduce =
       typeof window !== "undefined" &&
       window.matchMedia?.("(prefers-reduced-motion: reduce)").matches;
@@ -66,16 +100,25 @@ export default function LoadingAscii({ force = false }: { force?: boolean } = {}
         if (sessionStorage.getItem(SEEN_KEY)) show = false;
         else sessionStorage.setItem(SEEN_KEY, "1");
       } catch {
-        // si sessionStorage HS, on affiche quand même
+        // si sessionStorage HS, on affiche quand meme
       }
     }
 
-    if (!show) return;
+    if (!show) {
+      setStage("hidden");
+      applyStageToRoot("hidden");
+      return;
+    }
 
-    setVisible(true);
+    setProgress(0);
+    setStage("visible");
+    applyStageToRoot("visible");
+    doneRef.current = false;
+    armedRef.current = false;
+    loadedRef.current = false;
     startRef.current = performance.now();
 
-    // Préchargements utiles
+    // Prechargements utiles
     (async () => {
       try {
         router.prefetch?.("/projects");
@@ -86,7 +129,9 @@ export default function LoadingAscii({ force = false }: { force?: boolean } = {}
           const json = await res.json().catch(() => ({}));
           sessionStorage.setItem(CACHE_KEY_VIMEO, JSON.stringify(json));
         }
-      } catch {}
+      } catch {
+        /* network/cache issues non bloquantes */
+      }
     })();
 
     const onWindowLoad = () => {
@@ -94,15 +139,12 @@ export default function LoadingAscii({ force = false }: { force?: boolean } = {}
     };
     window.addEventListener("load", onWindowLoad, { passive: true });
 
-    // filet dur : quoi qu’il arrive, on ferme
+    // filet dur : quoi qu'il arrive, on ferme
     hardRef.current = window.setTimeout(() => {
-      if (!doneRef.current) {
-        doneRef.current = true;
-        setVisible(false);
-      }
+      requestClose();
     }, ABSOLUTE_TIMEOUT_MS);
 
-    // boucle d’animation
+    // boucle d'animation
     const tick = (now: number) => {
       if (doneRef.current) return;
 
@@ -115,14 +157,11 @@ export default function LoadingAscii({ force = false }: { force?: boolean } = {}
         return next > 0.999 ? 1 : next;
       });
 
-      // on arme la fermeture UNE seule fois quand on a atteint la durée cible
+      // on arme la fermeture UNE seule fois quand on a atteint la duree cible
       if (!armedRef.current && elapsed >= TOTAL_MS) {
         armedRef.current = true;
         window.setTimeout(() => {
-          if (!doneRef.current) {
-            doneRef.current = true;
-            setVisible(false);
-          }
+          requestClose();
         }, FADE_OUT_MS);
       }
 
@@ -137,36 +176,42 @@ export default function LoadingAscii({ force = false }: { force?: boolean } = {}
       window.removeEventListener("load", onWindowLoad);
       if (rafRef.current) cancelAnimationFrame(rafRef.current);
       if (hardRef.current) window.clearTimeout(hardRef.current);
+      if (fadeTimerRef.current) window.clearTimeout(fadeTimerRef.current);
+      doneRef.current = true;
+      applyStageToRoot("hidden");
     };
-    // ⚠️ ne pas dépendre de `progress` — sinon on relance l’effet à chaque frame
-  }, [force, router]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [applyStageToRoot, force, requestClose, router]);
 
-  if (!visible) return null;
+  useEffect(() => {
+    return () => {
+      applyStageToRoot("hidden");
+    };
+  }, [applyStageToRoot]);
+
+  if (stage === "hidden") return null;
+  const fading = stage === "fading";
 
   return (
     <div
       aria-hidden
-      style={{ ["--in" as any]: `${FADE_IN_MS}ms`, ["--out" as any]: `${FADE_OUT_MS}ms` }}
+      style={{
+        ["--in" as any]: `${FADE_IN_MS}ms`,
+        ["--out" as any]: `${FADE_OUT_MS}ms`,
+        opacity: fading ? 0 : 1,
+        filter: fading ? "blur(6px)" : "none",
+        transition: `opacity ${FADE_OUT_MS}ms ease, filter ${FADE_OUT_MS}ms ease`,
+      }}
       className="fixed inset-0 z-[9999] overflow-hidden bg-black text-zinc-100 animate-[antnFadeIn_var(--in)_ease-out_forwards]"
     >
-      {/* grain / scanlines (pas de grille de points statique pour éviter le doublon avec la matrice) */}
+      {/* grain / scanlines (pas de grille de points statique pour eviter le doublon avec la matrice) */}
       <div className="pointer-events-none absolute inset-0 opacity-[0.10] mix-blend-screen [background-image:radial-gradient(rgba(255,255,255,.08)_1px,transparent_1px)] [background-size:2px_2px]" />
       <div className="pointer-events-none absolute inset-0 opacity-[0.08] [background-image:linear-gradient(to_bottom,rgba(255,255,255,.25)_1px,transparent_1px)] [background-size:100%_3px]" />
 
       <div className="absolute inset-0 grid place-items-center">
         <div className="px-6">
           <pre className="select-none whitespace-pre leading-[1.05] tracking-[0.02em] text-[min(6vw,24px)] font-mono mb-6">
-{String.raw`
-                         ░██               
-                         ░██               
- ░██████   ░████████  ░████████ ░████████ 
-      ░██  ░██    ░██    ░██    ░██    ░██
- ░███████  ░██    ░██    ░██    ░██    ░██
-░██   ░██  ░██    ░██    ░██    ░██    ░██
- ░█████░██ ░██    ░██     ░████ ░██    ░██
-                                          
-                                          
-`}
+            {ASCII_ART}
           </pre>
 
           <div className="font-mono text-sm text-zinc-300/90">
@@ -182,10 +227,24 @@ export default function LoadingAscii({ force = false }: { force?: boolean } = {}
         </div>
       </div>
 
-      {/* crossfade out (piloté par l’effet via setVisible) */}
+      {/* crossfade out (pilote par l'effet via setStage) */}
       <style jsx global>{`
-        @keyframes antnFadeIn { from { opacity: 0 } to { opacity: 1 } }
-        @keyframes antnFadeOut { from { opacity: 1 } to { opacity: 0 } }
+        @keyframes antnFadeIn {
+          from {
+            opacity: 0;
+          }
+          to {
+            opacity: 1;
+          }
+        }
+        @keyframes antnFadeOut {
+          from {
+            opacity: 1;
+          }
+          to {
+            opacity: 0;
+          }
+        }
       `}</style>
     </div>
   );

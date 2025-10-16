@@ -61,6 +61,7 @@
   /* Fond & texte via Tailwind (override propre) */
   body {
     @apply bg-zinc-950 text-zinc-200;
+    transition: opacity 320ms ease, filter 320ms ease;
   }
 
   /* Wrapper page (z-index / flow) */
@@ -234,6 +235,11 @@
     animation: none !important;
     opacity: 0.7;
   }
+  html[data-app-loading="visible"] body,
+  html[data-app-loading="fading"] body {
+    filter: none !important;
+    opacity: 1 !important;
+  }
 }
 
 /* ==================
@@ -280,6 +286,16 @@ html[data-home="1"] #gl-layer {
   display: none;
 }
 /* ===== END PATCH ===== */
+
+html[data-app-loading="visible"] body {
+  filter: blur(18px);
+  opacity: 0.18;
+}
+
+html[data-app-loading="fading"] body {
+  filter: blur(10px);
+  opacity: 0.45;
+}
 
 /* START PATCH: SiteFooter — texte nu (pas de ligne, pas de fond) */
 /* On garde uniquement la gestion des interactions. */
