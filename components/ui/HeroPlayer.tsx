@@ -2,16 +2,15 @@
 
 import { useCallback, useEffect, useRef, useState } from "react";
 
-/** ---- Types ---- */
 type VimeoItem = {
   id: string;
   title?: string;
-  embed?: string; // fourni par /api/vimeo
-  duration?: number; // secondes si dispo
+  embed?: string;
+  duration?: number;
 };
 
 type Slide = {
-  src: string; // URL d’embed vimeo complet (avec query)
+  src: string;
   alt: string;
   durationMs: number;
 };
@@ -23,31 +22,53 @@ type HeroItem = {
   duration?: number;
 };
 
-/** ---- Constantes ---- */
 const DEFAULT_DURATION_MS = 15000;
 const MAX_FEATURED = 6;
 const WHEEL_THROTTLE_MS = 1000;
 
-/** ---- Mapping API->slides ---- */
-function toSlides(items: Array<Pick<HeroItem, "embed" | "title">>): Slide[] {
-  return items
-    .filter((it) => typeof it.embed === "string" && it.embed.length > 0)
-    .slice(0, MAX_FEATURED)
-    .map((it) => ({
-      // on force les flags d’autoplay inline + fond
-      src: `${it.embed!}&muted=1&autoplay=1&playsinline=1&controls=0&pip=1&transparent=0&background=1`,
-      alt: it.title ?? "Untitled",
+function buildSlide(embed?: string, title?: string): Slide | null {
+  if (!embed || typeof embed !== "string") return null;
+  try {
+    const url = new URL(embed.trim(), "https://player.vimeo.com");
+    const params = url.searchParams;
+    const set = (key: string, value: string) => {
+      params.set(key, value);
+    };
+    set("muted", "1");
+    set("autoplay", "1");
+    set("autopause", "0");
+    set("loop", "1");
+    set("playsinline", "1");
+    set("controls", "0");
+    set("pip", "1");
+    set("title", "0");
+    set("byline", "0");
+    set("portrait", "0");
+    set("transparent", "0");
+    params.delete("background");
+    return {
+      src: url.toString(),
+      alt: title ?? "Untitled",
       durationMs: DEFAULT_DURATION_MS,
-    }));
+    };
+  } catch {
+    return null;
+  }
 }
 
-/** ---- Composant ---- */
+function toSlides(items: Array<Pick<HeroItem, "embed" | "title">>): Slide[] {
+  return items
+    .map((it) => buildSlide(it.embed, it.title))
+    .filter((slide): slide is Slide => Boolean(slide))
+    .slice(0, MAX_FEATURED);
+}
+
 export default function HeroPlayer({
-  items, // <-- NOUVEAU : items préchargés (prioritaires)
+  items,
   onReady,
   readyTimeoutMs = 3500,
 }: {
-  items?: HeroItem[]; // <-- optionnel
+  items?: HeroItem[];
   onReady?: () => void;
   readyTimeoutMs?: number;
 }) {
@@ -66,14 +87,12 @@ export default function HeroPlayer({
   const wheelLockRef = useRef<number>(0);
   const touchStartY = useRef<number | null>(null);
 
-  /** 1) Utiliser les items préchargés si fournis */
   useEffect(() => {
     if (items && items.length) {
       setSlides(toSlides(items));
       setIndex(0);
       return;
     }
-    // Sinon fallback: fetch côté client (home sans préchargement)
     let stop = false;
     (async () => {
       try {
@@ -86,8 +105,8 @@ export default function HeroPlayer({
           setSlides(toSlides(apiItems));
           setIndex(0);
         }
-      } catch (e) {
-        console.warn("[Hero] API /api/vimeo failed:", e);
+      } catch (err) {
+        console.warn("[Hero] API /api/vimeo failed:", err);
         if (!stop) setSlides([]);
       }
     })();
@@ -97,27 +116,26 @@ export default function HeroPlayer({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [JSON.stringify(items?.map((i) => ({ id: i.id, embed: i.embed })))]);
 
-  /** Lancer la progression pour le slide courant */
   const startProgress = useCallback(() => {
     if (!slides.length) return;
-    const dur = slides[index]?.durationMs ?? DEFAULT_DURATION_MS;
+    const target = slides[index]?.durationMs ?? DEFAULT_DURATION_MS;
     setProgress(0);
     if (rafRef.current) cancelAnimationFrame(rafRef.current);
     startRef.current = performance.now();
 
     const tick = (now: number) => {
-      const p = Math.min(1, (now - startRef.current) / dur);
+      const p = Math.min(1, (now - startRef.current) / target);
       setProgress(p);
       if (p >= 1) {
         setIndex((i) => (i + 1) % slides.length);
-        return; // le prochain cycle redémarre à l’init du slide suivant
+        return;
       }
       rafRef.current = requestAnimationFrame(tick);
     };
+
     rafRef.current = requestAnimationFrame(tick);
   }, [slides, index]);
 
-  /** Initialise le player Vimeo pour le slide courant */
   useEffect(() => {
     if (!slides.length) return;
 
@@ -128,7 +146,6 @@ export default function HeroPlayer({
       setProgress(0);
       if (rafRef.current) cancelAnimationFrame(rafRef.current);
 
-      // Filet si aucun "play" ne vient
       if (safetyTimeoutRef.current)
         window.clearTimeout(safetyTimeoutRef.current);
       safetyTimeoutRef.current = window.setTimeout(() => {
@@ -149,16 +166,19 @@ export default function HeroPlayer({
 
         try {
           await playerRef.current?.unload?.();
-        } catch {}
+        } catch {
+          // ignore
+        }
 
         playerRef.current = new Player(iframeRef.current);
         await playerRef.current.ready();
 
         try {
           await playerRef.current.setMuted(true);
+          await playerRef.current.setVolume?.(0);
           await playerRef.current.play();
         } catch {
-          // autoplay bloqué : le safety timeout fera le job
+          // autoplay blocked; fallback handled by timeout
         }
 
         playerRef.current.on?.("play", () => {
@@ -173,7 +193,7 @@ export default function HeroPlayer({
           startProgress();
         });
 
-        playerRef.current.on?.("error", (err: any) => {
+        playerRef.current.on?.("error", (err: unknown) => {
           console.warn("[Hero] Vimeo error:", err);
           if (cancelled) return;
           if (safetyTimeoutRef.current)
@@ -183,11 +203,10 @@ export default function HeroPlayer({
             firstPlaySentRef.current = true;
             onReady?.();
           }
-          // Skip au prochain
           setIndex((i) => (i + 1) % slides.length);
         });
-      } catch (e) {
-        console.warn("[Hero] player init failed:", e);
+      } catch (err) {
+        console.warn("[Hero] player init failed:", err);
         if (!cancelled) {
           if (safetyTimeoutRef.current)
             window.clearTimeout(safetyTimeoutRef.current);
@@ -212,13 +231,14 @@ export default function HeroPlayer({
         playerRef.current?.off?.("play");
         playerRef.current?.off?.("error");
         playerRef.current?.unload?.();
-      } catch {}
+      } catch {
+        // ignore
+      }
     };
   }, [slides, index, onReady, readyTimeoutMs, startProgress]);
 
   const totalSlides = slides.length;
 
-  /** Navigation manuelle */
   const goTo = useCallback(
     (i: number) => {
       if (!totalSlides) return;
@@ -228,7 +248,6 @@ export default function HeroPlayer({
     [totalSlides],
   );
 
-  /** Wheel / swipe (throttle) */
   const step = useCallback(
     (dir: 1 | -1) => {
       if (!totalSlides) return;
@@ -242,51 +261,51 @@ export default function HeroPlayer({
 
   useEffect(() => {
     if (!totalSlides) return;
-    const el = document.getElementById("hero-root");
-    if (!el) return;
+    const root = document.getElementById("hero-root");
+    if (!root) return;
 
-    const onWheel = (e: WheelEvent) => {
+    const onWheel = (event: WheelEvent) => {
       try {
-        e.preventDefault();
-        step((e.deltaY > 0 ? 1 : -1) as 1 | -1);
+        event.preventDefault();
+        step((event.deltaY > 0 ? 1 : -1) as 1 | -1);
       } catch (err) {
         console.warn("[Hero] wheel handler error:", err);
       }
     };
-    const onTouchStart = (e: TouchEvent) => {
-      touchStartY.current = e.touches[0]?.clientY ?? null;
+
+    const onTouchStart = (event: TouchEvent) => {
+      touchStartY.current = event.touches[0]?.clientY ?? null;
     };
-    const onTouchEnd = (e: TouchEvent) => {
+
+    const onTouchEnd = (event: TouchEvent) => {
       try {
         if (touchStartY.current == null) return;
-        const dy = e.changedTouches[0]?.clientY - touchStartY.current;
+        const dy = event.changedTouches[0]?.clientY - touchStartY.current;
         if (Math.abs(dy) > 40) step(dy < 0 ? 1 : -1);
       } finally {
         touchStartY.current = null;
       }
     };
 
-    el.addEventListener("wheel", onWheel, { passive: false });
-    el.addEventListener("touchstart", onTouchStart, { passive: true });
-    el.addEventListener("touchend", onTouchEnd, { passive: true });
+    root.addEventListener("wheel", onWheel, { passive: false });
+    root.addEventListener("touchstart", onTouchStart, { passive: true });
+    root.addEventListener("touchend", onTouchEnd, { passive: true });
 
     return () => {
-      el.removeEventListener("wheel", onWheel as any);
-      el.removeEventListener("touchstart", onTouchStart as any);
-      el.removeEventListener("touchend", onTouchEnd as any);
+      root.removeEventListener("wheel", onWheel as EventListener);
+      root.removeEventListener("touchstart", onTouchStart as EventListener);
+      root.removeEventListener("touchend", onTouchEnd as EventListener);
     };
   }, [totalSlides, step]);
 
   if (!totalSlides) return null;
   const current = slides[index];
 
-  /** UI */
   return (
     <section
       id="hero-root"
       className="relative h-[100svh] w-full overflow-hidden bg-black"
     >
-      {/* Media plein écran */}
       <div className="absolute inset-0">
         <iframe
           key={index}
@@ -303,28 +322,33 @@ export default function HeroPlayer({
         />
       </div>
 
-      {/* Vignette douce */}
       <div className="pointer-events-none absolute inset-0 shadow-[inset_0_0_240px_rgba(0,0,0,0.55)]" />
 
-      {/* Barres horizontales (droite) */}
-      <div className="absolute right-6 top-1/2 -translate-y-1/2 flex flex-col gap-3 z-[5] w-[160px]">
+      <div className="absolute right-6 top-1/2 -translate-y-1/2 flex w-[160px] flex-col gap-3 z-[5]">
         {slides.map((_, i) => {
           const active = i === index;
-          const pct = active ? progress : i < index ? 1 : 0;
+          const pct = active ? progress : 0;
           return (
             <button
               key={i}
+              type="button"
               onClick={() => goTo(i)}
-              aria-label={`Aller au projet ${i + 1}`}
+              aria-label={`Afficher le projet ${i + 1}`}
               className={[
-                "group relative h-[8px] w-full overflow-hidden rounded-full",
-                "bg-white/15 transition-all",
-                active ? "ring-1 ring-white/40" : "hover:bg-white/25",
+                "group relative w-full overflow-hidden rounded-full cursor-pointer transition-all",
+                active
+                  ? "h-[11px] bg-white/35 ring-1 ring-white/60"
+                  : "h-[7px] bg-white/12 hover:bg-white/22",
               ].join(" ")}
             >
               <span
-                className="absolute left-0 top-0 bottom-0 bg-white/90 group-hover:bg-white"
-                style={{ width: `${Math.round(pct * 100)}%` }}
+                className="absolute inset-y-0 left-0 bg-white/90 transition-all duration-200 group-hover:bg-white"
+                style={{
+                  width: `${Math.min(
+                    100,
+                    Math.max(0, Math.round(pct * 100)),
+                  )}%`,
+                }}
               />
               <span className="absolute inset-0 rounded-full ring-0 group-focus-visible:ring-2 group-focus-visible:ring-white/70" />
             </button>
@@ -332,8 +356,7 @@ export default function HeroPlayer({
         })}
       </div>
 
-      {/* Légende courte */}
-      <div className="pointer-events-none absolute left-6 bottom-6 text-white/70 text-xs tracking-wide">
+      <div className="pointer-events-none absolute left-6 bottom-[7rem] sm:bottom-[7.5rem] text-white/70 text-xs tracking-wide">
         {current.alt}
       </div>
     </section>

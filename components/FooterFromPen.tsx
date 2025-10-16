@@ -3,8 +3,8 @@
 export default function FooterFromPen() {
   return (
     <div className="footer">
-      <div className="coordinates-section">
-        <p>48.7264° N, 2.2770° E</p>
+      <div className="coordinates-section footer-pen-mono">
+        <p>48.7264&deg; N, 2.2770&deg; E</p>
       </div>
       <div className="links-section">
         <a
@@ -25,28 +25,26 @@ export default function FooterFromPen() {
           LinkedIn
         </a>
       </div>
-      <div className="info-section">
-        <p>Est. 2025 • antn.studio</p>
+      <div className="info-section footer-pen-mono">
+        <p>Est. 2025 &bull; antn.studio</p>
       </div>
 
       <style jsx>{`
-        @import url("https://fonts.cdnfonts.com/css/thegoodmonolith");
-        @import url("https://fonts.cdnfonts.com/css/pp-neue-montreal");
-
         .footer {
           pointer-events: none;
           display: grid;
           grid-template-columns: repeat(12, 1fr);
           column-gap: 1rem;
-          align-items: end;
-          padding: 1.2rem;
+          align-items: center;
+          padding: 1.2rem 1.2rem 2rem;
           width: 100vw;
           color: #fff;
         }
         .coordinates-section {
           grid-column: 1 / span 4;
-          font-family: "TheGoodMonolith", monospace;
+          pointer-events: auto;
           font-weight: 400;
+          letter-spacing: 0.05em;
         }
         .links-section {
           grid-column: 5 / span 4;
@@ -54,18 +52,17 @@ export default function FooterFromPen() {
           justify-content: center;
           gap: 1rem;
           pointer-events: auto;
-        }
-        .links-section a {
-          position: relative;
           font-family:
             "PP Neue Montreal",
             system-ui,
             -apple-system,
-            Segoe UI,
-            Roboto,
+            "Segoe UI",
             sans-serif;
-          font-weight: 700;
           font-size: 13px;
+          font-weight: 600;
+        }
+        .links-section a {
+          position: relative;
           color: #fff;
           text-decoration: none;
           mix-blend-mode: difference;
@@ -89,8 +86,9 @@ export default function FooterFromPen() {
         .info-section {
           grid-column: 9 / span 4;
           text-align: right;
-          font-family: "TheGoodMonolith", monospace;
+          pointer-events: auto;
           font-weight: 400;
+          letter-spacing: 0.05em;
         }
         @media (max-width: 900px) {
           .coordinates-section {
