@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Projects — antn.studio</title>
+  <title>Projects &mdash; antn.studio</title>
 
   <link href="https://fonts.cdnfonts.com/css/thegoodmonolith" rel="stylesheet" />
   <link href="https://fonts.cdnfonts.com/css/pp-neue-montreal" rel="stylesheet" />
@@ -55,7 +55,7 @@
       background-attachment: fixed;
     }
 
-    /* Grain léger */
+    /* Grain leger */
     body::before{
       content:""; position:fixed; inset:-50%;
       background:url("https://assets.iceable.com/img/noise-transparent.png") repeat 0 0/300px 300px;
@@ -81,7 +81,7 @@
     .header{top:0}
     .footer{bottom:0}
 
-    /* On neutralise les styles “bulle” côté header uniquement */
+    /* On neutralise les styles "bulle" cote header uniquement */
     .header, .header *{
       background: transparent;
       box-shadow: none;
@@ -158,7 +158,7 @@
     .item-name{font-size:12px;text-transform:uppercase;letter-spacing:-.03em;margin-bottom:2px;overflow:hidden;height:16px}
     .item-number{font:400 10px/1 "TheGoodMonolith",monospace;color:#888;overflow:hidden;height:14px}
 
-    /* Styles restants non utilisés pour overlay local (laissé inoffensif) */
+    /* Styles restants non utilises pour overlay local (laisse inoffensif) */
     .expanded-item{display:none}
     .overlay{display:none}
 
@@ -173,16 +173,16 @@
 
     .links-section a{font-weight:700;font-size:13px}
 
-    /* ======= AJUSTEMENTS MERGÉS ======= */
+    /* ======= AJUSTEMENTS MERGES ======= */
 
     /* header sous la nav Next mais au-dessus du fond */
     .header { z-index: 60; }
-    /* panneau years au-dessus si nécessaire */
+    /* panneau years au-dessus si necessaire */
     .legacy-years-panel { z-index: 70; }
     /* pas de texte parasite au centre */
     .project-title { display: none !important; }
 
-    /* Footer typographies & hover uniformisés */
+    /* Footer typographies & hover uniformises */
     .links-section a {
       position: relative;
       font-weight: 700;
@@ -203,7 +203,7 @@
     .coordinates-section,
     .info-section { font-family: "TheGoodMonolith", monospace; font-weight: 400; }
 
-    /* safety: la grille dessinée reste visible à travers */
+    /* safety: la grille dessinee reste visible a travers */
     body { overflow: hidden; }
   </style>
 </head>
@@ -224,9 +224,9 @@
 
   <!-- ===== FOOTER ===== -->
   <div class="footer">
-    <div class="coordinates-section"><p>48.7264° N, 2.2770° E</p></div>
+    <div class="coordinates-section"><p>48.7264&deg; N, 2.2770&deg; E</p></div>
     <div class="links-section" id="socials"></div>
-    <div class="info-section"><p>Est. 2025 • antn.studio</p></div>
+    <div class="info-section"><p>Est. 2025 &bull; antn.studio</p></div>
   </div>
 
   <!-- ===== GRID ===== -->
@@ -248,7 +248,7 @@
 
   <script>
   (function(){
-    /* ===== Embed Footer flag (tout en haut de l’IIFE) ===== */
+    /* ===== Embed Footer flag (tout en haut de l'IIFE) ===== */
     const params = new URLSearchParams(location.search);
     const embedFooter = params.get('embed') === 'footer';
     if (embedFooter) {
@@ -259,40 +259,67 @@
     gsap.registerPlugin(CustomEase);
     CustomEase.create("hop","0.9,0,0.1,1");
 
-    let PROJECTS = [];
+    /* ===== Data ===== */
+    let PROJECTS = []; // { id, title, year, image, poster?, embed?, src?, videoSrc?, link? }
     let HAS_PARENT_DATA = false;
     let REQUESTED_PARENT = false;
-    let current = null;
 
-    // Sanity: limite la taille du dataset pour ne pas exploser la mémoire
-    const MAX_ITEMS = 80;
+    // parsing annee depuis le titre
+    function yearFromTitle(t){
+      if(!t || typeof t !== "string") return null;
+      const m = t.match(/(?:^|\D)(20\d{2}|19\d{2})(?:\D|$)/);
+      const y = m ? parseInt(m[1],10) : null;
+      if(y && y>=1900 && y<=2100) return y;
+      return null;
+    }
 
-    /* Format: {
-        id, title, year, image, videoSrc, duration, client,...
-     }
-    */
+    // --- PATCH: on preserve les champs video & poster ---
+    function pickPoster(it){
+      return (
+        it.poster ||
+        it.thumbnail ||
+        (it.pictures && it.pictures.sizes && it.pictures.sizes.length
+          ? it.pictures.sizes[it.pictures.sizes.length - 1].link
+          : null) ||
+        it.picture ||
+        it.thumb ||
+        ""
+      );
+    }
 
-    function normalize(raw){
-      if(!Array.isArray(raw)) return [];
-      const unique = new Map();
-      raw.forEach(item=>{
-        if(!item) return;
-        const id = item.id || item.uri || item.link;
-        if(!id) return;
-        const title = item.title || item.name || "Untitled";
-        const image = item.picture || item.thumbnail || item.poster || item.thumb || (item.pictures && item.pictures.sizes?.pop()?.link_with_play_button);
-        const embed = item.embed || item.embedHtml || item.embed?.html || item.player_embed_url;
-        const year = item.year || (item.release_time && new Date(item.release_time).getFullYear()) || (item.created_at && new Date(item.created_at).getFullYear());
-        unique.set(id, {
-          id,
+    function normalize(list){
+      return (Array.isArray(list) ? list : []).map(it => {
+        const title = it.title || it.name || "Untitled";
+        const yFromTitle = yearFromTitle(title);
+        const created = it.createdAt || it.created_time || null;
+        const yFromDate = created ? new Date(created).getFullYear() : (it.year || null);
+
+        return {
+          id: String(it.id ?? (it.uri && it.uri.split("/").pop()) ?? title),
           title,
-          image,
-          embed,
-          year,
-          duration: item.duration || item.stats?.plays || null,
-        });
+          year: yFromTitle ?? yFromDate ?? new Date().getFullYear(),
+          image: pickPoster(it),
+
+          // champs conserves pour le parent
+          poster: pickPoster(it),
+          embed: it.embed || (it.player && it.player.embed_url) || null,
+          src: it.src || null,
+          videoSrc: it.videoSrc || null,
+          link: it.link || null,
+        };
       });
-      return Array.from(unique.values()).slice(0, MAX_ITEMS);
+    }
+
+    async function loadProjects(){
+      if (HAS_PARENT_DATA) return;
+      try{
+        const res = await fetch("/api/vimeo", { cache:"no-store" });
+        const json = await res.json();
+        const items = normalize(json?.items);
+        PROJECTS = items.filter(p => !!p.image);
+      }catch(e){
+        PROJECTS = [];
+      }
     }
 
     const SOCIALS = [
@@ -351,166 +378,141 @@
     }
     function updateYearButtons(){
       yearsEl.querySelectorAll(".year-btn").forEach(btn=>{
-        const pressed = btn.textContent === activeYear;
-        btn.setAttribute("aria-pressed", String(pressed));
+        btn.setAttribute("aria-pressed", String(btn.textContent === String(activeYear)));
       });
+    }
+    function setActiveYear(label){
+      activeYear = label;
+      document.documentElement.setAttribute("data-year", String(label).toLowerCase());
+      resetAndRebuild();
+      updateYearButtons();
+      // PATCH: informer le parent du filtre en cours si besoin
+      window.parent?.postMessage({ type: "REQUEST_YEAR_ACK", value: activeYear === "All" ? "all" : activeYear }, "*");
     }
 
     function openYears(){
       yearsWrap.classList.add("open");
-      yearsToggle.setAttribute("aria-expanded", "true");
+      yearsToggle.setAttribute("aria-expanded","true");
     }
     function closeYears(){
       yearsWrap.classList.remove("open");
-      yearsToggle.setAttribute("aria-expanded", "false");
+      yearsToggle.setAttribute("aria-expanded","false");
     }
-
     yearsToggle.addEventListener("click", ()=>{
-      if(yearsWrap.classList.contains("open")) closeYears();
-      else openYears();
+      yearsWrap.classList.toggle("open");
+      yearsToggle.setAttribute("aria-expanded", String(yearsWrap.classList.contains("open")));
     });
     yearsClose.addEventListener("click", closeYears);
 
     function currentList(){
-      if(activeYear === "All") return PROJECTS;
-      return PROJECTS.filter(p => String(p.year) === activeYear);
+      if(activeYear==="All") return PROJECTS;
+      const y = parseInt(activeYear,10);
+      return PROJECTS.filter(p => p.year === y);
     }
 
-    function setActiveYear(year){
-      activeYear = year;
-      updateYearButtons();
-      rebuildIfNeeded();
-    }
+    /* ===== Grille / rendu infini ===== */
+    const itemSizes = [
+      { width: settings.baseWidth, height: settings.smallHeight },
+      { width: settings.baseWidth, height: settings.largeHeight }
+    ];
+    const cellWidth = settings.baseWidth + 65;
+    const cellHeight = Math.max(settings.smallHeight, settings.largeHeight) + 65;
+    let columns = 4;
 
-    /* ===== Grid placement ===== */
-    let viewWidth = window.innerWidth;
-    let viewHeight = window.innerHeight;
-    let ratio = viewWidth/viewHeight;
+    let isDragging=false,startX,startY,targetX=0,targetY=0,currentX=0,currentY=0,dragVX=0,dragVY=0,lastDrag=0;
+    let mouseHasMoved=false,visibleItems=new Set(),lastUpdate=0,lastX=0,lastY=0;
 
-    let lastX = 0, lastY = 0;
-    let targetX = 0, targetY = 0;
-    let currentX = 0, currentY = 0;
-    let dragVX = 0, dragVY = 0;
-    let lastDrag = 0;
-    let isDragging = false;
-    let mouseHasMoved = false;
-    let startX = 0, startY = 0;
-
-    const visibleItems = new Set();
-    const ITEMS = {};
-
-    function itemSize(){
-      const w = settings.baseWidth;
-      const h = ratio > 1.2 ? settings.largeHeight : settings.smallHeight;
-      return { w, h };
-    }
-
-    function snap(n){ return Math.round(n / settings.itemGap) * settings.itemGap; }
-
-    function placeItem(item, index, list){
-      const { w, h } = itemSize();
-      const col = index % 4;
-      const row = Math.floor(index / 4);
-      const x = col * (w + settings.itemGap);
-      const y = row * (h + settings.itemGap);
-
-      item.x = x;
-      item.y = y;
-
-      const el = createOrReuse(item, list.length);
-      el.style.transform = `translate(${x}px, ${y}px)`;
-      el.style.width = `${w}px`;
-      el.style.height = `${h}px`;
-    }
-
-    function createOrReuse(item, total){
-      let el = document.getElementById(item.id);
-      if(!el){
-        el = document.createElement("div");
-        el.className = "item";
-        el.id = item.id;
-        el.innerHTML = `
-          <div class="item-image-container">
-            <img src="${item.image || "https://placehold.co/600x400?text=No+Image"}" alt="${item.title}" loading="lazy" />
-          </div>
-          <div class="item-caption">
-            <div class="item-name">${item.title}</div>
-            <div class="item-number">${item.year || "—"}</div>
-          </div>
-        `;
-        el.addEventListener("click", ()=>{
-          window.parent?.postMessage({ type: "OPEN_PLAYER", value: item }, "*");
-        });
-        canvas.appendChild(el);
-      }
-      el.dataset.total = total;
-      return el;
-    }
+    function getItemSize(row,col){ const idx = Math.abs((row*columns+col)%itemSizes.length); return itemSizes[idx]; }
+    function getItemId(col,row){ return `${col},${row}`; }
+    function getItemPos(col,row){ return { x: col*cellWidth, y: row*cellHeight }; }
 
     function updateVisibleItems(){
       const list = currentList();
-      const { w, h } = itemSize();
-      const cols = Math.max(1, Math.floor(viewWidth / (w + settings.itemGap)) + settings.bufferZone);
-      const rows = Math.max(1, Math.floor(viewHeight / (h + settings.itemGap)) + settings.bufferZone);
+      const itemCount = list.length || 1;
+      if(!itemCount) return;
 
-      const needed = new Set();
-      const baseCol = Math.floor(-targetX / (w + settings.itemGap));
-      const baseRow = Math.floor(-targetY / (h + settings.itemGap));
+      const buffer = 3;
+      const vw = innerWidth*(1+buffer), vh = innerHeight*(1+buffer);
+      const startCol = Math.floor((-currentX - vw/2)/cellWidth);
+      const endCol   = Math.ceil((-currentX + vw*1.5)/cellWidth);
+      const startRow = Math.floor((-currentY - vh/2)/cellHeight);
+      const endRow   = Math.ceil((-currentY + vh*1.5)/cellHeight);
 
-      let index = 0;
-      for(let r = -1; r < rows; r++){
-        for(let c = -1; c < cols; c++){
-          const col = baseCol + c;
-          const row = baseRow + r;
-          const idx = row * 4 + col;
-          if(idx < 0 || idx >= list.length) continue;
-          const item = list[idx];
-          if(!item) continue;
+      const currentSet = new Set();
 
-          needed.add(item.id);
-          placeItem(item, idx, list);
+      for(let row=startRow; row<=endRow; row++){
+        for(let col=startCol; col<=endCol; col++){
+          const id = getItemId(col,row); currentSet.add(id);
+          if(visibleItems.has(id)) continue;
+
+          const size = getItemSize(row,col);
+          const pos = getItemPos(col,row);
+          const idx = Math.abs((row*columns+col) % itemCount);
+          const proj = list[idx];
+
+          const item = document.createElement("div");
+          item.className="item"; item.id=id;
+          item.style.width = `${size.width}px`;
+          item.style.height = `${size.height}px`;
+          item.style.left = `${pos.x}px`;
+          item.style.top  = `${pos.y}px`;
+          item.dataset.width = size.width;
+          item.dataset.height = size.height;
+          item.dataset.year = String(proj.year);
+
+          const imageContainer = document.createElement("div");
+          imageContainer.className = "item-image-container";
+          const img = document.createElement("img");
+          img.src = proj.image || "";
+          img.alt = proj.title;
+          imageContainer.appendChild(img); item.appendChild(imageContainer);
+
+          const caption = document.createElement("div");
+          caption.className = "item-caption";
+          const name = document.createElement("div"); name.className="item-name"; name.textContent = proj.title;
+          const number = document.createElement("div"); number.className="item-number"; number.textContent = String(proj.year);
+          caption.appendChild(name); caption.appendChild(number); item.appendChild(caption);
+
+          // PATCH: clic => notifie le parent d'ouvrir le player
+          item.addEventListener("click", () => {
+            if(mouseHasMoved||isDragging) return;
+            const payload = {
+              id: proj.id,
+              title: proj.title,
+              poster: proj.poster || proj.image,
+              embed: proj.embed || proj.src || proj.videoSrc || null,
+              link: proj.link || null,
+              year: proj.year
+            };
+            window.parent?.postMessage({ type: "OPEN_PLAYER", value: payload }, "*");
+          });
+
+          canvas.appendChild(item); visibleItems.add(id);
         }
       }
 
-      visibleItems.forEach(id=>{
-        if(!needed.has(id)){
+      // cleanup
+      visibleItems.forEach((id)=>{
+        if(!currentSet.has(id)){
           const el = document.getElementById(id);
-          if(el && el.parentNode === canvas) canvas.removeChild(el);
+          if(el && el.parentNode===canvas) canvas.removeChild(el);
           visibleItems.delete(id);
         }
       });
-
-      needed.forEach(id=> visibleItems.add(id));
-    }
-
-    let ticking = false;
-    function rebuildIfNeeded(){
-      if(!ticking){
-        ticking = true;
-        requestAnimationFrame(()=>{
-          updateVisibleItems();
-          ticking = false;
-        });
-      }
     }
 
     function animate(){
-      currentX += (targetX - currentX) * settings.dragEase;
-      currentY += (targetY - currentY) * settings.dragEase;
-
-      canvas.style.transform = `translate(${currentX}px, ${currentY}px)`;
-      const diffX = Math.abs(currentX - lastX);
-      const diffY = Math.abs(currentY - lastY);
-      if(diffX > 0.2 || diffY > 0.2){
-        updateVisibleItems();
-        lastX = currentX;
-        lastY = currentY;
-      }
+      const e = settings.dragEase;
+      currentX += (targetX-currentX)*e;
+      currentY += (targetY-currentY)*e;
+      canvas.style.transform = `translate(${currentX}px,${currentY}px)`;
+      const now = Date.now(), dist = Math.hypot(currentX-lastX,currentY-lastY);
+      if(dist>100 || now-lastUpdate>120){ updateVisibleItems(); lastX=currentX; lastY=currentY; lastUpdate=now; }
       requestAnimationFrame(animate);
     }
 
     // drag / touch
-    const containerEl = container; // alias pour clarté
+    const containerEl = container; // alias pour clarte
     containerEl.addEventListener("mousedown",(e)=>{ isDragging=true; mouseHasMoved=false; startX=e.clientX; startY=e.clientY; containerEl.style.cursor="grabbing"; });
     addEventListener("mousemove",(e)=>{ if(!isDragging) return; const dx=e.clientX-startX, dy=e.clientY-startY; if(Math.abs(dx)>5||Math.abs(dy)>5) mouseHasMoved=true; const now=Date.now(), dt=Math.max(10, now-lastDrag); lastDrag=now; dragVX=dx/dt; dragVY=dy/dt; targetX+=dx; targetY+=dy; startX=e.clientX; startY=e.clientY; });
     addEventListener("mouseup",()=>{ if(!isDragging) return; isDragging=false; containerEl.style.cursor="grab"; if(Math.abs(dragVX)>0.1||Math.abs(dragVY)>0.1){ targetX += dragVX*settings.momentumFactor; targetY += dragVY*settings.momentumFactor; } });
@@ -554,7 +556,7 @@
         }
         const ok = data.value?.ok;
         const count = data.value?.count ?? 0;
-        badge.textContent = ok ? `Vimeo OK • ${count} items` : `Vimeo KO`;
+        badge.textContent = ok ? `Vimeo OK \u2022 ${count} items` : `Vimeo KO`;
       }
 
       if (data.type === "SET_PROJECTS") {
@@ -572,7 +574,7 @@
         openYears();
       }
 
-      // Optionnel : le parent peut demander explicitement les projets/année
+      // Optionnel : le parent peut demander explicitement les projets/annee
       if (data.type === "PING") {
         window.parent?.postMessage({ type: "PONG" }, "*");
       }
@@ -580,10 +582,10 @@
 
     /* ===== Init ===== */
     (async function init(){
-      // Signaler au parent qu'on est prêt
+      // Signaler au parent qu'on est pret
       window.parent?.postMessage({ type: "IFRAME_READY" }, "*");
 
-      await loadProjects();      // fetch Vimeo si le parent n'a pas injecté
+      await loadProjects();      // fetch Vimeo si le parent n'a pas injecte
       if (!HAS_PARENT_DATA && PROJECTS.length === 0 && !REQUESTED_PARENT) {
         REQUESTED_PARENT = true;
         window.parent?.postMessage({ type: "REQUEST_PROJECTS" }, "*");
@@ -609,7 +611,7 @@
       gsap.set(titleSplit.words,{ y:"100%", opacity:0 });
       gsap.to(titleSplit.words,{ y:"0%", opacity:1, duration:0.8, stagger:.05, ease:"power3.out" });
     }
-    // Met à jour le titre au scroll (facultatif)
+    // Met a jour le titre au scroll (facultatif)
     document.addEventListener("pointerup", ()=> {
       const list = currentList();
       if(list.length) setAndAnimateTitle(list[Math.floor(Math.random()*list.length)].title);
