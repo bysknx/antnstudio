@@ -310,17 +310,6 @@ html[data-app-loading="fading"] body {
   opacity: 0.45;
 }
 
-/* START PATCH: SiteFooter — texte nu (pas de ligne, pas de fond) */
-/* On garde uniquement la gestion des interactions. */
-.antn-footer {
-  /* pas de background, pas de bordure, pas de blur */
-}
-.antn-footer a,
-.antn-footer .links-section,
-.antn-footer .coordinates-section,
-.antn-footer .info-section {
-  pointer-events: auto;
-}
 @import url("https://fonts.cdnfonts.com/css/thegoodmonolith");
 
 .footer-pen-mono {
