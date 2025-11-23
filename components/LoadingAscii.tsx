@@ -194,6 +194,7 @@ export default function LoadingAscii({ force = false }: { force?: boolean } = {}
 
   return (
     <div
+      data-loader="ascii"
       aria-hidden
       style={{
         ["--in" as any]: `${FADE_IN_MS}ms`,

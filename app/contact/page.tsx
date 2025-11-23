@@ -37,65 +37,74 @@ const EXPERIENCES = [
 export default function ContactPage() {
   return (
     <main className="relative container mx-auto flex min-h-[100svh] flex-col justify-between px-6 py-24">
-      <div className="flex flex-grow flex-col items-center justify-between gap-12 lg:flex-row">
-        <div className="w-full max-w-md flex-shrink-0">
-          <ContactForm className="glass-panel" />
-        </div>
+      <div className="relative overflow-hidden rounded-[28px] border border-white/8 bg-black/40 px-6 py-10 shadow-[0_35px_140px_rgba(0,0,0,0.55)] backdrop-blur-xl">
+        <div
+          aria-hidden
+          className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_20%_20%,rgba(255,255,255,0.12),transparent_42%),radial-gradient(circle_at_85%_12%,rgba(94,234,212,0.08),transparent_32%),radial-gradient(circle_at_70%_80%,rgba(255,255,255,0.06),transparent_40%)] opacity-80"
+        />
 
-        <section className="w-full space-y-6 text-left lg:w-1/2">
-          <div className="space-y-3">
-            <h2 className="mb-3 text-2xl font-semibold text-zinc-100">
-              About.
-            </h2>
-
-            <p className="max-w-xl text-[15px] leading-relaxed text-zinc-300/90">
-              <strong className="font-semibold">
-                &laquo; antn.studio &raquo;
-              </strong>{" "}
-              founded by Anthony, an independent director and project lead from{" "}
-              <HoverWord>Paris</HoverWord>.
-            </p>
-
-            <p className="max-w-xl text-[15px] leading-relaxed text-zinc-300/90">
-              Blending <HoverWord>precision</HoverWord> with{" "}
-              <HoverWord>emotion</HoverWord>, the studio crafts{" "}
-              <HoverWord>cinematic visuals</HoverWord>,{" "}
-              <HoverWord>brand films</HoverWord>, and{" "}
-              <HoverWord>digital experiences</HoverWord> with a strong{" "}
-              <HoverWord>narrative core</HoverWord>.
-            </p>
-
-            <p className="max-w-xl text-[15px] leading-relaxed text-zinc-300/90">
-              Each project is shaped with <HoverWord>technical mastery</HoverWord>
-              , and driven by a search for <HoverWord>authenticity</HoverWord> and{" "}
-              <HoverWord>impact</HoverWord>.
-            </p>
-
-            <p className="max-w-xl text-[15px] leading-relaxed text-zinc-300/90">
-              <HoverWord>Sensory</HoverWord>, <HoverWord>intentional</HoverWord>,{" "}
-              <HoverWord>timeless</HoverWord> &mdash; antn.studio turns ideas into{" "}
-              <HoverWord>living imagery</HoverWord>.
-            </p>
+        <div className="relative flex flex-grow flex-col items-center justify-between gap-12 lg:flex-row">
+          <div className="w-full max-w-md flex-shrink-0">
+            <ContactForm className="glass-panel" />
           </div>
 
-          <div className="flex flex-col items-start gap-4 pt-2 sm:flex-row sm:items-center">
-            <span className="text-sm text-zinc-400">Let&rsquo;s connect :</span>
+          <section className="relative w-full space-y-6 rounded-2xl border border-white/10 bg-zinc-900/55 p-6 text-left shadow-[0_20px_80px_rgba(0,0,0,0.35)] backdrop-blur">
+            <div className="space-y-3">
+              <h2 className="mb-3 text-2xl font-semibold text-zinc-100">
+                About.
+              </h2>
 
-            <a
-              href="mailto:anthony@antn.studio"
-              className="group relative inline-flex items-center overflow-hidden rounded-md border border-white/10 bg-zinc-900/40 px-5 py-2.5 text-sm font-medium text-zinc-100 backdrop-blur transition-colors"
-            >
-              <span className="relative z-10 transition-colors duration-300 group-hover:text-zinc-900">
-                anthony@antn.studio
+              <p className="max-w-xl text-[15px] leading-relaxed text-zinc-300/90">
+                <strong className="font-semibold">
+                  &laquo; antn.studio &raquo;
+                </strong>{" "}
+                founded by Anthony, an independent director and project lead from{" "}
+                <HoverWord>Paris</HoverWord>.
+              </p>
+
+              <p className="max-w-xl text-[15px] leading-relaxed text-zinc-300/90">
+                Blending <HoverWord>precision</HoverWord> with{" "}
+                <HoverWord>emotion</HoverWord>, the studio crafts{" "}
+                <HoverWord>cinematic visuals</HoverWord>,{" "}
+                <HoverWord>brand films</HoverWord>, and{" "}
+                <HoverWord>digital experiences</HoverWord> with a strong{" "}
+                <HoverWord>narrative core</HoverWord>.
+              </p>
+
+              <p className="max-w-xl text-[15px] leading-relaxed text-zinc-300/90">
+                Each project is shaped with <HoverWord>technical mastery</HoverWord>
+                , and driven by a search for <HoverWord>authenticity</HoverWord> and{" "}
+                <HoverWord>impact</HoverWord>.
+              </p>
+
+              <p className="max-w-xl text-[15px] leading-relaxed text-zinc-300/90">
+                <HoverWord>Sensory</HoverWord>, <HoverWord>intentional</HoverWord>,{" "}
+                <HoverWord>timeless</HoverWord> &mdash; antn.studio turns ideas into{" "}
+                <HoverWord>living imagery</HoverWord>.
+              </p>
+            </div>
+
+            <div className="flex flex-col items-start gap-4 pt-2 sm:flex-row sm:items-center">
+              <span className="text-sm text-zinc-400">
+                Let&rsquo;s connect :
               </span>
-              <span
-                aria-hidden
-                className="absolute inset-0 -z-0 translate-x-[101%] bg-white transition-transform duration-300 ease-out group-hover:translate-x-0"
-                style={{ transformOrigin: "right center" }}
-              />
-            </a>
-          </div>
-        </section>
+
+              <a
+                href="mailto:anthony@antn.studio"
+                className="group relative inline-flex items-center overflow-hidden rounded-md border border-white/10 bg-zinc-800/70 px-5 py-2.5 text-sm font-medium text-zinc-100 backdrop-blur transition-colors"
+              >
+                <span className="relative z-10 transition-colors duration-300 group-hover:text-zinc-900">
+                  anthony@antn.studio
+                </span>
+                <span
+                  aria-hidden
+                  className="absolute inset-0 -z-0 translate-x-[101%] bg-white transition-transform duration-300 ease-out group-hover:translate-x-0"
+                  style={{ transformOrigin: "right center" }}
+                />
+              </a>
+            </div>
+          </section>
+        </div>
       </div>
 
       <section className="mt-24">

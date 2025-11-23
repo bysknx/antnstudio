@@ -1,3 +1,5 @@
+import { getSiteUrl } from "@/lib/constants";
+
 // app/sitemap.ts
 export const dynamic = "force-dynamic";
 
@@ -11,18 +13,11 @@ function slugify(input: string) {
 }
 
 export default async function sitemap() {
-  const base =
-    process.env.NEXT_PUBLIC_SITE_URL ||
-    process.env.VERCEL_PROJECT_PRODUCTION_URL?.startsWith("http")
-      ? process.env.VERCEL_PROJECT_PRODUCTION_URL
-      : `https://${process.env.VERCEL_PROJECT_PRODUCTION_URL || "localhost:3000"}`;
+  const base = getSiteUrl();
 
-  const res = await fetch(
-    `${process.env.NEXT_PUBLIC_BASE_URL ?? ""}/api/vimeo`,
-    {
-      cache: "no-store",
-    },
-  ).catch(() => null);
+  const res = await fetch(`${base}/api/vimeo`, {
+    cache: "no-store",
+  }).catch(() => null);
 
   const json = res && res.ok ? await res.json() : { items: [] as any[] };
   const items: any[] = Array.isArray(json?.items) ? json.items : [];

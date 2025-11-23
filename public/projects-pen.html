@@ -287,12 +287,37 @@
       );
     }
 
+    function normalizeEmbed(url){
+      if(!url) return null;
+      try{
+        const u = new URL(url, "https://player.vimeo.com");
+        const set = (k,v) => u.searchParams.set(k,v);
+        set("autoplay","1");
+        set("muted","1");
+        set("controls","1");
+        set("playsinline","1");
+        set("pip","1");
+        set("title","0");
+        set("byline","0");
+        return u.toString();
+      }catch(e){
+        return url;
+      }
+    }
+
     function normalize(list){
       return (Array.isArray(list) ? list : []).map(it => {
         const title = it.title || it.name || "Untitled";
         const yFromTitle = yearFromTitle(title);
         const created = it.createdAt || it.created_time || null;
         const yFromDate = created ? new Date(created).getFullYear() : (it.year || null);
+        const embed = normalizeEmbed(
+          it.embed ||
+          (it.player && it.player.embed_url) ||
+          it.src ||
+          it.videoSrc ||
+          null
+        );
 
         return {
           id: String(it.id ?? (it.uri && it.uri.split("/").pop()) ?? title),
@@ -302,7 +327,7 @@
 
           // champs conserves pour le parent
           poster: pickPoster(it),
-          embed: it.embed || (it.player && it.player.embed_url) || null,
+          embed,
           src: it.src || null,
           videoSrc: it.videoSrc || null,
           link: it.link || null,
@@ -480,7 +505,7 @@
               id: proj.id,
               title: proj.title,
               poster: proj.poster || proj.image,
-              embed: proj.embed || proj.src || proj.videoSrc || null,
+              embed: normalizeEmbed(proj.embed || proj.src || proj.videoSrc || null),
               link: proj.link || null,
               year: proj.year
             };

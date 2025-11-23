@@ -152,7 +152,7 @@ export async function fetchVimeoWorks(opts: {
       thumbnail: thumb,
       link: v?.link || (id ? `https://vimeo.com/${id}` : ""),
       embed: id
-        ? `https://player.vimeo.com/video/${id}?muted=1&autoplay=0&playsinline=1&controls=0&pip=1&transparent=0`
+        ? `https://player.vimeo.com/video/${id}?muted=1&autoplay=1&playsinline=1&controls=1&pip=1&transparent=0&title=0&byline=0`
         : "",
       duration: v?.duration ?? undefined,
     };

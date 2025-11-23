@@ -26,13 +26,13 @@ const BOOT_SCRIPT = String.raw`(function () {
     var box = document.createElement("div");
     box.id = "boot";
     box.style.cssText = css;
-    var art = [
-      "      ___        _            _        _           ",
-      "     / _ &bsol; _   _| |_ ___  ___| |_ __ _| |_ ___  _ __ ",
-      "    / /_)/ | | | __/ _ &bsol;/ __| __/ _ &bsol;| '__|",
-      "   / ___/| |_| | ||  __/&bsol;__ &bsol; || (_| | || (_) | |   ",
-      "   &bsol;/     &bsol;__,_|&bsol;__&bsol;___||___/&bsol;__&bsol;__,_|&bsol;__&bsol;___/|_|   "
-    ].join("\\n");
+    var art = String.raw`
+      ___        _            _        _
+     / _ \ _   _| |_ ___  ___| |_ __ _| |_ ___  _ __
+    / /_)/ | | | __/ _ \/ __| __/ _\` | __/ _ \| '__|
+   / ___/| |_| | ||  __/\__ \ || (_| | || (_) | |
+   \/     \__,_|\__\___||___/\__\__,_|\__\___/|_|
+    `.trim();
     box.innerHTML = '<div style="padding:24px;text-align:left">'+
       '<pre style="margin:0;line-height:1.05;letter-spacing:.02em;font-size:clamp(14px,6vw,24px);opacity:.95">'+ art + '\\n\\n</pre>'+
       '<div style="margin-top:16px;font-size:12px;opacity:.9">booting interface '+
@@ -55,14 +55,14 @@ const BOOT_SCRIPT = String.raw`(function () {
 })();`;
 
 export const metadata: Metadata = {
-  title: "antn.studio â€” Anthony",
+  title: "antn.studio — Anthony",
   description:
-    "Front-end & DA minimale. ExpÃ©riences web sobres, performantes, accessibles.",
+    "Front-end & DA minimale. Expériences web sobres, performantes, accessibles.",
   metadataBase: new URL("https://antn.studio"),
   openGraph: {
-    title: "antn.studio â€” Anthony",
+    title: "antn.studio — Anthony",
     description:
-      "Front-end & DA minimale. ExpÃ©riences web sobres, performantes, accessibles.",
+      "Front-end & DA minimale. Expériences web sobres, performantes, accessibles.",
     url: "https://antn.studio",
     siteName: "antn.studio",
     images: [{ url: "/cover.jpg", width: 1200, height: 630, alt: "antn.studio" }],
@@ -70,9 +70,9 @@ export const metadata: Metadata = {
   },
   twitter: {
     card: "summary_large_image",
-    title: "antn.studio â€” Anthony",
+    title: "antn.studio — Anthony",
     description:
-      "Front-end & DA minimale. ExpÃ©riences web sobres, performantes, accessibles.",
+      "Front-end & DA minimale. Expériences web sobres, performantes, accessibles.",
     images: ["/cover.jpg"],
   },
   icons: [{ rel: "icon", url: "/favicon.ico" }],
@@ -90,14 +90,14 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <link rel="dns-prefetch" href="https://i.vimeocdn.com" />
         <link rel="dns-prefetch" href="https://f.vimeocdn.com" />
 
-        {/* PrÃ©charge le pen pour lisser lâ€™ouverture */}
+        {/* Preloads the pen to smooth the first open */}
         <link rel="preload" href="/projects-pen.html" as="document" />
 
-        {/* PrÃ©charge lâ€™API Vimeo cÃ´tÃ© nav client (hint pour le navigateur) */}
+        {/* Preload Vimeo API client-side (browser hint) */}
         <link rel="preload" href="/api/vimeo" as="fetch" crossOrigin="anonymous" />
       </head>
       <body className="overflow-x-hidden">
-        {/* Boot shell : 1er paint = Ã©cran loader. Masque tout le reste jusqu'Ã  disparition. */}
+        {/* Boot shell: first paint = loader screen. Hides the rest until dismissal. */}
         <script
           dangerouslySetInnerHTML={{
             __html: BOOT_SCRIPT,
@@ -106,10 +106,10 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <style
           dangerouslySetInnerHTML={{
             __html: `html[data-booting] body > *:not(#boot){ visibility:hidden }`,
-          }}
-        />
+        }}
+      />
 
-        {/* Loader ASCII (plein Ã©cran, z-max) */}
+        {/* Fullscreen ASCII loader */}
         <LoadingAscii />
 
         {/* Header global (nav) */}
@@ -126,4 +126,3 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
     </html>
   );
 }
-

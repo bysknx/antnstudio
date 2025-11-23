@@ -248,8 +248,8 @@
     animation: none !important;
     opacity: 0.7;
   }
-  html[data-app-loading="visible"] body,
-  html[data-app-loading="fading"] body {
+  html[data-app-loading="visible"] body > :not(#boot):not([data-loader="ascii"]),
+  html[data-app-loading="fading"] body > :not(#boot):not([data-loader="ascii"]) {
     filter: none !important;
     opacity: 1 !important;
   }
@@ -300,14 +300,14 @@ html[data-home="1"] #gl-layer {
 }
 /* ===== END PATCH ===== */
 
-html[data-app-loading="visible"] body {
-  filter: blur(18px);
-  opacity: 0.18;
+html[data-app-loading="visible"] body > :not(#boot):not([data-loader="ascii"]) {
+  filter: blur(10px);
+  opacity: 0.32;
 }
 
-html[data-app-loading="fading"] body {
-  filter: blur(10px);
-  opacity: 0.45;
+html[data-app-loading="fading"] body > :not(#boot):not([data-loader="ascii"]) {
+  filter: blur(6px);
+  opacity: 0.55;
 }
 
 @import url("https://fonts.cdnfonts.com/css/thegoodmonolith");

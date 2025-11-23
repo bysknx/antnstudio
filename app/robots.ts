@@ -1,13 +1,14 @@
 import type { MetadataRoute } from "next";
-import { WEBSITE_URL } from "@/lib/constants";
+import { getSiteUrl } from "@/lib/constants";
 
 export default function robots(): MetadataRoute.Robots {
+  const base = getSiteUrl();
   return {
     rules: {
       userAgent: "*",
       allow: "/",
       disallow: "/private/",
     },
-    sitemap: `${WEBSITE_URL}/sitemap.xml`,
+    sitemap: `${base}/sitemap.xml`,
   };
 }
