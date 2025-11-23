@@ -1,6 +1,7 @@
 // app/projects/[slug]/page.tsx
 import { notFound } from "next/navigation";
 import Link from "next/link";
+import { getSiteUrl } from "@/lib/constants";
 
 export const dynamic = "force-dynamic"; // on lit /api/vimeo à la requête
 
@@ -15,7 +16,7 @@ function slugify(input: string) {
 
 async function getProjects() {
   // Route Handler interne — en SSR une URL relative marche aussi
-  const base = process.env.NEXT_PUBLIC_BASE_URL ?? "";
+  const base = getSiteUrl();
   const url = `${base}/api/vimeo`.replace(/\/{2,}/g, "/").replace(":/", "://");
 
   const res = await fetch(url, { cache: "no-store" }).catch(() => null);

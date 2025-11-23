@@ -311,6 +311,7 @@ html[data-app-loading="fading"] body > :not(#boot):not([data-loader="ascii"]) {
 }
 
 @import url("https://fonts.cdnfonts.com/css/thegoodmonolith");
+@import url("https://fonts.cdnfonts.com/css/pp-neue-montreal");
 
 .footer-pen-mono {
   font-family: "TheGoodMonolith", monospace;
