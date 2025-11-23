@@ -36,15 +36,15 @@ const EXPERIENCES = [
 
 export default function ContactPage() {
   return (
-    <main className="relative container mx-auto flex min-h-[100svh] flex-col justify-between px-6 py-24 lg:max-w-6xl xl:max-w-7xl">
-      <div className="relative overflow-hidden rounded-[28px] border border-white/8 bg-black/40 px-6 py-10 shadow-[0_35px_140px_rgba(0,0,0,0.55)] backdrop-blur-xl">
+    <main className="relative mx-auto flex min-h-[100svh] w-full max-w-7xl flex-col justify-between px-6 py-24">
+      <div className="relative overflow-hidden rounded-[28px] border border-white/10 bg-black/28 px-6 py-10 shadow-[0_30px_120px_rgba(0,0,0,0.5)] backdrop-blur-xl">
         <div
           aria-hidden
-          className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_20%_20%,rgba(255,255,255,0.12),transparent_42%),radial-gradient(circle_at_85%_12%,rgba(94,234,212,0.08),transparent_32%),radial-gradient(circle_at_70%_80%,rgba(255,255,255,0.06),transparent_40%)] opacity-80"
+          className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_20%_20%,rgba(255,255,255,0.08),transparent_44%),radial-gradient(circle_at_85%_12%,rgba(94,234,212,0.07),transparent_34%),radial-gradient(circle_at_70%_80%,rgba(255,255,255,0.05),transparent_42%)] opacity-75"
         />
 
         <div className="relative flex flex-grow flex-col items-center justify-between gap-12 lg:flex-row lg:items-start lg:gap-28 xl:gap-36">
-          <div className="w-full max-w-sm flex-shrink-0">
+          <div className="w-full max-w-md flex-shrink-0">
             <ContactForm className="glass-panel" />
           </div>
 
