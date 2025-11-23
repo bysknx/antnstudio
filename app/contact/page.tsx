@@ -43,12 +43,12 @@ export default function ContactPage() {
           className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_20%_20%,rgba(255,255,255,0.12),transparent_42%),radial-gradient(circle_at_85%_12%,rgba(94,234,212,0.08),transparent_32%),radial-gradient(circle_at_70%_80%,rgba(255,255,255,0.06),transparent_40%)] opacity-80"
         />
 
-        <div className="relative flex flex-grow flex-col items-center justify-between gap-12 lg:flex-row">
-          <div className="w-full max-w-md flex-shrink-0">
+        <div className="relative flex flex-grow flex-col items-center justify-between gap-12 lg:flex-row lg:items-start lg:gap-20 xl:gap-28">
+          <div className="w-full max-w-sm flex-shrink-0">
             <ContactForm className="glass-panel" />
           </div>
 
-          <section className="relative w-full space-y-6 rounded-2xl border border-white/10 bg-zinc-900/55 p-6 text-left shadow-[0_20px_80px_rgba(0,0,0,0.35)] backdrop-blur">
+          <section className="relative w-full space-y-6 rounded-2xl border border-white/10 bg-zinc-900/55 p-6 text-left shadow-[0_20px_80px_rgba(0,0,0,0.35)] backdrop-blur lg:w-[58%]">
             <div className="space-y-3">
               <h2 className="mb-3 text-2xl font-semibold text-zinc-100">
                 About.
