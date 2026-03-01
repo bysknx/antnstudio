@@ -1,7 +1,5 @@
 "use client";
 
-import { useMemo } from "react";
-
 type Props = {
   open: boolean;
   onClose: () => void;
@@ -10,24 +8,6 @@ type Props = {
   embed?: string | null;
 };
 
-function normalizeEmbed(input?: string | null) {
-  if (!input) return null;
-  try {
-    const url = new URL(input, "https://player.vimeo.com");
-    const set = (k: string, v: string) => url.searchParams.set(k, v);
-    set("autoplay", "1");
-    set("muted", "1");
-    set("controls", "1");
-    set("playsinline", "1");
-    set("pip", "1");
-    set("title", "0");
-    set("byline", "0");
-    return url.toString();
-  } catch {
-    return input;
-  }
-}
-
 export default function FullBleedPlayer({
   open,
   onClose,
@@ -35,9 +15,7 @@ export default function FullBleedPlayer({
   poster,
   embed,
 }: Props) {
-  const embedSrc = useMemo(() => normalizeEmbed(embed), [embed]);
-
-  if (!open || !embedSrc) return null;
+  if (!open || !embed) return null;
 
   return (
     <div
@@ -74,13 +52,15 @@ export default function FullBleedPlayer({
             </div>
           ) : null}
 
-          <iframe
-            key={embedSrc}
+          <video
+            key={embed}
             className="relative inset-0 h-full w-full rounded-lg"
-            src={embedSrc}
+            src={embed}
             title={title ?? "video"}
-            allow="autoplay; fullscreen; picture-in-picture; encrypted-media; clipboard-write; web-share"
-            allowFullScreen
+            autoPlay
+            controls
+            playsInline
+            style={{ objectFit: "contain" }}
           />
         </div>
       </div>

@@ -86,18 +86,14 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
   return (
     <html lang="fr" className="dark">
       <head>
-        {/* Preconnect/DNS-prefetch pour Vimeo */}
-        <link rel="preconnect" href="https://player.vimeo.com" />
-        <link rel="preconnect" href="https://i.vimeocdn.com" />
-        <link rel="preconnect" href="https://f.vimeocdn.com" />
-        <link rel="dns-prefetch" href="https://player.vimeo.com" />
-        <link rel="dns-prefetch" href="https://i.vimeocdn.com" />
-        <link rel="dns-prefetch" href="https://f.vimeocdn.com" />
+        {/* Preconnect vers le CDN média self-hosted */}
+        <link rel="preconnect" href="https://media.antn.studio" />
+        <link rel="dns-prefetch" href="https://media.antn.studio" />
 
         {/* Preloads the pen to smooth the first open */}
         <link rel="preload" href="/projects-pen.html" as="document" />
 
-        {/* Preload Vimeo API client-side (browser hint) */}
+        {/* Préchargement du manifest vidéo */}
         <link rel="preload" href="/api/vimeo" as="fetch" crossOrigin="anonymous" />
       </head>
       <body className="overflow-x-hidden">

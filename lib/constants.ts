@@ -1,4 +1,6 @@
 export const WEBSITE_URL = "https://antn.studio";
+export const MEDIA_URL =
+  process.env.NEXT_PUBLIC_MEDIA_URL || "https://media.antn.studio";
 
 /**
  * Returns the public-facing site URL, falling back to the canonical domain.

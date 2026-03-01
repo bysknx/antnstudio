@@ -3,7 +3,7 @@
 import { useEffect, useRef, useState } from "react";
 import { useSearchParams } from "next/navigation";
 import FullBleedPlayer from "@/components/ui/FullBleedPlayer";
-import { parseVimeoTitle } from "@/lib/parseVimeoTitle";
+// parseVimeoTitle supprimé — les titres sont déjà normalisés par l'API
 
 /* ==== Types ==== */
 export type VimeoItem = {
@@ -30,20 +30,14 @@ type Props = {
 
 /* ===== helpers ===== */
 function normalize(it: VimeoItem): VimeoItem {
-  const parsed = parseVimeoTitle(it.title || it.name || "");
-  const niceTitle = parsed?.title
-    ? parsed.client
-      ? `${parsed.client} — ${parsed.title}`
-      : parsed.title
-    : it.title || it.name || "Untitled";
-
+  // Les titres sont déjà normalisés par /api/vimeo (manifest local)
+  const title = it.title || it.name || "Untitled";
   const year =
-    parsed?.year ??
     it.year ??
     (it.createdAt ? new Date(it.createdAt).getFullYear() : undefined) ??
     (it.created_time ? new Date(it.created_time).getFullYear() : undefined);
 
-  return { ...it, title: niceTitle, year };
+  return { ...it, title, year };
 }
 
 /* ========= Composant client ========= */
@@ -74,7 +68,7 @@ export default function ProjectsClient({ initialItems }: Props) {
     try {
       const cached =
         typeof window !== "undefined"
-          ? sessionStorage.getItem("__VIMEO_PREFETCH")
+          ? (sessionStorage.getItem("__VIDEO_PREFETCH") || sessionStorage.getItem("__VIMEO_PREFETCH"))
           : null;
       if (cached) {
         const j = JSON.parse(cached);

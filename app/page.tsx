@@ -1,7 +1,6 @@
 // app/page.tsx — SERVER COMPONENT
 import { Suspense } from "react";
-import { fetchVimeoWorks } from "@/lib/vimeo";
-import { parseVimeoTitle } from "@/lib/parseVimeoTitle";
+import { fetchVideos } from "@/lib/videos";
 import PreloadVimeo from "@/components/PreloadVimeo";
 import ClientHeroSection from "@/components/ClientHeroSection";
 
@@ -13,34 +12,29 @@ type Item = {
   poster?: string;
   embed?: string;
   link?: string;
+  url?: string;
+  year?: number | null;
 };
 
 export const dynamic = "force-dynamic";
 
 export default async function HomePage() {
-  // Appel direct à la lib serveur (pas de fetch HTTP côté serveur)
-  const { items } = await fetchVimeoWorks({});
+  // Lecture du manifest local côté serveur
+  const videos = await fetchVideos();
 
-  const normalized: Item[] = (items || []).map((it: any) => {
-    const parsed = parseVimeoTitle(it?.title ?? "");
-    const display = parsed?.title
-      ? parsed.client
-        ? `${parsed.client} — ${parsed.title}`
-        : parsed.title
-      : (it?.title ?? "Untitled");
+  const normalized: Item[] = (videos || []).map((v) => ({
+    id: v.id,
+    title: v.title,
+    createdAt: v.year ? `${v.year}-01-01T00:00:00.000Z` : null,
+    thumbnail: "",
+    poster: "",
+    embed: v.url,
+    link: v.url,
+    url: v.url,
+    year: v.year,
+  }));
 
-    return {
-      id: String(it.id),
-      title: display,
-      createdAt: it.createdAt ?? null,
-      thumbnail: it.thumbnail ?? it.poster ?? "",
-      poster: it.thumbnail ?? it.poster ?? "",
-      embed: it.embed ?? "",
-      link: it.link ?? "",
-    };
-  });
-
-  // derniers 5 par date
+  // Les 5 plus récents (par année, puis par ordre)
   const latest = normalized
     .sort(
       (a, b) =>
@@ -51,7 +45,7 @@ export default async function HomePage() {
 
   return (
     <main className="relative min-h-[100svh]">
-      {/* Préchargement de /api/vimeo en fond pour accélérer /projects */}
+      {/* Préchargement du manifest en fond pour accélérer /projects */}
       <Suspense fallback={null}>
         <PreloadVimeo />
       </Suspense>

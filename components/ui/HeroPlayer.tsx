@@ -2,11 +2,14 @@
 
 import { useCallback, useEffect, useRef, useState } from "react";
 
-type VimeoItem = {
+type VideoItem = {
   id: string;
   title?: string;
+  url?: string;
   embed?: string;
-  duration?: number;
+  duration?: number | null;
+  client?: string;
+  year?: number | null;
 };
 
 type Slide = {
@@ -14,58 +17,33 @@ type Slide = {
   alt: string;
   durationMs: number;
   durationSeconds?: number;
-  vimeoId?: string;
-};
-
-type HeroItem = {
-  id: string;
-  title?: string;
-  embed?: string;
-  duration?: number;
 };
 
 const DEFAULT_DURATION_MS = 15000;
 const MAX_FEATURED = 6;
 const WHEEL_THROTTLE_MS = 1000;
 
-function buildSlide(item: HeroItem): Slide | null {
-  const { embed, title, duration } = item;
-  if (!embed || typeof embed !== "string") return null;
-  try {
-    const url = new URL(embed.trim(), "https://player.vimeo.com");
-    const params = url.searchParams;
-    const set = (key: string, value: string) => {
-      params.set(key, value);
-    };
-    set("muted", "1");
-    set("autoplay", "1");
-    set("autopause", "0");
-    set("loop", "1");
-    set("playsinline", "1");
-    set("controls", "0");
-    set("pip", "1");
-    set("title", "0");
-    set("byline", "0");
-    set("portrait", "0");
-    set("transparent", "0");
-    set("background", "1");
-    return {
-      src: url.toString(),
-      alt: title ?? "Untitled",
-      durationMs:
-        typeof duration === "number" && duration > 0
-          ? duration * 1000
-          : DEFAULT_DURATION_MS,
-      durationSeconds:
-        typeof duration === "number" && duration > 0 ? duration : undefined,
-      vimeoId: url.pathname.split("/").filter(Boolean).pop(),
-    };
-  } catch {
-    return null;
-  }
+function buildSlide(item: VideoItem): Slide | null {
+  const src = item.url || item.embed;
+  if (!src || typeof src !== "string") return null;
+
+  const durationMs =
+    typeof item.duration === "number" && item.duration > 0
+      ? item.duration * 1000
+      : DEFAULT_DURATION_MS;
+
+  return {
+    src,
+    alt: item.title ?? "Untitled",
+    durationMs,
+    durationSeconds:
+      typeof item.duration === "number" && item.duration > 0
+        ? item.duration
+        : undefined,
+  };
 }
 
-function toSlides(items: HeroItem[]): Slide[] {
+function toSlides(items: VideoItem[]): Slide[] {
   return items
     .map((it) => buildSlide(it))
     .filter((slide): slide is Slide => Boolean(slide))
@@ -77,7 +55,7 @@ export default function HeroPlayer({
   onReady,
   readyTimeoutMs = 3500,
 }: {
-  items?: HeroItem[];
+  items?: VideoItem[];
   onReady?: () => void;
   readyTimeoutMs?: number;
 }) {
@@ -88,10 +66,9 @@ export default function HeroPlayer({
 
   const rafRef = useRef<number | null>(null);
   const startRef = useRef<number>(0);
-  const iframeRef = useRef<HTMLIFrameElement | null>(null);
-  const playerRef = useRef<any>(null);
+  const videoRef = useRef<HTMLVideoElement | null>(null);
 
-  const firstPlaySentRef = useRef(false);
+  const firstReadySentRef = useRef(false);
   const safetyTimeoutRef = useRef<number | null>(null);
   const wheelLockRef = useRef<number>(0);
   const touchStartY = useRef<number | null>(null);
@@ -107,7 +84,7 @@ export default function HeroPlayer({
       try {
         const res = await fetch("/api/vimeo", { cache: "no-store" });
         const json = await res.json();
-        const apiItems: VimeoItem[] = Array.isArray(json?.items)
+        const apiItems: VideoItem[] = Array.isArray(json?.items)
           ? json.items
           : [];
         if (!stop) {
@@ -125,11 +102,7 @@ export default function HeroPlayer({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [
     JSON.stringify(
-      items?.map((i) => ({
-        id: i.id,
-        embed: i.embed,
-        duration: i.duration,
-      })),
+      items?.map((i) => ({ id: i.id, url: i.url, duration: i.duration })),
     ),
   ]);
 
@@ -157,102 +130,39 @@ export default function HeroPlayer({
     if (!slides.length) return;
 
     let cancelled = false;
+    setVisible(false);
+    setProgress(0);
+    if (rafRef.current) cancelAnimationFrame(rafRef.current);
+    if (safetyTimeoutRef.current) window.clearTimeout(safetyTimeoutRef.current);
 
-    const run = async () => {
-      setVisible(false);
-      setProgress(0);
-      if (rafRef.current) cancelAnimationFrame(rafRef.current);
-
-      if (safetyTimeoutRef.current)
-        window.clearTimeout(safetyTimeoutRef.current);
-      safetyTimeoutRef.current = window.setTimeout(() => {
-        if (!cancelled) {
-          setVisible(true);
-          if (!firstPlaySentRef.current) {
-            firstPlaySentRef.current = true;
-            onReady?.();
-          }
-          startProgress();
+    // Safety timeout: afficher quoi qu'il arrive après readyTimeoutMs
+    safetyTimeoutRef.current = window.setTimeout(() => {
+      if (!cancelled) {
+        setVisible(true);
+        if (!firstReadySentRef.current) {
+          firstReadySentRef.current = true;
+          onReady?.();
         }
-      }, readyTimeoutMs);
-
-      try {
-        const mod = await import("@vimeo/player");
-        const Player = mod.default;
-        if (!iframeRef.current) throw new Error("iframeRef null");
-
-        try {
-          await playerRef.current?.unload?.();
-        } catch {
-          // ignore
-        }
-
-        playerRef.current = new Player(iframeRef.current);
-        await playerRef.current.ready();
-
-        try {
-          await playerRef.current.setMuted(true);
-          await playerRef.current.setVolume?.(0);
-          await playerRef.current.play();
-        } catch {
-          // autoplay blocked; fallback handled by timeout
-        }
-
-        playerRef.current.on?.("play", () => {
-          if (cancelled) return;
-          if (safetyTimeoutRef.current)
-            window.clearTimeout(safetyTimeoutRef.current);
-          setVisible(true);
-          if (!firstPlaySentRef.current) {
-            firstPlaySentRef.current = true;
-            onReady?.();
-          }
-          startProgress();
-        });
-
-        playerRef.current.on?.("error", (err: unknown) => {
-          console.warn("[Hero] Vimeo error:", err);
-          if (cancelled) return;
-          if (safetyTimeoutRef.current)
-            window.clearTimeout(safetyTimeoutRef.current);
-          setVisible(true);
-          if (!firstPlaySentRef.current) {
-            firstPlaySentRef.current = true;
-            onReady?.();
-          }
-          setIndex((i) => (i + 1) % slides.length);
-        });
-      } catch (err) {
-        console.warn("[Hero] player init failed:", err);
-        if (!cancelled) {
-          if (safetyTimeoutRef.current)
-            window.clearTimeout(safetyTimeoutRef.current);
-          setVisible(true);
-          if (!firstPlaySentRef.current) {
-            firstPlaySentRef.current = true;
-            onReady?.();
-          }
-          startProgress();
-        }
+        startProgress();
       }
-    };
-
-    run();
+    }, readyTimeoutMs);
 
     return () => {
       cancelled = true;
       if (rafRef.current) cancelAnimationFrame(rafRef.current);
-      if (safetyTimeoutRef.current)
-        window.clearTimeout(safetyTimeoutRef.current);
-      try {
-        playerRef.current?.off?.("play");
-        playerRef.current?.off?.("error");
-        playerRef.current?.unload?.();
-      } catch {
-        // ignore
-      }
+      if (safetyTimeoutRef.current) window.clearTimeout(safetyTimeoutRef.current);
     };
   }, [slides, index, onReady, readyTimeoutMs, startProgress]);
+
+  const handleVideoCanPlay = useCallback(() => {
+    if (safetyTimeoutRef.current) window.clearTimeout(safetyTimeoutRef.current);
+    setVisible(true);
+    if (!firstReadySentRef.current) {
+      firstReadySentRef.current = true;
+      onReady?.();
+    }
+    startProgress();
+  }, [onReady, startProgress]);
 
   const totalSlides = slides.length;
 
@@ -328,20 +238,11 @@ export default function HeroPlayer({
     .padStart(2, "0");
   const stats = [
     { label: "Now Playing", value: current.alt },
-    {
-      label: "Duration",
-      value: `${minutes}:${seconds}`,
-    },
-    {
-      label: "Slide",
-      value: `${index + 1} / ${totalSlides}`,
-    },
+    { label: "Duration", value: `${minutes}:${seconds}` },
+    { label: "Slide", value: `${index + 1} / ${totalSlides}` },
     { label: "Loop", value: "Enabled" },
     { label: "Autoplay", value: "Muted" },
-    current.vimeoId
-      ? { label: "Vimeo ID", value: current.vimeoId }
-      : null,
-  ].filter(Boolean) as { label: string; value: string }[];
+  ] as { label: string; value: string }[];
 
   return (
     <section
@@ -349,19 +250,26 @@ export default function HeroPlayer({
       className="relative h-[100svh] w-full overflow-hidden bg-black"
     >
       <div className="absolute inset-0">
-        <iframe
+        <video
           key={index}
-          ref={iframeRef}
+          ref={videoRef}
           data-cover
           className={`hero-iframe transition-opacity duration-300 ${
             visible ? "opacity-100" : "opacity-0"
           }`}
           src={current.src}
-          title={current.alt}
-          allow="autoplay; fullscreen; picture-in-picture; encrypted-media; clipboard-write; web-share"
-          allowFullScreen
-          referrerPolicy="strict-origin-when-cross-origin"
-          loading="eager"
+          autoPlay
+          muted
+          loop
+          playsInline
+          onCanPlay={handleVideoCanPlay}
+          style={{
+            position: "absolute",
+            inset: 0,
+            width: "100%",
+            height: "100%",
+            objectFit: "cover",
+          }}
         />
       </div>
 
@@ -387,10 +295,7 @@ export default function HeroPlayer({
               <span
                 className="absolute inset-y-0 left-0 bg-white/90 transition-all duration-200 group-hover:bg-white"
                 style={{
-                  width: `${Math.min(
-                    100,
-                    Math.max(0, Math.round(pct * 100)),
-                  )}%`,
+                  width: `${Math.min(100, Math.max(0, Math.round(pct * 100)))}%`,
                 }}
               />
               <span className="absolute inset-0 rounded-full ring-0 group-focus-visible:ring-2 group-focus-visible:ring-white/70" />

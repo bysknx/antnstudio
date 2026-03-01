@@ -1,46 +1,53 @@
 // app/api/vimeo/route.ts
+// Redirecte vers le manifest local (anciennement Vimeo API)
 import { NextResponse } from "next/server";
-import { fetchVimeoWorks } from "@/lib/vimeo";
-import { parseVimeoTitle } from "@/lib/parseVimeoTitle";
+import { readFile } from "fs/promises";
+import { join } from "path";
 
 export const revalidate = 0;
 
-export async function GET(req: Request) {
-  const url = new URL(req.url);
-  const debugWanted = url.searchParams.get("debug") === "1";
-
+export async function GET() {
   try {
-    // Récup Vimeo (dossier + sous-dossiers)
-    const { items, debug } = await fetchVimeoWorks({});
+    const manifestPath = join(process.cwd(), "public", "videos", "manifest.json");
+    const raw = await readFile(manifestPath, "utf-8");
+    const videos = JSON.parse(raw);
 
-    // Titre propre: `Client — Titre` et année dans un champ séparé
-    const mapped = items.map((it) => {
-      const parsed = parseVimeoTitle(it.title || "");
+    const mediaUrl =
+      process.env.NEXT_PUBLIC_MEDIA_URL || "https://media.antn.studio";
 
-      const display = parsed?.title
-        ? parsed.client
-          ? `${parsed.client} — ${parsed.title}`
-          : parsed.title
-        : it.title || "Untitled";
-
-      const year =
-        parsed?.year ??
-        (it as any).year ??
-        (it.createdAt ? new Date(it.createdAt).getFullYear() : undefined);
+    const items = videos.map((v: {
+      id: string;
+      title: string;
+      client: string;
+      year: number | null;
+      filename: string;
+      url: string;
+      duration: number | null;
+    }) => {
+      const url = v.url || `${mediaUrl}/${v.filename}`;
+      const displayTitle = v.client ? `${v.client} — ${v.title}` : v.title;
 
       return {
-        ...it,
-        title: display, // utilisé par l’iframe/clients
-        year, // année isolée
+        id: v.id,
+        title: displayTitle,
+        client: v.client,
+        year: v.year,
+        filename: v.filename,
+        url,
+        // Champs compat HeroPlayer / ProjectsClient
+        embed: url,
+        link: url,
+        duration: v.duration,
+        createdAt: v.year ? `${v.year}-01-01T00:00:00.000Z` : null,
+        thumbnail: null,
       };
     });
 
+    return NextResponse.json({ items });
+  } catch (e: unknown) {
+    const message = e instanceof Error ? e.message : "manifest fetch failed";
     return NextResponse.json(
-      debugWanted ? { items: mapped, __debug: debug } : { items: mapped },
-    );
-  } catch (e: any) {
-    return NextResponse.json(
-      { items: [], error: e?.message ?? "Vimeo fetch failed" },
+      { items: [], error: message },
       { status: 500 },
     );
   }
