@@ -160,6 +160,10 @@ export default function HeroPlayer({
     if (!firstReadySentRef.current) {
       firstReadySentRef.current = true;
       onReady?.();
+      // Signal the loading screen
+      if (typeof window !== "undefined") {
+        window.dispatchEvent(new Event("antn:video-ready"));
+      }
     }
     startProgress();
   }, [onReady, startProgress]);
