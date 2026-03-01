@@ -15,7 +15,7 @@ export default async function Page() {
     embed: v.url,
     link: v.url,
     url: v.url,
-    year: v.year,
+    year: v.year ?? undefined,
   }));
 
   return <ProjectsClient initialItems={items} />;
