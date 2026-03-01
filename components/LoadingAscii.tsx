@@ -36,6 +36,25 @@ export default function LoadingAscii({ force = false }: { force?: boolean }) {
     }, 320);
   }, []);
 
+  // Remove the inline #boot div injected by layout.tsx
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    try {
+      const w = window as Window & { __antnBootTick?: number };
+      if (typeof w.__antnBootTick === "number") {
+        clearInterval(w.__antnBootTick);
+        delete w.__antnBootTick;
+      }
+      document.documentElement.removeAttribute("data-booting");
+      const boot = document.getElementById("boot");
+      if (boot) {
+        boot.style.transition = "opacity 180ms ease-out";
+        boot.style.opacity = "0";
+        setTimeout(() => boot.remove(), 220);
+      }
+    } catch { /* ignore */ }
+  }, []);
+
   useEffect(() => {
     if (typeof window === "undefined") return;
 
