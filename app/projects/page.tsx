@@ -10,7 +10,7 @@ export default async function Page() {
   const items: VimeoItem[] = videos.map((v) => ({
     id: v.id,
     title: v.title,
-    createdAt: v.year ? `${v.year}-01-01T00:00:00.000Z` : null,
+    createdAt: v.year ? `${v.year}-01-01T00:00:00.000Z` : undefined,
     thumbnail: "",
     embed: v.url,
     link: v.url,

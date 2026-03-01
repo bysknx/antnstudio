@@ -300,15 +300,7 @@ html[data-home="1"] #gl-layer {
 }
 /* ===== END PATCH ===== */
 
-html[data-app-loading="visible"] body > :not(#boot):not([data-loader="ascii"]) {
-  filter: blur(10px);
-  opacity: 0.32;
-}
-
-html[data-app-loading="fading"] body > :not(#boot):not([data-loader="ascii"]) {
-  filter: blur(6px);
-  opacity: 0.55;
-}
+/* blur rules removed — caused body-level blur in Next.js app router */
 
 @import url("https://fonts.cdnfonts.com/css/thegoodmonolith");
 @import url("https://fonts.cdnfonts.com/css/pp-neue-montreal");
