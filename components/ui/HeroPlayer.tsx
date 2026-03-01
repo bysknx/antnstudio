@@ -62,7 +62,7 @@ export default function HeroPlayer({
   const [slides, setSlides] = useState<Slide[]>([]);
   const [index, setIndex] = useState(0);
   const [progress, setProgress] = useState(0);
-  const [visible, setVisible] = useState(false);
+  const [visible, setVisible] = useState(true);
 
   const rafRef = useRef<number | null>(null);
   const startRef = useRef<number>(0);
@@ -130,7 +130,6 @@ export default function HeroPlayer({
     if (!slides.length) return;
 
     let cancelled = false;
-    setVisible(false);
     setProgress(0);
     if (rafRef.current) cancelAnimationFrame(rafRef.current);
     if (safetyTimeoutRef.current) window.clearTimeout(safetyTimeoutRef.current);

@@ -1,23 +1,22 @@
-// app/projects/page.tsx
+// app/projects/page.tsx — SERVER COMPONENT
 import ProjectsClient, { VimeoItem } from "./ProjectsClient";
-import { getSiteUrl } from "@/lib/constants";
+import { fetchVideos } from "@/lib/videos";
 
 export const revalidate = 0;
 
 export default async function Page() {
-  // On récupère côté serveur pour précharger la grille
-  const base = getSiteUrl();
-  const res = await fetch(`${base}/api/vimeo`, {
-    cache: "no-store",
-  }).catch(() => null);
+  const videos = await fetchVideos();
 
-  let items: VimeoItem[] = [];
-  if (res && res.ok) {
-    try {
-      const json = await res.json();
-      items = Array.isArray(json?.items) ? json.items : [];
-    } catch {}
-  }
+  const items: VimeoItem[] = videos.map((v) => ({
+    id: v.id,
+    title: v.title,
+    createdAt: v.year ? `${v.year}-01-01T00:00:00.000Z` : null,
+    thumbnail: "",
+    embed: v.url,
+    link: v.url,
+    url: v.url,
+    year: v.year,
+  }));
 
-  return <ProjectsClient initialItems={items ?? []} />;
+  return <ProjectsClient initialItems={items} />;
 }
