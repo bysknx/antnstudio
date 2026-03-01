@@ -23,6 +23,10 @@ function normalizeVideo(v: VideoItem): VideoItem {
   const url = v.url?.startsWith("http")
     ? v.url
     : `${MEDIA_URL}/${v.filename}`;
+  const thumbFilename = v.filename.replace(".mp4", ".jpg");
+  const thumbnail = v.thumbnail?.startsWith("http")
+    ? v.thumbnail
+    : `${MEDIA_URL}/thumbs/${thumbFilename}`;
   const displayTitle = v.client ? `${v.client} — ${v.title}` : v.title;
   return {
     ...v,
@@ -30,7 +34,7 @@ function normalizeVideo(v: VideoItem): VideoItem {
     title: displayTitle,
     embed: url,
     link: url,
-    thumbnail: undefined,
+    thumbnail,
     createdAt: v.year ? `${v.year}-01-01T00:00:00.000Z` : undefined,
   };
 }

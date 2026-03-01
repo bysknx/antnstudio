@@ -11,7 +11,7 @@ export default async function Page() {
     id: v.id,
     title: v.title,
     createdAt: v.year ? `${v.year}-01-01T00:00:00.000Z` : undefined,
-    thumbnail: "",
+    thumbnail: v.thumbnail ?? "",
     embed: v.url,
     link: v.url,
     url: v.url,
