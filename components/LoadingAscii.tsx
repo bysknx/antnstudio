@@ -37,6 +37,7 @@ export default function LoadingAscii({ force = false }: { force?: boolean }) {
   }, []);
 
   // Remove the inline #boot div injected by layout.tsx
+  // Also clears data-app-loading which the boot script sets and which triggers a blur/fade CSS rule
   useEffect(() => {
     if (typeof window === "undefined") return;
     try {
@@ -55,6 +56,16 @@ export default function LoadingAscii({ force = false }: { force?: boolean }) {
     } catch { /* ignore */ }
   }, []);
 
+  // Keep data-app-loading in sync with stage so the CSS blur rule applies correctly
+  useEffect(() => {
+    if (typeof document === "undefined") return;
+    if (stage === "hidden") {
+      document.documentElement.removeAttribute("data-app-loading");
+    } else {
+      document.documentElement.setAttribute("data-app-loading", stage);
+    }
+  }, [stage]);
+
   useEffect(() => {
     if (typeof window === "undefined") return;
 
@@ -66,7 +77,11 @@ export default function LoadingAscii({ force = false }: { force?: boolean }) {
         else sessionStorage.setItem(SEEN_KEY, "1");
       } catch { /* ignore */ }
     }
-    if (!show) return;
+    if (!show) {
+      // Still need to clear data-app-loading set by the boot script
+      document.documentElement.removeAttribute("data-app-loading");
+      return;
+    }
 
     setStage("visible");
     setCompletedLines(0);
