@@ -340,10 +340,11 @@
       try{
         const res = await fetch("/api/vimeo", { cache:"no-store" });
         const json = await res.json();
+        if (HAS_PARENT_DATA) return; // parent already provided data
         const items = normalize(json?.items);
         PROJECTS = items.filter(p => !!p.image);
       }catch(e){
-        PROJECTS = [];
+        if (!HAS_PARENT_DATA) PROJECTS = [];
       }
     }
 

@@ -24,9 +24,10 @@ function normalizeVideo(v: VideoItem): VideoItem {
     ? v.url
     : `${MEDIA_URL}/${v.filename}`;
   const thumbFilename = v.filename.replace(".mp4", ".jpg");
-  const thumbnail = v.thumbnail?.startsWith("http")
+  // Thumbnails served from Vercel (same domain) to avoid cross-origin blocking
+  const thumbnail = v.thumbnail?.startsWith("/")
     ? v.thumbnail
-    : `${MEDIA_URL}/thumbs/${thumbFilename}`;
+    : `/thumbs/${thumbFilename}`;
   const displayTitle = v.client ? `${v.client} — ${v.title}` : v.title;
   return {
     ...v,
