@@ -1,5 +1,5 @@
 // components/PreloadVimeo.tsx
-// Précharge le manifest vidéo local (anciennement Vimeo)
+// Précharge le manifest vidéo (API /api/vimeo)
 "use client";
 
 import { useEffect } from "react";

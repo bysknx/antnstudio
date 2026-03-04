@@ -1,5 +1,5 @@
 // app/api/vimeo/route.ts
-// Redirecte vers le manifest local (anciennement Vimeo API)
+// Sert le manifest vidéo (public/videos/manifest.json) au format attendu par le front
 import { NextResponse } from "next/server";
 import { readFile } from "fs/promises";
 import { join } from "path";

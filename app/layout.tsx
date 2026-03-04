@@ -1,4 +1,4 @@
-﻿// app/layout.tsx
+// app/layout.tsx
 import type { Metadata } from "next";
 import "./globals.css";
 
@@ -86,6 +86,16 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
   return (
     <html lang="fr" className="dark">
       <head>
+        {/* Polices du footer (alignées sur le pen projects) */}
+        <link
+          href="https://fonts.cdnfonts.com/css/thegoodmonolith"
+          rel="stylesheet"
+        />
+        <link
+          href="https://fonts.cdnfonts.com/css/pp-neue-montreal"
+          rel="stylesheet"
+        />
+
         {/* Preconnect vers le CDN média self-hosted */}
         <link rel="preconnect" href="https://media.antn.studio" />
         <link rel="dns-prefetch" href="https://media.antn.studio" />

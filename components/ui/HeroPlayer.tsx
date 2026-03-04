@@ -92,7 +92,7 @@ export default function HeroPlayer({
           setIndex(0);
         }
       } catch (err) {
-        console.warn("[Hero] API /api/vimeo failed:", err);
+        console.warn("[Hero] Manifest vidéo (API) failed:", err);
         if (!stop) setSlides([]);
       }
     })();

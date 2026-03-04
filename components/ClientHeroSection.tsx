@@ -18,7 +18,7 @@ type Item = {
 export default function ClientHeroSection({ items }: { items: Item[] }) {
   const [gate, setGate] = useState(true);
 
-  // Safety net: auto-unveil after 2.5s in case Vimeo is slow
+  // Safety net: auto-unveil after 2.5s if the player is slow to load
   useEffect(() => {
     if (!items?.length) {
       setGate(false);

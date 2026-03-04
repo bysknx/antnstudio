@@ -582,7 +582,7 @@
         }
         const ok = data.value?.ok;
         const count = data.value?.count ?? 0;
-        badge.textContent = ok ? `Vimeo OK \u2022 ${count} items` : `Vimeo KO`;
+        badge.textContent = ok ? `Videos OK \u2022 ${count} items` : `Videos KO`;
       }
 
       if (data.type === "SET_PROJECTS") {
@@ -611,7 +611,7 @@
       // Signaler au parent qu'on est pret
       window.parent?.postMessage({ type: "IFRAME_READY" }, "*");
 
-      await loadProjects();      // fetch Vimeo si le parent n'a pas injecte
+      await loadProjects();      // fetch manifest si le parent n'a pas injecté
       if (!HAS_PARENT_DATA && PROJECTS.length === 0 && !REQUESTED_PARENT) {
         REQUESTED_PARENT = true;
         window.parent?.postMessage({ type: "REQUEST_PROJECTS" }, "*");

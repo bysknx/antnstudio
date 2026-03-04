@@ -3,7 +3,7 @@
 export default function FooterFromPen() {
   return (
     <div className="footer">
-      <div className="coordinates-section footer-pen-mono">
+      <div className="coordinates-section">
         <p>48.7264&deg; N, 2.2770&deg; E</p>
       </div>
       <div className="links-section">
@@ -25,7 +25,7 @@ export default function FooterFromPen() {
           LinkedIn
         </a>
       </div>
-      <div className="info-section footer-pen-mono">
+      <div className="info-section">
         <p>Est. 2025 &bull; antn.studio</p>
       </div>
 
@@ -40,10 +40,14 @@ export default function FooterFromPen() {
           width: 100vw;
           color: #fff;
         }
+        .coordinates-section,
+        .info-section {
+          font-family: "TheGoodMonolith", monospace;
+          font-weight: 400;
+        }
         .coordinates-section {
           grid-column: 1 / span 4;
           pointer-events: auto;
-          font-weight: 400;
           letter-spacing: 0.05em;
           text-transform: uppercase;
         }
@@ -53,12 +57,7 @@ export default function FooterFromPen() {
           justify-content: center;
           gap: 1rem;
           pointer-events: auto;
-          font-family:
-            "PP Neue Montreal",
-            system-ui,
-            -apple-system,
-            "Segoe UI",
-            sans-serif;
+          font-family: "PP Neue Montreal", system-ui, sans-serif;
           font-size: 13px;
           font-weight: 700;
         }
@@ -88,7 +87,6 @@ export default function FooterFromPen() {
           grid-column: 9 / span 4;
           text-align: right;
           pointer-events: auto;
-          font-weight: 400;
           letter-spacing: 0.05em;
           text-transform: uppercase;
         }

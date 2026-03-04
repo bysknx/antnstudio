@@ -1,4 +1,4 @@
-// lib/videos.ts — remplace Vimeo, source locale
+// lib/videos.ts — source vidéos : manifest local (public/videos/manifest.json)
 
 import rawManifest from "@/public/videos/manifest.json";
 

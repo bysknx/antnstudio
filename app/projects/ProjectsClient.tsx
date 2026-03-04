@@ -3,10 +3,8 @@
 import { useEffect, useRef, useState } from "react";
 import { useSearchParams } from "next/navigation";
 import FullBleedPlayer from "@/components/ui/FullBleedPlayer";
-// parseVimeoTitle supprimé — les titres sont déjà normalisés par l'API
-
 /* ==== Types ==== */
-export type VimeoItem = {
+export type VideoItem = {
   id: string;
   title?: string;
   name?: string;
@@ -24,13 +22,13 @@ export type VimeoItem = {
 };
 
 type Props = {
-  /** Items préchargés par la page serveur (`/api/vimeo`) */
-  initialItems?: VimeoItem[];
+  /** Items préchargés par la page serveur (manifest vidéo) */
+  initialItems?: VideoItem[];
 };
 
 /* ===== helpers ===== */
-function normalize(it: VimeoItem): VimeoItem {
-  // Les titres sont déjà normalisés par /api/vimeo (manifest local)
+function normalize(it: VideoItem): VideoItem {
+  // Titres déjà normalisés par le manifest
   const title = it.title || it.name || "Untitled";
   const year =
     it.year ??
@@ -46,14 +44,14 @@ export default function ProjectsClient({ initialItems }: Props) {
   const search = useSearchParams();
   const year = search.get("year");
 
-  const [projects, setProjects] = useState<VimeoItem[] | null>(
+  const [projects, setProjects] = useState<VideoItem[] | null>(
     initialItems ?? null,
   );
   const [iframeReady, setIframeReady] = useState(false);
   const [showIframe, setShowIframe] = useState(false);
 
   const [open, setOpen] = useState(false);
-  const [current, setCurrent] = useState<VimeoItem | null>(null);
+  const [current, setCurrent] = useState<VideoItem | null>(null);
 
   const src = `/projects-pen.html${year ? `?year=${encodeURIComponent(year)}` : ""}`;
 
@@ -72,7 +70,7 @@ export default function ProjectsClient({ initialItems }: Props) {
           : null;
       if (cached) {
         const j = JSON.parse(cached);
-        const itemsRaw: VimeoItem[] = Array.isArray(j?.items) ? j.items : [];
+        const itemsRaw: VideoItem[] = Array.isArray(j?.items) ? j.items : [];
         if (itemsRaw.length) {
           setProjects(itemsRaw.map(normalize));
           return; // on a déjà de quoi peindre, on laissera un fetch rafraîchir après
@@ -92,7 +90,7 @@ export default function ProjectsClient({ initialItems }: Props) {
       try {
         const res = await fetch("/api/vimeo", { cache: "no-store" });
         const json = await res.json();
-        const itemsRaw: VimeoItem[] = Array.isArray(json?.items)
+        const itemsRaw: VideoItem[] = Array.isArray(json?.items)
           ? json.items
           : [];
         const items = itemsRaw.map(normalize);
@@ -149,7 +147,7 @@ export default function ProjectsClient({ initialItems }: Props) {
           break;
         }
         case "OPEN_PLAYER": {
-          const value: VimeoItem | undefined = (data as any).value;
+          const value: VideoItem | undefined = (data as any).value;
           if (value) {
             setCurrent(value);
             setOpen(true);

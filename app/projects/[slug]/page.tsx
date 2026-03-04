@@ -3,7 +3,7 @@ import { notFound } from "next/navigation";
 import Link from "next/link";
 import { getSiteUrl } from "@/lib/constants";
 
-export const dynamic = "force-dynamic"; // on lit /api/vimeo à la requête
+export const dynamic = "force-dynamic"; // on lit /api/vimeo (manifest vidéo) à la requête
 
 function slugify(input: string) {
   return input
@@ -50,7 +50,8 @@ export default async function ProjectPage({ params }: PageProps) {
     new Date(
       project.createdAt || project.created_time || Date.now(),
     ).getFullYear();
-  const vimeoUrl: string = project.vimeoUrl || project.link || "#";
+  const videoUrl: string =
+    project.link || project.url || project.embed || "#";
 
   return (
     <main className="container mx-auto px-6 py-16">
@@ -85,12 +86,12 @@ export default async function ProjectPage({ params }: PageProps) {
         ) : (
           <div className="aspect-video grid place-items-center text-zinc-500">
             <a
-              href={vimeoUrl}
+              href={videoUrl}
               target="_blank"
               rel="noopener noreferrer"
               className="underline hover:text-zinc-300"
             >
-              View on Vimeo
+              Voir la vidéo
             </a>
           </div>
         )}
@@ -98,14 +99,14 @@ export default async function ProjectPage({ params }: PageProps) {
 
       {/* liens / meta */}
       <div className="mt-6 flex items-center gap-4 text-sm text-zinc-400">
-        {vimeoUrl && vimeoUrl !== "#" && (
+        {videoUrl && videoUrl !== "#" && (
           <a
-            href={vimeoUrl}
+            href={videoUrl}
             target="_blank"
             rel="noopener noreferrer"
             className="underline hover:text-zinc-200"
           >
-            Open on Vimeo
+            Ouvrir la vidéo
           </a>
         )}
       </div>
