@@ -7,11 +7,16 @@ import GlCanvas from "@/components/GlCanvas";
 export default function ChromeFrame({ children }: PropsWithChildren) {
   const pathname = usePathname();
   const isHome = pathname === "/";
-  const hideStaticDots = pathname === "/contact" || pathname === "/";
+  const isProjects = pathname?.startsWith("/projects");
+  const isContact = pathname === "/contact";
+  // Pas de grille sur home, contact ni projects (le pen a son propre fond)
+  const hideStaticDots = isHome || isContact || isProjects;
+  // FX (GlCanvas) uniquement sur contact ; pas sur home ni projects (évite le flash de grille)
+  const showGlLayer = !isHome && !isProjects && isContact;
 
   return (
     <div className="relative min-h-[100svh] bg-[#0b0b0b] z-0">
-      {/* Grille de points fixe : uniquement hors home/contact */}
+      {/* Grille de points fixe : désactivée sur home, contact, projects */}
       {!hideStaticDots && (
         <div
           data-static-dots
@@ -25,10 +30,10 @@ export default function ChromeFrame({ children }: PropsWithChildren) {
         />
       )}
 
-      {/* Couche FX (uniquement hors home pour eviter tout flash) */}
-      {!isHome && (
-        <div id="gl-layer" className="pointer-events-none fixed inset-0 z-0">
-          <GlCanvas />
+      {/* Couche FX : uniquement sur contact (grille animée discrète) */}
+      {showGlLayer && (
+        <div id="gl-layer" className="pointer-events-none fixed inset-0 z-0" aria-hidden>
+          <GlCanvas spacing={40} maxOffset={12} subtle />
           <div className="grain" />
           <div className="scanlines" />
         </div>

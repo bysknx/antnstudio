@@ -48,41 +48,23 @@ export default function ContactPage() {
             <ContactForm className="glass-panel" />
           </div>
 
-          <section className="relative w-full space-y-6 rounded-2xl border border-white/10 bg-zinc-900/55 p-6 text-left shadow-[0_20px_80px_rgba(0,0,0,0.35)] backdrop-blur lg:w-[58%]">
-            <div className="space-y-3">
-              <h2 className="mb-3 text-2xl font-semibold text-zinc-100">
-                About.
-              </h2>
-
-              <p className="max-w-xl text-[15px] leading-relaxed text-zinc-300/90">
-                <strong className="font-semibold">
-                  &laquo; antn.studio &raquo;
-                </strong>{" "}
-                founded by Anthony, an independent director and project lead from{" "}
-                <HoverWord>Paris</HoverWord>.
-              </p>
-
-              <p className="max-w-xl text-[15px] leading-relaxed text-zinc-300/90">
-                Blending <HoverWord>precision</HoverWord> with{" "}
-                <HoverWord>emotion</HoverWord>, the studio crafts{" "}
-                <HoverWord>cinematic visuals</HoverWord>,{" "}
-                <HoverWord>brand films</HoverWord>, and{" "}
-                <HoverWord>digital experiences</HoverWord> with a strong{" "}
-                <HoverWord>narrative core</HoverWord>.
-              </p>
-
-              <p className="max-w-xl text-[15px] leading-relaxed text-zinc-300/90">
-                Each project is shaped with <HoverWord>technical mastery</HoverWord>
-                , and driven by a search for <HoverWord>authenticity</HoverWord> and{" "}
-                <HoverWord>impact</HoverWord>.
-              </p>
-
-              <p className="max-w-xl text-[15px] leading-relaxed text-zinc-300/90">
-                <HoverWord>Sensory</HoverWord>, <HoverWord>intentional</HoverWord>,{" "}
-                <HoverWord>timeless</HoverWord> &mdash; antn.studio turns ideas into{" "}
-                <HoverWord>living imagery</HoverWord>.
-              </p>
-            </div>
+          <section className="relative w-full space-y-5 rounded-2xl border border-white/10 bg-zinc-900/55 p-6 text-left shadow-[0_20px_80px_rgba(0,0,0,0.35)] backdrop-blur lg:w-[58%]">
+            <h2 className="text-xl font-semibold text-zinc-100">
+              About.
+            </h2>
+            <p className="max-w-xl text-[15px] leading-relaxed text-zinc-300/90">
+              <strong className="font-semibold">&laquo; antn.studio &raquo;</strong>{" "}
+              founded by Anthony, director and project lead from <HoverWord>Paris</HoverWord>.
+              The studio crafts <HoverWord>cinematic visuals</HoverWord>,{" "}
+              <HoverWord>brand films</HoverWord> and <HoverWord>digital experiences</HoverWord>{" "}
+              with a strong narrative core — <HoverWord>technical mastery</HoverWord>,{" "}
+              <HoverWord>authenticity</HoverWord> and <HoverWord>impact</HoverWord>.
+            </p>
+            <p className="max-w-xl text-[15px] leading-relaxed text-zinc-300/90">
+              <HoverWord>Sensory</HoverWord>, <HoverWord>intentional</HoverWord>,{" "}
+              <HoverWord>timeless</HoverWord> — antn.studio turns ideas into{" "}
+              <HoverWord>living imagery</HoverWord>.
+            </p>
 
             <div className="flex flex-col items-start gap-4 pt-2 sm:flex-row sm:items-center">
               <span className="text-sm text-zinc-400">

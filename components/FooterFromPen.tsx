@@ -37,7 +37,9 @@ export default function FooterFromPen() {
           column-gap: 1rem;
           align-items: center;
           padding: 1.2rem 1.2rem 2rem;
-          width: 100vw;
+          width: 100%;
+          max-width: 100vw;
+          box-sizing: border-box;
           color: #fff;
         }
         .coordinates-section,

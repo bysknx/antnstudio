@@ -25,10 +25,10 @@ export default function Template({ children }: { children: React.ReactNode }) {
       <AnimatePresence mode="wait">
         <motion.div
           key={pathname}
-          initial={{ opacity: 0, filter: "blur(12px)" }}
+          initial={{ opacity: 0, filter: "blur(8px)" }}
           animate={{ opacity: 1, filter: "blur(0px)" }}
-          exit={{ opacity: 0, filter: "blur(12px)" }}
-          transition={{ duration: 0.4, ease: [0.22, 0.03, 0.26, 1] }}
+          exit={{ opacity: 0, filter: "blur(8px)" }}
+          transition={{ duration: 0.22, ease: [0.22, 0.03, 0.26, 1] }}
           style={{ willChange: "opacity, filter" }}
         >
           {children}

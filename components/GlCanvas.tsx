@@ -3,15 +3,17 @@
 import { useEffect, useRef } from "react";
 
 export default function GlCanvas({
-  spacing = 36, // grille un peu plus dense
+  spacing = 36,
   padding = 64,
-  maxOffset = 18, // deplacement max plus fin
-  maxFps = 45, // limite FPS pour CPU/GPU
+  maxOffset = 18,
+  maxFps = 45,
+  subtle = false, // version discrète (ex. page contact)
 }: {
   spacing?: number;
   padding?: number;
   maxOffset?: number;
   maxFps?: number;
+  subtle?: boolean;
 }) {
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
   const ctxRef = useRef<CanvasRenderingContext2D | null>(null);
@@ -135,8 +137,9 @@ export default function GlCanvas({
       const { width, height, ratio, maxOffset } = state;
       ctx.clearRect(0, 0, width, height);
 
-      // Lignes
-      ctx.strokeStyle = "rgba(255,255,255,0.06)";
+      const lineOpacity = subtle ? 0.03 : 0.06;
+      const dotOpacity = subtle ? 0.22 : 0.5;
+      ctx.strokeStyle = `rgba(255,255,255,${lineOpacity})`;
       ctx.lineWidth = 1 * ratio;
       ctx.beginPath();
 
@@ -155,7 +158,7 @@ export default function GlCanvas({
       ctx.stroke();
 
       // Points (une seule passe)
-      ctx.fillStyle = "rgba(255,255,255,0.5)";
+      ctx.fillStyle = `rgba(255,255,255,${dotOpacity})`;
       for (let i = 0; i < dotsRef.current.length; i++) {
         const d = dotsRef.current[i];
         const m = mouseRef.current;
@@ -200,7 +203,7 @@ export default function GlCanvas({
       document.removeEventListener("visibilitychange", onVisChange);
       ctxRef.current = null;
     };
-  }, [spacing, padding, maxOffset, maxFps]);
+  }, [spacing, padding, maxOffset, maxFps, subtle]);
 
   return <canvas ref={canvasRef} aria-hidden="true" />;
 }
