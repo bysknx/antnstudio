@@ -42,7 +42,7 @@ export default async function sitemap() {
       changeFrequency: "weekly" as const,
     },
     {
-      url: `${base}/contact`,
+      url: `${base}/about`,
       priority: 0.4,
       changeFrequency: "monthly" as const,
     },

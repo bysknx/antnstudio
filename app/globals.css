@@ -96,7 +96,7 @@
       transparent 0.6px
     );
     background-size: 2px 2px;
-    opacity: 0.4;
+    opacity: 0.6;
     mix-blend-mode: soft-light;
     pointer-events: none;
   }

@@ -2,17 +2,18 @@
 "use client";
 // Import Next.js helpers for client-side navigation links and reading the current route.
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 
 // Define the navigation structure so items can be rendered dynamically.
 const LINKS = [
   { href: "/", label: "home" },
   { href: "/projects", label: "projects" },
-  { href: "/contact", label: "about" },
+  { href: "/about", label: "about" },
 ];
 
 export default function Header() {
   const pathname = usePathname();
+  const router = useRouter();
   if (pathname === "/admin") return null;
 
   return (
@@ -36,6 +37,10 @@ export default function Header() {
               <Link
                 key={l.href}
                 href={l.href}
+                prefetch={true}
+                onMouseEnter={() =>
+                  l.href === "/projects" ? router.prefetch("/projects") : undefined
+                }
                 className={`px-3 py-1 rounded-full text-sm transition ${
                   active
                     ? "bg-white text-black"
