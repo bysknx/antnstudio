@@ -77,12 +77,128 @@ function LoginForm({ onSuccess }: { onSuccess: () => void }) {
   );
 }
 
+type VideoEntry = { id: string; title: string; filename?: string; year?: number };
+
 function AdminDashboard() {
+  const [videos, setVideos] = useState<VideoEntry[]>([]);
+  const [config, setConfig] = useState<{ featuredIds: string[]; visibility: Record<string, boolean> }>({
+    featuredIds: [],
+    visibility: {},
+  });
+  const [saving, setSaving] = useState(false);
+  const [saveOk, setSaveOk] = useState(false);
+
+  useEffect(() => {
+    let cancelled = false;
+    Promise.all([
+      fetch("/api/vimeo", { cache: "no-store" }).then((r) => r.json()),
+      fetch("/api/admin/config", { cache: "no-store" }).then((r) => r.json()),
+    ]).then(([vimeo, cfg]) => {
+      if (cancelled) return;
+      const items = Array.isArray(vimeo?.items) ? vimeo.items : [];
+      setVideos(
+        items.map(
+          (v: {
+            id: string;
+            title: string;
+            filename?: string;
+            year?: number;
+          }) => ({
+            id: v.id,
+            title: v.title,
+            filename: v.filename,
+            year: v.year,
+          }),
+        ),
+      );
+      setConfig({
+        featuredIds: Array.isArray(cfg?.featuredIds) ? cfg.featuredIds : [],
+        visibility:
+          cfg?.visibility && typeof cfg.visibility === "object"
+            ? cfg.visibility
+            : {},
+      });
+    });
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
+  const featuredOrder = config.featuredIds.length > 0
+    ? [...config.featuredIds]
+    : videos
+        .sort((a, b) => (b.year ?? 0) - (a.year ?? 0))
+        .slice(0, 5)
+        .map((v) => v.id);
+  const setFeaturedOrder = (ids: string[]) =>
+    setConfig((c) => ({ ...c, featuredIds: ids }));
+
+  const moveFeatured = (index: number, dir: 1 | -1) => {
+    const next = [...featuredOrder];
+    const j = index + dir;
+    if (j < 0 || j >= next.length) return;
+    [next[index], next[j]] = [next[j], next[index]];
+    setFeaturedOrder(next);
+  };
+
+  const addToFeatured = (id: string) => {
+    if (featuredOrder.includes(id)) return;
+    setFeaturedOrder([...featuredOrder, id]);
+  };
+
+  const removeFromFeatured = (index: number) => {
+    setFeaturedOrder(featuredOrder.filter((_, i) => i !== index));
+  };
+
+  const notInFeatured = videos.filter((v) => !featuredOrder.includes(v.id));
+
+  const toggleVisibility = (id: string) => {
+    setConfig((c) => ({
+      ...c,
+      visibility: { ...c.visibility, [id]: c.visibility[id] === false },
+    }));
+  };
+  const isVisible = (id: string) => config.visibility[id] !== false;
+
+  const saveConfig = async () => {
+    setSaving(true);
+    setSaveOk(false);
+    try {
+      const res = await fetch("/api/admin/config", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          featuredIds: featuredOrder,
+          visibility: videos.reduce((acc, v) => {
+            acc[v.id] = isVisible(v.id);
+            return acc;
+          }, {} as Record<string, boolean>),
+        }),
+      });
+      if (res.ok) {
+        setSaveOk(true);
+        setTimeout(() => setSaveOk(false), 2000);
+      }
+    } finally {
+      setSaving(false);
+    }
+  };
+
   return (
     <div className="mx-auto max-w-4xl space-y-12 px-4 py-12">
-      <h1 className="text-2xl font-semibold text-zinc-100">
-        Admin — antn.studio
-      </h1>
+      <div className="flex items-center justify-between gap-4 flex-wrap">
+        <h1 className="text-2xl font-semibold text-zinc-100">
+          Admin — antn.studio
+        </h1>
+        <button
+          type="button"
+          onClick={saveConfig}
+          disabled={saving}
+          className="rounded-md bg-white px-4 py-2 text-sm font-medium text-black hover:bg-zinc-200 disabled:opacity-50"
+        >
+          {saving ? "Enregistrement…" : saveOk ? "Enregistré" : "Enregistrer la config"}
+        </button>
+      </div>
 
       <section className="space-y-3">
         <h2 className="text-lg font-medium text-zinc-200">
@@ -93,8 +209,18 @@ function AdminDashboard() {
           sur ton API ou script d’upload (ex. presigned URL S3, ou API custom
           sur le VPS). Format web recommandé : H.264/MP4, compression adaptée.
         </p>
-        <div className="rounded-lg border border-white/10 bg-zinc-900/50 p-6 text-zinc-500">
-          [À venir : liste des fichiers + formulaire d’upload]
+        <div className="rounded-lg border border-white/10 bg-zinc-900/50 p-4">
+          <ul className="text-sm text-zinc-400 space-y-1 max-h-48 overflow-y-auto font-mono">
+            {videos.map((v) => (
+              <li key={v.id} className="flex justify-between gap-2">
+                <span className="truncate">{v.filename || v.title}</span>
+                <span className="text-zinc-500 shrink-0">{v.year ?? "—"}</span>
+              </li>
+            ))}
+          </ul>
+          <p className="mt-3 text-xs text-zinc-500">
+            Upload : à connecter à ton API (presigned URL S3 ou endpoint custom sur le VPS).
+          </p>
         </div>
       </section>
 
@@ -103,11 +229,72 @@ function AdminDashboard() {
           Featured (home page)
         </h2>
         <p className="max-w-xl text-sm text-zinc-400">
-          Choisir quelles vidéos apparaissent dans le hero de la home (actuellement
-          les 5 plus récentes du manifest).
+          Ordre des vidéos dans le hero de la home (les 5 premières = affichées).
         </p>
-        <div className="rounded-lg border border-white/10 bg-zinc-900/50 p-6 text-zinc-500">
-          [À venir : cases à cocher / ordre drag & drop]
+        <div className="rounded-lg border border-white/10 bg-zinc-900/50 p-4">
+          <ul className="space-y-1">
+            {featuredOrder.map((id, i) => {
+              const v = videos.find((x) => x.id === id);
+              return (
+                <li
+                  key={id}
+                  className="flex items-center gap-2 py-1.5 text-sm text-zinc-300"
+                >
+                  <span className="w-6 text-zinc-500 tabular-nums">{i + 1}</span>
+                  <button
+                    type="button"
+                    onClick={() => moveFeatured(i, -1)}
+                    disabled={i === 0}
+                    className="rounded p-0.5 text-zinc-500 hover:text-zinc-300 disabled:opacity-30"
+                    aria-label="Monter"
+                  >
+                    ↑
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => moveFeatured(i, 1)}
+                    disabled={i >= featuredOrder.length - 1}
+                    className="rounded p-0.5 text-zinc-500 hover:text-zinc-300 disabled:opacity-30"
+                    aria-label="Descendre"
+                  >
+                    ↓
+                  </button>
+                  <span className="truncate flex-1">{v?.title ?? id}</span>
+                  {i < 5 && <span className="text-xs text-emerald-500/80">hero</span>}
+                  <button
+                    type="button"
+                    onClick={() => removeFromFeatured(i)}
+                    className="rounded p-0.5 text-zinc-500 hover:text-red-400 text-xs"
+                    aria-label="Retirer"
+                  >
+                    ×
+                  </button>
+                </li>
+              );
+            })}
+          </ul>
+          {notInFeatured.length > 0 && (
+            <div className="mt-2 pt-2 border-t border-white/10">
+              <label className="text-xs text-zinc-500 block mb-1">Ajouter au featured</label>
+              <select
+                className="w-full rounded bg-zinc-800 border border-white/10 text-zinc-200 text-sm p-1.5"
+                value=""
+                onChange={(e) => {
+                  const id = e.target.value;
+                  if (id) addToFeatured(id);
+                  e.target.value = "";
+                }}
+              >
+                <option value="">— choisir —</option>
+                {notInFeatured.map((v) => (
+                  <option key={v.id} value={v.id}>{v.title}</option>
+                ))}
+              </select>
+            </div>
+          )}
+          {featuredOrder.length === 0 && (
+            <p className="text-zinc-500 text-sm">Chargement…</p>
+          )}
         </div>
       </section>
 
@@ -116,11 +303,25 @@ function AdminDashboard() {
           Projets publics
         </h2>
         <p className="max-w-xl text-sm text-zinc-400">
-          Définir quelles vidéos sont visibles dans la grille /projects (manifest
-          ou source de vérité à connecter).
+          Visibilité de chaque vidéo sur la grille /projects.
         </p>
-        <div className="rounded-lg border border-white/10 bg-zinc-900/50 p-6 text-zinc-500">
-          [À venir : toggle par vidéo]
+        <div className="rounded-lg border border-white/10 bg-zinc-900/50 p-4 max-h-64 overflow-y-auto">
+          <ul className="space-y-2">
+            {videos.map((v) => (
+              <li key={v.id} className="flex items-center gap-3 text-sm">
+                <input
+                  type="checkbox"
+                  id={`vis-${v.id}`}
+                  checked={isVisible(v.id)}
+                  onChange={() => toggleVisibility(v.id)}
+                  className="rounded border-white/20 bg-zinc-800 text-white"
+                />
+                <label htmlFor={`vis-${v.id}`} className="truncate flex-1 cursor-pointer text-zinc-300">
+                  {v.title}
+                </label>
+              </li>
+            ))}
+          </ul>
         </div>
       </section>
 
@@ -132,10 +333,16 @@ function AdminDashboard() {
           Upload de versions de travail pour les clients : liens privés, section
           commentaires et téléchargement possible.
         </p>
-        <div className="rounded-lg border border-white/10 bg-zinc-900/50 p-6 text-zinc-500">
-          [À venir : projets privés, commentaires, lien de téléchargement]
+        <div className="rounded-lg border border-white/10 bg-zinc-900/50 p-6 text-zinc-500 text-sm">
+          À venir : projets privés, commentaires, lien de téléchargement. Nécessite
+          un backend (stockage fichiers + métadonnées, auth par lien secret).
         </div>
       </section>
+
+      <p className="text-xs text-zinc-500">
+        Config enregistrée dans <code className="rounded bg-zinc-800 px-1">.data/</code> en local.
+        En production (ex. Vercel), prévoir un stockage (DB ou Vercel KV) pour persister featured et visibilité.
+      </p>
     </div>
   );
 }

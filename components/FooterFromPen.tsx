@@ -36,11 +36,12 @@ export default function FooterFromPen() {
           grid-template-columns: repeat(12, 1fr);
           column-gap: 1rem;
           align-items: center;
-          padding: 1.2rem 1.2rem 2rem;
+          padding: 1.2rem;
           width: 100%;
           max-width: 100vw;
           box-sizing: border-box;
           color: #fff;
+          font-size: 14px;
         }
         .coordinates-section,
         .info-section {
@@ -50,8 +51,13 @@ export default function FooterFromPen() {
         .coordinates-section {
           grid-column: 1 / span 4;
           pointer-events: auto;
-          letter-spacing: 0.05em;
-          text-transform: uppercase;
+        }
+        .coordinates-section p,
+        .info-section p {
+          margin: 0;
+          font-size: 14px;
+          font-weight: 600;
+          letter-spacing: -0.01em;
         }
         .links-section {
           grid-column: 5 / span 4;
@@ -60,14 +66,13 @@ export default function FooterFromPen() {
           gap: 1rem;
           pointer-events: auto;
           font-family: "PP Neue Montreal", system-ui, sans-serif;
-          font-size: 13px;
+          font-size: 14px;
           font-weight: 700;
         }
         .links-section a {
           position: relative;
           color: #fff;
           text-decoration: none;
-          mix-blend-mode: difference;
           transition: color 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
         }
         .links-section a::after {
@@ -81,6 +86,7 @@ export default function FooterFromPen() {
         }
         .links-section a:hover {
           color: #000;
+          mix-blend-mode: difference;
         }
         .links-section a:hover::after {
           width: 100%;
@@ -89,10 +95,11 @@ export default function FooterFromPen() {
           grid-column: 9 / span 4;
           text-align: right;
           pointer-events: auto;
-          letter-spacing: 0.05em;
-          text-transform: uppercase;
         }
         @media (max-width: 900px) {
+          .footer {
+            grid-template-rows: auto auto auto;
+          }
           .coordinates-section {
             grid-column: 1 / span 6;
           }

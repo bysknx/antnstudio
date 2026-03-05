@@ -1,6 +1,7 @@
 // app/page.tsx — SERVER COMPONENT
 import { Suspense } from "react";
 import { fetchVideos } from "@/lib/videos";
+import { getAdminConfig } from "@/lib/admin-config";
 import PreloadVimeo from "@/components/PreloadVimeo";
 import ClientHeroSection from "@/components/ClientHeroSection";
 
@@ -19,8 +20,7 @@ type Item = {
 export const dynamic = "force-dynamic";
 
 export default async function HomePage() {
-  // Lecture du manifest local côté serveur
-  const videos = await fetchVideos();
+  const [videos, config] = await Promise.all([fetchVideos(), getAdminConfig()]);
 
   const normalized: Item[] = (videos || []).map((v) => ({
     id: v.id,
@@ -34,14 +34,23 @@ export default async function HomePage() {
     year: v.year,
   }));
 
-  // Les 5 plus récents (par année, puis par ordre)
-  const latest = normalized
-    .sort(
-      (a, b) =>
-        new Date(b.createdAt || 0).getTime() -
-        new Date(a.createdAt || 0).getTime(),
-    )
-    .slice(0, 5);
+  const byId = new Map(normalized.map((v) => [v.id, v]));
+
+  // Featured :
+  // - si l’admin a défini un ordre (même vide), on le respecte
+  // - sinon, fallback sur les 5 plus récents
+  const useFeaturedOverride = config.hasFeaturedOverride;
+  const latest = useFeaturedOverride
+    ? (config.featuredIds || [])
+        .map((id) => byId.get(id))
+        .filter(Boolean) as Item[]
+    : normalized
+        .sort(
+          (a, b) =>
+            new Date(b.createdAt || 0).getTime() -
+            new Date(a.createdAt || 0).getTime(),
+        )
+        .slice(0, 5);
 
   return (
     <main className="relative min-h-[100svh]">

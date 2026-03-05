@@ -1,10 +1,10 @@
 "use client";
 
-type Props = { className?: string };
+type Props = { className?: string; hideTitle?: boolean };
 
 const CONTACT_EMAIL = "anthony@antn.studio";
 
-export function ContactForm({ className = "" }: Props) {
+export function ContactForm({ className = "", hideTitle }: Props) {
   const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     const form = e.currentTarget;
@@ -25,7 +25,9 @@ export function ContactForm({ className = "" }: Props) {
       className={`space-y-4 rounded-2xl p-5 ${className}`}
       onSubmit={handleSubmit}
     >
-      <h2 className="text-lg font-semibold text-zinc-100">Contact</h2>
+      {!hideTitle && (
+        <h2 className="text-lg font-semibold text-zinc-100">Contact</h2>
+      )}
 
       <label className="block text-xs text-zinc-400">
         Votre nom

@@ -1,5 +1,6 @@
-// app/contact/page.tsx
+// app/contact/page.tsx — About / Contact, style ORAGE (console, grille, blocs [ SECTION ])
 import type { ReactNode } from "react";
+import Link from "next/link";
 import { ContactForm } from "@/components/ContactForm";
 
 function HoverWord({ children }: { children: ReactNode }) {
@@ -10,105 +11,182 @@ function HoverWord({ children }: { children: ReactNode }) {
         aria-hidden
         className="pointer-events-none absolute left-0 right-0 -bottom-0.5 h-[1.5px] origin-left scale-x-0 bg-white/80 transition-transform duration-200 ease-out group-hover:scale-x-100"
       />
-      <span
-        aria-hidden
-        className="pointer-events-none absolute inset-x-0 -bottom-1 h-2 rounded-full bg-white/10 opacity-0 blur-[2px] transition-opacity duration-200 group-hover:opacity-100"
-      />
     </span>
   );
 }
 
+function Block({
+  label,
+  children,
+}: {
+  label: string;
+  children: ReactNode;
+}) {
+  return (
+    <div className="border-l border-white/20 pl-3 py-1">
+      <div className="text-white/45 text-xs font-mono tracking-widest uppercase mb-1.5">
+        [ {label}
+      </div>
+      <div className="text-zinc-200 text-sm font-mono leading-relaxed">
+        {children}
+      </div>
+    </div>
+  );
+}
+
 const EXPERIENCES = [
-  { title: "CEO", company: "antn.studio", dates: "2019 - Present", type: "" },
-  {
-    title: "Edit Supervisor",
-    company: "Freelance @ Jellysmack",
-    dates: "2022 - 2023",
-    type: "",
-  },
-  {
-    title: "International Project Manager",
-    company: "Freelance",
-    dates: "2023 - 2025",
-    type: "",
-  },
+  { title: "CEO", company: "antn.studio", dates: "2019 - Present" },
+  { title: "Edit Supervisor", company: "Freelance @ Jellysmack", dates: "2022 - 2023" },
+  { title: "International Project Manager", company: "Freelance", dates: "2023 - 2025" },
 ];
 
 export default function ContactPage() {
   return (
-    <main className="relative mx-auto flex min-h-[100svh] w-full max-w-7xl flex-col justify-between px-6 py-24">
-      <div className="relative overflow-hidden rounded-[28px] border border-white/10 bg-black/28 px-6 py-10 shadow-[0_30px_120px_rgba(0,0,0,0.5)] backdrop-blur-xl">
-        <div
-          aria-hidden
-          className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_20%_20%,rgba(255,255,255,0.08),transparent_44%),radial-gradient(circle_at_85%_12%,rgba(94,234,212,0.07),transparent_34%),radial-gradient(circle_at_70%_80%,rgba(255,255,255,0.05),transparent_42%)] opacity-75"
-        />
+    <main className="relative min-h-[100svh] w-full overflow-hidden">
+      {/* Grand titre de fond (style ORAGE) */}
+      <div
+        aria-hidden
+        className="pointer-events-none fixed inset-0 flex items-center justify-center z-0"
+      >
+        <span
+          className="font-mono text-[clamp(4rem,18vw,14rem)] font-bold uppercase tracking-[0.2em] text-white/[0.04] select-none"
+          style={{ fontFamily: "ui-monospace, monospace" }}
+        >
+          About
+        </span>
+      </div>
 
-        <div className="relative flex flex-grow flex-col items-center justify-between gap-12 lg:flex-row lg:items-start lg:gap-28 xl:gap-36">
-          <div className="w-full max-w-md flex-shrink-0">
-            <ContactForm className="glass-panel" />
-          </div>
+      {/* Coins cadre (style console) */}
+      <div className="pointer-events-none fixed inset-0 z-10 flex items-stretch justify-between p-4 md:p-6">
+        <span className="w-6 h-6 border-l-2 border-t-2 border-white/15" />
+        <span className="w-6 h-6 border-r-2 border-t-2 border-white/15" />
+      </div>
+      <div className="pointer-events-none fixed inset-0 z-10 flex items-end justify-between p-4 md:p-6 top-auto">
+        <span className="w-6 h-6 border-l-2 border-b-2 border-white/15" />
+        <span className="w-6 h-6 border-r-2 border-b-2 border-white/15" />
+      </div>
 
-          <section className="relative w-full space-y-5 rounded-2xl border border-white/10 bg-zinc-900/55 p-6 text-left shadow-[0_20px_80px_rgba(0,0,0,0.35)] backdrop-blur lg:w-[58%]">
-            <h2 className="text-xl font-semibold text-zinc-100">
-              About.
-            </h2>
-            <p className="max-w-xl text-[15px] leading-relaxed text-zinc-300/90">
-              <strong className="font-semibold">&laquo; antn.studio &raquo;</strong>{" "}
-              founded by Anthony, director and project lead from <HoverWord>Paris</HoverWord>.
-              The studio crafts <HoverWord>cinematic visuals</HoverWord>,{" "}
-              <HoverWord>brand films</HoverWord> and <HoverWord>digital experiences</HoverWord>{" "}
-              with a strong narrative core — <HoverWord>technical mastery</HoverWord>,{" "}
-              <HoverWord>authenticity</HoverWord> and <HoverWord>impact</HoverWord>.
-            </p>
-            <p className="max-w-xl text-[15px] leading-relaxed text-zinc-300/90">
-              <HoverWord>Sensory</HoverWord>, <HoverWord>intentional</HoverWord>,{" "}
-              <HoverWord>timeless</HoverWord> — antn.studio turns ideas into{" "}
-              <HoverWord>living imagery</HoverWord>.
-            </p>
-
-            <div className="flex flex-col items-start gap-4 pt-2 sm:flex-row sm:items-center">
-              <span className="text-sm text-zinc-400">
-                Let&rsquo;s connect :
-              </span>
-
-              <a
-                href="mailto:anthony@antn.studio"
-                className="group relative inline-flex items-center overflow-hidden rounded-md border border-white/10 bg-zinc-800/70 px-5 py-2.5 text-sm font-medium text-zinc-100 backdrop-blur transition-colors"
-              >
-                <span className="relative z-10 transition-colors duration-300 group-hover:text-zinc-900">
-                  anthony@antn.studio
-                </span>
-                <span
-                  aria-hidden
-                  className="absolute inset-0 -z-0 translate-x-[101%] bg-white transition-transform duration-300 ease-out group-hover:translate-x-0"
-                  style={{ transformOrigin: "right center" }}
-                />
-              </a>
-            </div>
-          </section>
+      {/* Breadcrumb type chemin (C:\ANTN\CONTACT) */}
+      <div className="relative z-20 pt-24 md:pt-28 shell">
+        <div className="flex items-center gap-2 text-white/5 font-mono text-sm tracking-wider">
+          <span>C:\</span>
+          <span>ANTN</span>
+          <span className="text-white/40">\</span>
+          <span className="text-white/50">CONTACT</span>
         </div>
       </div>
 
-      <section className="mt-24">
-        <h3 className="sr-only">Experiences</h3>
-        <ul className="grid place-items-center gap-6 sm:grid-cols-2 lg:grid-cols-3">
-          {EXPERIENCES.map((exp) => (
-            <li
-              key={`${exp.company}-${exp.title}`}
-              className="glass-panel w-full max-w-sm rounded-2xl p-4"
-            >
-              <div className="mb-1 flex items-center justify-between text-xs text-zinc-400">
+      <div className="relative z-20 shell shell-lg flex flex-col lg:flex-row gap-16 lg:gap-20 py-12 pb-24">
+        {/* Colonne gauche : description studio */}
+        <div className="flex-1 max-w-xl">
+          <div className="border-l border-white/20 pl-4">
+            <p className="text-zinc-300 text-sm md:text-base leading-relaxed font-mono uppercase tracking-wide">
+              <strong className="text-white font-semibold">antn.studio</strong>{" "}
+              is a creative studio founded by Anthony, director and project lead
+              from <HoverWord>Paris</HoverWord>. We craft{" "}
+              <HoverWord>cinematic visuals</HoverWord>,{" "}
+              <HoverWord>brand films</HoverWord> and{" "}
+              <HoverWord>digital experiences</HoverWord> with a strong narrative
+              core — <HoverWord>technical mastery</HoverWord>,{" "}
+              <HoverWord>authenticity</HoverWord> and{" "}
+              <HoverWord>impact</HoverWord>.
+            </p>
+            <p className="mt-4 text-zinc-400 text-sm font-mono uppercase tracking-wide leading-relaxed">
+              <HoverWord>Sensory</HoverWord>, <HoverWord>intentional</HoverWord>,{" "}
+              <HoverWord>timeless</HoverWord> — we turn ideas into{" "}
+              <HoverWord>living imagery</HoverWord>.
+            </p>
+          </div>
+
+          {/* Expériences en liste compacte type console */}
+          <ul className="mt-10 space-y-2">
+            {EXPERIENCES.map((exp) => (
+              <li
+                key={`${exp.company}-${exp.title}`}
+                className="flex flex-wrap items-baseline gap-x-3 gap-y-0 text-xs font-mono text-zinc-500"
+              >
+                <span className="text-white/60">{exp.title}</span>
+                <span className="text-white/30">@</span>
                 <span>{exp.company}</span>
-                <span>{exp.dates}</span>
-              </div>
-              <div className="text-sm text-zinc-200">{exp.title}</div>
-              {exp.type ? (
-                <div className="mt-1 text-xs text-zinc-500">{exp.type}</div>
-              ) : null}
-            </li>
-          ))}
-        </ul>
-      </section>
+                <span className="text-white/25">({exp.dates})</span>
+              </li>
+            ))}
+          </ul>
+        </div>
+
+        {/* Colonne droite : blocs [ SOCIAL ], [ ADDRESS ], etc. */}
+        <div className="flex-shrink-0 w-full lg:w-[320px] space-y-6">
+          <Block label="Social">
+            <a
+              href="https://www.instagram.com/antnstudio/"
+              target="_blank"
+              rel="noreferrer"
+              className="block text-white/90 hover:text-white transition"
+            >
+              Instagram
+            </a>
+            <a
+              href="https://x.com/antnstudio"
+              target="_blank"
+              rel="noreferrer"
+              className="block text-white/90 hover:text-white transition"
+            >
+              X / Twitter
+            </a>
+            <a
+              href="https://www.linkedin.com/in/antnstudio/"
+              target="_blank"
+              rel="noreferrer"
+              className="block text-white/90 hover:text-white transition"
+            >
+              LinkedIn
+            </a>
+          </Block>
+
+          <Block label="Address">
+            48.7264° N, 2.2770° E
+          </Block>
+
+          <Block label="For new project">
+            <a
+              href="mailto:anthony@antn.studio"
+              className="text-white/90 hover:text-white transition underline underline-offset-2"
+            >
+              anthony@antn.studio
+            </a>
+          </Block>
+
+          <Block label="Job">
+            <Link href="mailto:anthony@antn.studio?subject=Application" className="text-white/90 hover:text-white transition underline underline-offset-2">
+              Apply here
+            </Link>
+          </Block>
+
+          <Block label="Infos">
+            <Link href="/" className="text-white/90 hover:text-white transition">
+              Legals
+            </Link>
+            <span className="text-white/40 mx-1">·</span>
+            <span className="text-white/60">Credits</span>
+          </Block>
+
+          {/* Formulaire contact intégré */}
+          <div className="pt-4 border-l border-white/20 pl-3">
+            <div className="text-white/45 text-xs font-mono tracking-widest uppercase mb-3">
+              [ Send message
+            </div>
+            <ContactForm hideTitle className="!rounded-lg !p-0 !bg-transparent !border-0 !shadow-none space-y-3" />
+          </div>
+        </div>
+      </div>
+
+      {/* Coordonnées type readout (bas droite, optionnel) */}
+      <div
+        aria-hidden
+        className="fixed bottom-20 right-6 z-10 font-mono text-[10px] text-white/25 tabular-nums"
+      >
+        X: 1.150BPX Y: 980BPX
+      </div>
     </main>
   );
 }

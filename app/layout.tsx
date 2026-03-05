@@ -22,10 +22,10 @@ const BOOT_SCRIPT = String.raw`(function () {
     document.documentElement.setAttribute("data-booting", "");
     document.documentElement.setAttribute("data-app-loading", "visible");
 
-    var css = "position:fixed;inset:0;background:#000;color:#e5e7eb;z-index:2147483647;display:grid;place-items:center;font-family:ui-monospace,SFMono-Regular,Menlo,Monaco,Consolas,\\\"Liberation Mono\\\",\\\"Courier New\\\",monospace;opacity:0;transition:opacity 600ms ease-out";
+    // Full-screen boot: black, centered ASCII logo with progressive opacity (old PC boot feel)
     var box = document.createElement("div");
     box.id = "boot";
-    box.style.cssText = css;
+    box.style.cssText = "position:fixed;inset:0;background:#000;color:#e5e7eb;z-index:2147483647;display:grid;place-items:center;font-family:ui-monospace,SFMono-Regular,Menlo,Monaco,Consolas,\\\"Liberation Mono\\\",\\\"Courier New\\\",monospace;opacity:0;transition:opacity 800ms ease-out";
     var art = [
       "░▒▓██████▓▒░░▒▓███████▓▒░▒▓████████▓▒░▒▓███████▓▒░  ",
       "░▒▓█▓▒░░▒▓█▓▒░▒▓█▓▒░░▒▓█▓▒░ ░▒▓█▓▒░   ░▒▓█▓▒░░▒▓█▓▒░ ",
@@ -34,34 +34,22 @@ const BOOT_SCRIPT = String.raw`(function () {
       "░▒▓█▓▒░░▒▓█▓▒░▒▓█▓▒░░▒▓█▓▒░ ░▒▓█▓▒░   ░▒▓█▓▒░░▒▓█▓▒░ ",
       "░▒▓█▓▒░░▒▓█▓▒░▒▓█▓▒░░▒▓█▓▒░ ░▒▓█▓▒░   ░▒▓█▓▒░░▒▓█▓▒░ ",
       "░▒▓█▓▒░░▒▓█▓▒░▒▓█▓▒░░▒▓█▓▒░ ░▒▓█▓▒░   ░▒▓█▓▒░░▒▓█▓▒░ ",
-      "                                                     ",
-      "                                                     ",
     ].join("\\n");
-    box.innerHTML = '<div style="padding:24px;text-align:left">'+
-      '<pre style="margin:0;line-height:1.05;letter-spacing:.02em;font-size:clamp(14px,6vw,24px);opacity:.95">'+ art + '\\n\\n</pre>'+
-      '<div style="margin-top:16px;font-size:12px;opacity:.9">booting interface '+
-      '<span style="display:inline-block;vertical-align:middle;height:12px;width:160px;overflow:hidden;border:1px solid rgba(255,255,255,.4);background:rgba(0,0,0,.4)"><span id="bootBar" style="display:block;height:100%;width:0;background:rgba(16,185,129,.9);background-image:repeating-linear-gradient(90deg,rgba(0,0,0,.18) 0 6px,transparent 6px 12px);transition:width 120ms linear"></span></span>'+
-      ' <span id="bootPct" style="font-variant-numeric:tabular-nums">0%</span></div>'+
-      '</div>';
+    box.innerHTML = '<div class="boot-grid" style="position:absolute;inset:0;background-image:linear-gradient(rgba(255,255,255,.03) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,.03) 1px, transparent 1px);background-size:24px 24px;pointer-events:none"></div>' +
+      '<pre id="bootAscii" style="margin:0;line-height:1.08;letter-spacing:.04em;font-size:clamp(12px,4.2vw,22px);color:rgba(229,231,235,.98);opacity:0;transition:opacity 1s ease-out;white-space:pre;text-align:center">' + art + '</pre>';
 
     (document.body || document.documentElement).appendChild(box);
 
-    // Fade-in du logo ASCII
+    // Progressive opacity: logo fades in like an old CRT
     requestAnimationFrame(function () {
-      try {
-        box.style.opacity = "1";
-      } catch (e) {}
+      requestAnimationFrame(function () {
+        try {
+          box.style.opacity = "1";
+          var pre = document.getElementById("bootAscii");
+          if (pre) pre.style.opacity = "1";
+        } catch (e) {}
+      });
     });
-
-    var p = 0;
-    var pctEl = document.getElementById("bootPct");
-    var barEl = document.getElementById("bootBar");
-    var t = setInterval(function () {
-      p = Math.min(99, p + 1 + Math.random() * 3);
-      if (barEl) barEl.style.width = Math.round(p) + "%";
-      if (pctEl) pctEl.textContent = Math.round(p) + "%";
-    }, 120);
-    window.__antnBootTick = t;
   } catch (e) {}
 })();`;
 
