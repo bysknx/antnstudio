@@ -1,7 +1,6 @@
 // app/contact/page.tsx — About / Contact, style ORAGE (console, grille, blocs [ SECTION ])
 import type { ReactNode } from "react";
 import Link from "next/link";
-import { ContactForm } from "@/components/ContactForm";
 
 function HoverWord({ children }: { children: ReactNode }) {
   return (
@@ -43,19 +42,6 @@ const EXPERIENCES = [
 export default function ContactPage() {
   return (
     <main className="relative min-h-[100svh] w-full overflow-hidden">
-      {/* Titre de fond centré (viewport) */}
-      <div
-        aria-hidden
-        className="pointer-events-none fixed inset-0 z-0 flex items-center justify-center"
-      >
-        <span
-          className="font-mono text-[clamp(4rem,18vw,14rem)] font-bold uppercase tracking-[0.2em] text-white/[0.04] select-none text-center"
-          style={{ fontFamily: "ui-monospace, monospace" }}
-        >
-          About
-        </span>
-      </div>
-
       {/* Breadcrumb C:\ANTN\ABOUT */}
       <div className="relative z-20 pt-24 md:pt-28 shell">
         <div className="flex items-center gap-2 text-white/5 font-mono text-sm tracking-wider">
@@ -159,14 +145,6 @@ export default function ContactPage() {
             <span className="text-white/40 mx-1">·</span>
             <span className="text-white/60">Credits</span>
           </Block>
-
-          {/* Formulaire contact intégré */}
-          <div className="pt-4 border-l border-white/20 pl-3">
-            <div className="text-white/45 text-xs font-mono tracking-widest uppercase mb-3">
-              [ Send message
-            </div>
-            <ContactForm hideTitle className="!rounded-lg !p-0 !bg-transparent !border-0 !shadow-none space-y-3" />
-          </div>
         </div>
       </div>
 
