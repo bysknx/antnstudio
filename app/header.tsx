@@ -8,12 +8,12 @@ import { usePathname } from "next/navigation";
 const LINKS = [
   { href: "/", label: "home" },
   { href: "/projects", label: "projects" },
-  { href: "/contact", label: "contact" },
+  { href: "/contact", label: "about" },
 ];
 
 export default function Header() {
-  // Read the active pathname so we can highlight the matching navigation link.
   const pathname = usePathname();
+  if (pathname === "/admin") return null;
 
   return (
     // Fixed, translucent header that stays on top of the viewport.

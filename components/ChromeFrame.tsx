@@ -2,7 +2,6 @@
 
 import { PropsWithChildren } from "react";
 import { usePathname } from "next/navigation";
-import GlCanvas from "@/components/GlCanvas";
 
 export default function ChromeFrame({ children }: PropsWithChildren) {
   const pathname = usePathname();
@@ -11,8 +10,8 @@ export default function ChromeFrame({ children }: PropsWithChildren) {
   const isContact = pathname === "/contact";
   // Pas de grille sur home, contact ni projects (le pen a son propre fond)
   const hideStaticDots = isHome || isContact || isProjects;
-  // FX (GlCanvas) uniquement sur contact ; pas sur home ni projects (évite le flash de grille)
-  const showGlLayer = !isHome && !isProjects && isContact;
+  // Page about/contact : grain seul (pas de grille réactive)
+  const showGrainOnly = isContact;
 
   return (
     <div className="relative min-h-[100svh] bg-[#0b0b0b] z-0">
@@ -30,12 +29,10 @@ export default function ChromeFrame({ children }: PropsWithChildren) {
         />
       )}
 
-      {/* Couche FX : uniquement sur contact (grille animée discrète) */}
-      {showGlLayer && (
+      {/* About : fond grain léger uniquement (pas de grille réactive) */}
+      {showGrainOnly && (
         <div id="gl-layer" className="pointer-events-none fixed inset-0 z-0" aria-hidden>
-          <GlCanvas spacing={40} maxOffset={12} subtle />
           <div className="grain" />
-          <div className="scanlines" />
         </div>
       )}
 

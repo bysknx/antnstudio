@@ -27,10 +27,10 @@ export async function getAdminConfig(): Promise<AdminConfig> {
     const path = dataPath();
     const raw = await readFile(path, "utf-8");
     const data = JSON.parse(raw) as Partial<AdminConfig>;
+    // Old configs without hasFeaturedOverride: treat as no override (fallback to default 5).
+    // Otherwise empty featuredIds would be treated as "override with zero" incorrectly.
     const hasStoredOverride = Object.prototype.hasOwnProperty.call(data, "hasFeaturedOverride");
-    const hasFeaturedOverride = hasStoredOverride
-      ? Boolean(data.hasFeaturedOverride)
-      : Object.prototype.hasOwnProperty.call(data, "featuredIds");
+    const hasFeaturedOverride = hasStoredOverride ? Boolean(data.hasFeaturedOverride) : false;
     return {
       featuredIds: Array.isArray(data.featuredIds) ? data.featuredIds : DEFAULT_CONFIG.featuredIds,
       visibility: data.visibility && typeof data.visibility === "object" ? data.visibility : DEFAULT_CONFIG.visibility,
@@ -47,7 +47,11 @@ export async function setAdminConfig(config: Partial<AdminConfig>): Promise<Admi
     featuredIds: config.featuredIds ?? current.featuredIds,
     visibility: config.visibility ?? current.visibility,
     hasFeaturedOverride:
-      config.featuredIds !== undefined ? true : current.hasFeaturedOverride,
+      config.hasFeaturedOverride !== undefined
+        ? config.hasFeaturedOverride
+        : config.featuredIds !== undefined
+          ? true
+          : current.hasFeaturedOverride,
   };
   try {
     const dir = join(process.cwd(), DATA_DIR);

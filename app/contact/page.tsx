@@ -43,36 +43,26 @@ const EXPERIENCES = [
 export default function ContactPage() {
   return (
     <main className="relative min-h-[100svh] w-full overflow-hidden">
-      {/* Grand titre de fond (style ORAGE) */}
+      {/* Titre de fond centré (viewport) */}
       <div
         aria-hidden
-        className="pointer-events-none fixed inset-0 flex items-center justify-center z-0"
+        className="pointer-events-none fixed inset-0 z-0 flex items-center justify-center"
       >
         <span
-          className="font-mono text-[clamp(4rem,18vw,14rem)] font-bold uppercase tracking-[0.2em] text-white/[0.04] select-none"
+          className="font-mono text-[clamp(4rem,18vw,14rem)] font-bold uppercase tracking-[0.2em] text-white/[0.04] select-none text-center"
           style={{ fontFamily: "ui-monospace, monospace" }}
         >
           About
         </span>
       </div>
 
-      {/* Coins cadre (style console) */}
-      <div className="pointer-events-none fixed inset-0 z-10 flex items-stretch justify-between p-4 md:p-6">
-        <span className="w-6 h-6 border-l-2 border-t-2 border-white/15" />
-        <span className="w-6 h-6 border-r-2 border-t-2 border-white/15" />
-      </div>
-      <div className="pointer-events-none fixed inset-0 z-10 flex items-end justify-between p-4 md:p-6 top-auto">
-        <span className="w-6 h-6 border-l-2 border-b-2 border-white/15" />
-        <span className="w-6 h-6 border-r-2 border-b-2 border-white/15" />
-      </div>
-
-      {/* Breadcrumb type chemin (C:\ANTN\CONTACT) */}
+      {/* Breadcrumb C:\ANTN\ABOUT */}
       <div className="relative z-20 pt-24 md:pt-28 shell">
         <div className="flex items-center gap-2 text-white/5 font-mono text-sm tracking-wider">
           <span>C:\</span>
           <span>ANTN</span>
           <span className="text-white/40">\</span>
-          <span className="text-white/50">CONTACT</span>
+          <span className="text-white/50">ABOUT</span>
         </div>
       </div>
 
@@ -180,13 +170,6 @@ export default function ContactPage() {
         </div>
       </div>
 
-      {/* Coordonnées type readout (bas droite, optionnel) */}
-      <div
-        aria-hidden
-        className="fixed bottom-20 right-6 z-10 font-mono text-[10px] text-white/25 tabular-nums"
-      >
-        X: 1.150BPX Y: 980BPX
-      </div>
     </main>
   );
 }

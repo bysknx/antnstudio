@@ -81,12 +81,19 @@ type VideoEntry = { id: string; title: string; filename?: string; year?: number 
 
 function AdminDashboard() {
   const [videos, setVideos] = useState<VideoEntry[]>([]);
-  const [config, setConfig] = useState<{ featuredIds: string[]; visibility: Record<string, boolean> }>({
+  const [config, setConfig] = useState<{
+    featuredIds: string[];
+    visibility: Record<string, boolean>;
+    hasFeaturedOverride?: boolean;
+  }>({
     featuredIds: [],
     visibility: {},
+    hasFeaturedOverride: false,
   });
   const [saving, setSaving] = useState(false);
   const [saveOk, setSaveOk] = useState(false);
+  const [uploading, setUploading] = useState(false);
+  const [uploadResult, setUploadResult] = useState<{ ok: boolean; message?: string } | null>(null);
 
   useEffect(() => {
     let cancelled = false;
@@ -117,6 +124,8 @@ function AdminDashboard() {
           cfg?.visibility && typeof cfg.visibility === "object"
             ? cfg.visibility
             : {},
+        hasFeaturedOverride:
+          typeof cfg?.hasFeaturedOverride === "boolean" ? cfg.hasFeaturedOverride : false,
       });
     });
     return () => {
@@ -124,14 +133,18 @@ function AdminDashboard() {
     };
   }, []);
 
-  const featuredOrder = config.featuredIds.length > 0
-    ? [...config.featuredIds]
-    : videos
-        .sort((a, b) => (b.year ?? 0) - (a.year ?? 0))
-        .slice(0, 5)
-        .map((v) => v.id);
+  const defaultFive = videos
+    .sort((a, b) => (b.year ?? 0) - (a.year ?? 0))
+    .slice(0, 5)
+    .map((v) => v.id);
+  const featuredOrder =
+    config.hasFeaturedOverride && config.featuredIds.length > 0
+      ? [...config.featuredIds]
+      : config.hasFeaturedOverride && config.featuredIds.length === 0
+        ? []
+        : defaultFive;
   const setFeaturedOrder = (ids: string[]) =>
-    setConfig((c) => ({ ...c, featuredIds: ids }));
+    setConfig((c) => ({ ...c, featuredIds: ids, hasFeaturedOverride: true }));
 
   const moveFeatured = (index: number, dir: 1 | -1) => {
     const next = [...featuredOrder];
@@ -160,6 +173,44 @@ function AdminDashboard() {
   };
   const isVisible = (id: string) => config.visibility[id] !== false;
 
+  const handleUpload = async (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    const form = e.currentTarget;
+    const input = form.querySelector('input[type="file"]') as HTMLInputElement;
+    const file = input?.files?.[0];
+    if (!file) return;
+    setUploading(true);
+    setUploadResult(null);
+    try {
+      const fd = new FormData();
+      fd.set("file", file);
+      const res = await fetch("/api/admin/upload", { method: "POST", body: fd });
+      const data = await res.json();
+      if (res.ok && data.ok) {
+        setUploadResult({ ok: true, message: data.message || "Fichier enregistré." });
+        input.value = "";
+        const vimeoRes = await fetch("/api/vimeo", { cache: "no-store" });
+        const vimeo = await vimeoRes.json();
+        if (Array.isArray(vimeo?.items)) {
+          setVideos(
+            vimeo.items.map((v: VideoEntry) => ({
+              id: v.id,
+              title: v.title,
+              filename: v.filename,
+              year: v.year,
+            })),
+          );
+        }
+      } else {
+        setUploadResult({ ok: false, message: data.error || "Échec upload" });
+      }
+    } catch {
+      setUploadResult({ ok: false, message: "Erreur réseau" });
+    } finally {
+      setUploading(false);
+    }
+  };
+
   const saveConfig = async () => {
     setSaving(true);
     setSaveOk(false);
@@ -173,6 +224,7 @@ function AdminDashboard() {
             acc[v.id] = isVisible(v.id);
             return acc;
           }, {} as Record<string, boolean>),
+          hasFeaturedOverride: config.hasFeaturedOverride ?? true,
         }),
       });
       if (res.ok) {
@@ -218,8 +270,30 @@ function AdminDashboard() {
               </li>
             ))}
           </ul>
-          <p className="mt-3 text-xs text-zinc-500">
-            Upload : à connecter à ton API (presigned URL S3 ou endpoint custom sur le VPS).
+          <form onSubmit={handleUpload} className="mt-3 flex flex-wrap items-end gap-2">
+            <label className="flex-1 min-w-[180px]">
+              <span className="sr-only">Fichier MP4</span>
+              <input
+                type="file"
+                accept=".mp4,video/mp4"
+                className="block w-full text-sm text-zinc-400 file:mr-2 file:rounded file:border-0 file:bg-white file:px-3 file:py-1 file:text-black"
+              />
+            </label>
+            <button
+              type="submit"
+              disabled={uploading}
+              className="rounded-md bg-white/10 px-3 py-1.5 text-sm text-zinc-200 hover:bg-white/20 disabled:opacity-50"
+            >
+              {uploading ? "Envoi…" : "Envoyer"}
+            </button>
+          </form>
+          {uploadResult && (
+            <p className={`mt-2 text-xs ${uploadResult.ok ? "text-emerald-500" : "text-red-400"}`}>
+              {uploadResult.message}
+            </p>
+          )}
+          <p className="mt-2 text-xs text-zinc-500">
+            En local : fichier enregistré dans <code className="rounded bg-zinc-800 px-1">.data/uploads</code>. En prod : brancher S3 ou API VPS.
           </p>
         </div>
       </section>

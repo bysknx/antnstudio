@@ -17,7 +17,11 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "Non autorisé" }, { status: 401 });
   }
 
-  let body: { featuredIds?: string[]; visibility?: Record<string, boolean> } = {};
+  let body: {
+    featuredIds?: string[];
+    visibility?: Record<string, boolean>;
+    hasFeaturedOverride?: boolean;
+  } = {};
   try {
     body = await req.json();
   } catch {

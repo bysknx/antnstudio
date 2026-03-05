@@ -10,46 +10,20 @@ import Header from "./header";
 
 const BOOT_SCRIPT = String.raw`(function () {
   try {
-    var TTL = 15 * 60 * 1000; // 15 minutes
+    var TTL = 15 * 60 * 1000;
     var k = "antn_ascii_loader_last_seen";
     var last = +localStorage.getItem(k);
-    var should = !last || (Date.now() - last) > TTL;
-    if (!should) {
+    if (last && (Date.now() - last) <= TTL) {
       document.documentElement.removeAttribute("data-app-loading");
       return;
     }
-
     document.documentElement.setAttribute("data-booting", "");
     document.documentElement.setAttribute("data-app-loading", "visible");
-
-    // Full-screen boot: black, centered ASCII logo with progressive opacity (old PC boot feel)
     var box = document.createElement("div");
     box.id = "boot";
-    box.style.cssText = "position:fixed;inset:0;background:#000;color:#e5e7eb;z-index:2147483647;display:grid;place-items:center;font-family:ui-monospace,SFMono-Regular,Menlo,Monaco,Consolas,\\\"Liberation Mono\\\",\\\"Courier New\\\",monospace;opacity:0;transition:opacity 800ms ease-out";
-    var art = [
-      "░▒▓██████▓▒░░▒▓███████▓▒░▒▓████████▓▒░▒▓███████▓▒░  ",
-      "░▒▓█▓▒░░▒▓█▓▒░▒▓█▓▒░░▒▓█▓▒░ ░▒▓█▓▒░   ░▒▓█▓▒░░▒▓█▓▒░ ",
-      "░▒▓█▓▒░░▒▓█▓▒░▒▓█▓▒░░▒▓█▓▒░ ░▒▓█▓▒░   ░▒▓█▓▒░░▒▓█▓▒░ ",
-      "░▒▓████████▓▒░▒▓█▓▒░░▒▓█▓▒░ ░▒▓█▓▒░   ░▒▓█▓▒░░▒▓█▓▒░ ",
-      "░▒▓█▓▒░░▒▓█▓▒░▒▓█▓▒░░▒▓█▓▒░ ░▒▓█▓▒░   ░▒▓█▓▒░░▒▓█▓▒░ ",
-      "░▒▓█▓▒░░▒▓█▓▒░▒▓█▓▒░░▒▓█▓▒░ ░▒▓█▓▒░   ░▒▓█▓▒░░▒▓█▓▒░ ",
-      "░▒▓█▓▒░░▒▓█▓▒░▒▓█▓▒░░▒▓█▓▒░ ░▒▓█▓▒░   ░▒▓█▓▒░░▒▓█▓▒░ ",
-    ].join("\\n");
-    box.innerHTML = '<div class="boot-grid" style="position:absolute;inset:0;background-image:linear-gradient(rgba(255,255,255,.03) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,.03) 1px, transparent 1px);background-size:24px 24px;pointer-events:none"></div>' +
-      '<pre id="bootAscii" style="margin:0;line-height:1.08;letter-spacing:.04em;font-size:clamp(12px,4.2vw,22px);color:rgba(229,231,235,.98);opacity:0;transition:opacity 1s ease-out;white-space:pre;text-align:center">' + art + '</pre>';
-
+    box.style.cssText = "position:fixed;inset:0;background:#000;z-index:2147483647;opacity:0;transition:opacity 400ms ease-out";
     (document.body || document.documentElement).appendChild(box);
-
-    // Progressive opacity: logo fades in like an old CRT
-    requestAnimationFrame(function () {
-      requestAnimationFrame(function () {
-        try {
-          box.style.opacity = "1";
-          var pre = document.getElementById("bootAscii");
-          if (pre) pre.style.opacity = "1";
-        } catch (e) {}
-      });
-    });
+    requestAnimationFrame(function () { try { box.style.opacity = "1"; } catch (e) {} });
   } catch (e) {}
 })();`;
 

@@ -4,25 +4,35 @@ import { useCallback, useEffect, useRef, useState } from "react";
 
 const SEEN_KEY = "antn_loader_seen_v2";
 const ASCII_TTL_KEY = "antn_ascii_loader_last_seen";
-const REMOVE_BOOT_DELAY_MS = 1200;
+const LOGO_FADE_MS = 1200;
 const HARD_TIMEOUT_MS = 6000;
-const FADE_OUT_MS = 400;
+const FADE_OUT_MS = 500;
 
-type Stage = "hidden" | "visible" | "fading";
+const ASCII_ART = [
+  "░▒▓██████▓▒░░▒▓███████▓▒░▒▓████████▓▒░▒▓███████▓▒░  ",
+  "░▒▓█▓▒░░▒▓█▓▒░▒▓█▓▒░░▒▓█▓▒░ ░▒▓█▓▒░   ░▒▓█▓▒░░▒▓█▓▒░ ",
+  "░▒▓█▓▒░░▒▓█▓▒░▒▓█▓▒░░▒▓█▓▒░ ░▒▓█▓▒░   ░▒▓█▓▒░░▒▓█▓▒░ ",
+  "░▒▓████████▓▒░▒▓█▓▒░░▒▓█▓▒░ ░▒▓█▓▒░   ░▒▓█▓▒░░▒▓█▓▒░ ",
+  "░▒▓█▓▒░░▒▓█▓▒░▒▓█▓▒░░▒▓█▓▒░ ░▒▓█▓▒░   ░▒▓█▓▒░░▒▓█▓▒░ ",
+  "░▒▓█▓▒░░▒▓█▓▒░▒▓█▓▒░░▒▓█▓▒░ ░▒▓█▓▒░   ░▒▓█▓▒░░▒▓█▓▒░ ",
+  "░▒▓█▓▒░░▒▓█▓▒░▒▓█▓▒░░▒▓█▓▒░ ░▒▓█▓▒░   ░▒▓█▓▒░░▒▓█▓▒░ ",
+].join("\n");
 
-// Lines that appear progressively during boot
 const BOOT_LINES = [
-  { text: "> initializing display", delay: 0,    suffix: "OK" },
-  { text: "> loading manifest",     delay: 280,  suffix: "OK" },
-  { text: "> mounting interface",   delay: 560,  suffix: "OK" },
-  { text: "> buffering video feed", delay: 840,  suffix: null }, // stays pending until video ready
+  { text: "> initializing display", delay: 0, suffix: "OK" },
+  { text: "> loading manifest", delay: 280, suffix: "OK" },
+  { text: "> mounting interface", delay: 560, suffix: "OK" },
+  { text: "> buffering video feed", delay: 840, suffix: null },
 ];
 
 const DOTS = "............";
 
+type Stage = "hidden" | "visible" | "fading";
+
 export default function LoadingAscii({ force = false }: { force?: boolean }) {
   const [stage, setStage] = useState<Stage>("hidden");
-  const [completedLines, setCompletedLines] = useState<number>(0);
+  const [logoVisible, setLogoVisible] = useState(false);
+  const [completedLines, setCompletedLines] = useState(0);
   const [videoReady, setVideoReady] = useState(false);
   const [showReady, setShowReady] = useState(false);
   const doneRef = useRef(false);
@@ -35,9 +45,7 @@ export default function LoadingAscii({ force = false }: { force?: boolean }) {
       if (typeof window !== "undefined") {
         localStorage.setItem(ASCII_TTL_KEY, String(Date.now()));
       }
-    } catch {
-      /* ignore */
-    }
+    } catch { /* ignore */ }
     setShowReady(true);
     setTimeout(() => {
       setStage("fading");
@@ -45,30 +53,17 @@ export default function LoadingAscii({ force = false }: { force?: boolean }) {
     }, 320);
   }, []);
 
-  // Remove the inline #boot div injected by layout.tsx
-  // Also clears data-app-loading which the boot script sets and which triggers a blur/fade CSS rule
+  // Remove #boot from layout script and take over the full sequence
   useEffect(() => {
     if (typeof window === "undefined") return;
-    try {
-      const w = window as Window & { __antnBootTick?: number };
-      if (typeof w.__antnBootTick === "number") {
-        clearInterval(w.__antnBootTick);
-        delete w.__antnBootTick;
-      }
-      document.documentElement.removeAttribute("data-booting");
-      const boot = document.getElementById("boot");
-      if (boot) {
-        setTimeout(() => {
-          // Laisse la transition définie par le script de boot (600ms)
-          // et ne pilote que la cible d'opacité + la suppression.
-          boot.style.opacity = "0";
-          setTimeout(() => boot.remove(), 650);
-        }, REMOVE_BOOT_DELAY_MS);
-      }
-    } catch { /* ignore */ }
+    document.documentElement.removeAttribute("data-booting");
+    const boot = document.getElementById("boot");
+    if (boot) {
+      boot.style.opacity = "0";
+      setTimeout(() => boot.remove(), 400);
+    }
   }, []);
 
-  // Keep data-app-loading in sync with stage so the CSS blur rule applies correctly
   useEffect(() => {
     if (typeof document === "undefined") return;
     if (stage === "hidden") {
@@ -90,31 +85,32 @@ export default function LoadingAscii({ force = false }: { force?: boolean }) {
       } catch { /* ignore */ }
     }
     if (!show) {
-      // Still need to clear data-app-loading set by the boot script
       document.documentElement.removeAttribute("data-app-loading");
+      const boot = document.getElementById("boot");
+      if (boot) boot.remove();
       return;
     }
 
     setStage("visible");
+    setLogoVisible(false);
     setCompletedLines(0);
     setVideoReady(false);
     setShowReady(false);
     doneRef.current = false;
 
-    // Appear lines one by one
+    // Phase 1: logo fade-in (VHS / terminal)
+    const tLogo = setTimeout(() => setLogoVisible(true), 50);
+
+    // Phase 2: boot lines appear one by one (push logo up)
     const timers: ReturnType<typeof setTimeout>[] = [];
     BOOT_LINES.forEach((line, i) => {
       if (line.suffix !== null) {
-        const t = setTimeout(() => setCompletedLines(i + 1), line.delay + 200);
-        timers.push(t);
+        timers.push(setTimeout(() => setCompletedLines(i + 1), LOGO_FADE_MS + line.delay + 200));
       } else {
-        // Last line (video) appears but stays pending
-        const t = setTimeout(() => setCompletedLines(i), line.delay);
-        timers.push(t);
+        timers.push(setTimeout(() => setCompletedLines(i), LOGO_FADE_MS + line.delay));
       }
     });
 
-    // Listen for video ready event
     const onVideoReady = () => {
       setVideoReady(true);
       setCompletedLines(BOOT_LINES.length);
@@ -122,12 +118,12 @@ export default function LoadingAscii({ force = false }: { force?: boolean }) {
     };
     window.addEventListener("antn:video-ready", onVideoReady, { once: true });
 
-    // Hard timeout
     hardRef.current = setTimeout(() => {
       window.dispatchEvent(new Event("antn:video-ready"));
     }, HARD_TIMEOUT_MS);
 
     return () => {
+      clearTimeout(tLogo);
       timers.forEach(clearTimeout);
       if (hardRef.current) clearTimeout(hardRef.current);
       window.removeEventListener("antn:video-ready", onVideoReady);
@@ -145,18 +141,34 @@ export default function LoadingAscii({ force = false }: { force?: boolean }) {
       }}
       className="fixed inset-0 z-[9999] bg-black text-white font-mono overflow-hidden"
     >
-      {/* Scanlines */}
-      <div className="pointer-events-none absolute inset-0 opacity-[0.06] [background-image:linear-gradient(to_bottom,rgba(255,255,255,.3)_1px,transparent_1px)] [background-size:100%_3px]" />
+      {/* VHS / terminal: grain + scanlines */}
+      <div className="pointer-events-none absolute inset-0 z-0 grain opacity-100" style={{ opacity: 0.12 }} />
+      <div
+        className="pointer-events-none absolute inset-0 z-0 opacity-[0.06]"
+        style={{
+          backgroundImage: "linear-gradient(to bottom, rgba(255,255,255,.3) 1px, transparent 1px)",
+          backgroundSize: "100% 3px",
+        }}
+      />
 
-      <div className="absolute inset-0 flex items-center justify-center px-8">
-        <div className="w-full max-w-lg">
-          {/* Header */}
-          <div className="mb-8 text-white/40 text-xs tracking-[0.25em] uppercase">
-            ANTN.STUDIO — system boot
-          </div>
+      {/* Contenu aligné en bas : les lignes "poussent" le logo vers le haut */}
+      <div className="absolute inset-0 flex flex-col items-center justify-end pb-16 sm:pb-24 px-4">
+        <div className="w-full max-w-lg flex flex-col items-center">
+          {/* Logo ASCII — apparaît en fondu puis est poussé par les lignes */}
+          <pre
+            className="mb-6 text-center whitespace-pre font-mono text-[rgba(229,231,235,.98)] transition-opacity duration-1000 ease-out"
+            style={{
+              lineHeight: 1.08,
+              letterSpacing: "0.04em",
+              fontSize: "clamp(10px, 3.5vw, 20px)",
+              opacity: logoVisible ? 1 : 0,
+            }}
+          >
+            {ASCII_ART}
+          </pre>
 
-          {/* Boot lines */}
-          <div className="space-y-2 text-sm">
+          {/* Lignes de boot une par une */}
+          <div className="w-full space-y-2 text-sm">
             {BOOT_LINES.map((line, i) => {
               const shown = completedLines > i || (i === BOOT_LINES.length - 1 && completedLines >= i);
               const done = completedLines > i || (i === BOOT_LINES.length - 1 && videoReady);
@@ -178,9 +190,8 @@ export default function LoadingAscii({ force = false }: { force?: boolean }) {
             })}
           </div>
 
-          {/* READY */}
           {showReady && (
-            <div className="mt-8 text-white tracking-[0.3em] text-sm uppercase animate-[antnFadeIn_200ms_ease_forwards]">
+            <div className="mt-6 text-white tracking-[0.3em] text-xs uppercase animate-[antnFadeIn_200ms_ease_forwards]">
               — READY
             </div>
           )}
@@ -190,7 +201,7 @@ export default function LoadingAscii({ force = false }: { force?: boolean }) {
       <style jsx global>{`
         @keyframes antnFadeIn {
           from { opacity: 0; transform: translateY(4px); }
-          to   { opacity: 1; transform: translateY(0); }
+          to { opacity: 1; transform: translateY(0); }
         }
       `}</style>
     </div>
