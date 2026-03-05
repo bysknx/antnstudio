@@ -40,7 +40,8 @@ export async function POST(request: Request) {
       { status: 400 },
     );
   }
-  if (body.password !== secret) {
+  const password = typeof body.password === "string" ? body.password.trim() : "";
+  if (password === "" || password !== secret.trim()) {
     return NextResponse.json(
       { ok: false, error: "Mot de passe incorrect" },
       { status: 401 },

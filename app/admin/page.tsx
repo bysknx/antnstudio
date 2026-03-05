@@ -9,15 +9,19 @@ function LoginForm({ onSuccess }: { onSuccess: () => void }) {
   const [loading, setLoading] = useState(false);
 
   const submit = useCallback(
-    async (e: React.FormEvent) => {
+    async (e: React.FormEvent<HTMLFormElement>) => {
       e.preventDefault();
       setError("");
       setLoading(true);
+      const form = e.currentTarget;
+      const passwordInput = form.elements.namedItem("password");
+      const passwordValue =
+        passwordInput && "value" in passwordInput ? String(passwordInput.value) : "";
       try {
         const res = await fetch("/api/admin/auth", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ password }),
+          body: JSON.stringify({ password: passwordValue }),
         });
         const data = await res.json();
         if (data.ok) {
@@ -43,6 +47,7 @@ function LoginForm({ onSuccess }: { onSuccess: () => void }) {
         <label className="block text-sm text-zinc-400">
           Mot de passe
           <input
+            name="password"
             type="password"
             value={password}
             onChange={(e) => setPassword(e.target.value)}
