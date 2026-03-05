@@ -3,6 +3,8 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 
 const SEEN_KEY = "antn_loader_seen_v2";
+const ASCII_TTL_KEY = "antn_ascii_loader_last_seen";
+const REMOVE_BOOT_DELAY_MS = 1200;
 const HARD_TIMEOUT_MS = 6000;
 const FADE_OUT_MS = 400;
 
@@ -29,6 +31,13 @@ export default function LoadingAscii({ force = false }: { force?: boolean }) {
   const close = useCallback(() => {
     if (doneRef.current) return;
     doneRef.current = true;
+    try {
+      if (typeof window !== "undefined") {
+        localStorage.setItem(ASCII_TTL_KEY, String(Date.now()));
+      }
+    } catch {
+      /* ignore */
+    }
     setShowReady(true);
     setTimeout(() => {
       setStage("fading");
@@ -49,9 +58,12 @@ export default function LoadingAscii({ force = false }: { force?: boolean }) {
       document.documentElement.removeAttribute("data-booting");
       const boot = document.getElementById("boot");
       if (boot) {
-        boot.style.transition = "opacity 180ms ease-out";
-        boot.style.opacity = "0";
-        setTimeout(() => boot.remove(), 220);
+        setTimeout(() => {
+          // Laisse la transition définie par le script de boot (600ms)
+          // et ne pilote que la cible d'opacité + la suppression.
+          boot.style.opacity = "0";
+          setTimeout(() => boot.remove(), 650);
+        }, REMOVE_BOOT_DELAY_MS);
       }
     } catch { /* ignore */ }
   }, []);

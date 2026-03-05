@@ -22,7 +22,7 @@ const BOOT_SCRIPT = String.raw`(function () {
     document.documentElement.setAttribute("data-booting", "");
     document.documentElement.setAttribute("data-app-loading", "visible");
 
-    var css = "position:fixed;inset:0;background:#000;color:#e5e7eb;z-index:2147483647;display:grid;place-items:center;font-family:ui-monospace,SFMono-Regular,Menlo,Monaco,Consolas,\\\"Liberation Mono\\\",\\\"Courier New\\\",monospace";
+    var css = "position:fixed;inset:0;background:#000;color:#e5e7eb;z-index:2147483647;display:grid;place-items:center;font-family:ui-monospace,SFMono-Regular,Menlo,Monaco,Consolas,\\\"Liberation Mono\\\",\\\"Courier New\\\",monospace;opacity:0;transition:opacity 600ms ease-out";
     var box = document.createElement("div");
     box.id = "boot";
     box.style.cssText = css;
@@ -45,6 +45,13 @@ const BOOT_SCRIPT = String.raw`(function () {
       '</div>';
 
     (document.body || document.documentElement).appendChild(box);
+
+    // Fade-in du logo ASCII
+    requestAnimationFrame(function () {
+      try {
+        box.style.opacity = "1";
+      } catch (e) {}
+    });
 
     var p = 0;
     var pctEl = document.getElementById("bootPct");
