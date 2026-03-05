@@ -1,6 +1,5 @@
 // app/contact/page.tsx — About / Contact, style ORAGE (console, grille, blocs [ SECTION ])
 import type { ReactNode } from "react";
-import Link from "next/link";
 
 function HoverWord({ children }: { children: ReactNode }) {
   return (
@@ -90,35 +89,8 @@ export default function ContactPage() {
           </ul>
         </div>
 
-        {/* Colonne droite : blocs [ SOCIAL ], [ ADDRESS ], etc. */}
+        {/* Colonne droite : [ ADDRESS ], [ FOR NEW PROJECT ] */}
         <div className="flex-shrink-0 w-full lg:w-[320px] space-y-6">
-          <Block label="Social">
-            <a
-              href="https://www.instagram.com/antnstudio/"
-              target="_blank"
-              rel="noreferrer"
-              className="block text-white/90 hover:text-white transition"
-            >
-              Instagram
-            </a>
-            <a
-              href="https://x.com/antnstudio"
-              target="_blank"
-              rel="noreferrer"
-              className="block text-white/90 hover:text-white transition"
-            >
-              X / Twitter
-            </a>
-            <a
-              href="https://www.linkedin.com/in/antnstudio/"
-              target="_blank"
-              rel="noreferrer"
-              className="block text-white/90 hover:text-white transition"
-            >
-              LinkedIn
-            </a>
-          </Block>
-
           <Block label="Address">
             48.7264° N, 2.2770° E
           </Block>
@@ -130,20 +102,6 @@ export default function ContactPage() {
             >
               anthony@antn.studio
             </a>
-          </Block>
-
-          <Block label="Job">
-            <Link href="mailto:anthony@antn.studio?subject=Application" className="text-white/90 hover:text-white transition underline underline-offset-2">
-              Apply here
-            </Link>
-          </Block>
-
-          <Block label="Infos">
-            <Link href="/" className="text-white/90 hover:text-white transition">
-              Legals
-            </Link>
-            <span className="text-white/40 mx-1">·</span>
-            <span className="text-white/60">Credits</span>
           </Block>
         </div>
       </div>
