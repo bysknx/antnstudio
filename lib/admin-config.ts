@@ -1,5 +1,6 @@
 // lib/admin-config.ts — config admin (featured, visibility) lue depuis fichier ou défauts
 
+import { cache } from "react";
 import { readFile, writeFile, mkdir } from "fs/promises";
 import { join } from "path";
 
@@ -22,7 +23,7 @@ function dataPath(): string {
   return join(process.cwd(), DATA_DIR, CONFIG_FILENAME);
 }
 
-export async function getAdminConfig(): Promise<AdminConfig> {
+async function getAdminConfigUncached(): Promise<AdminConfig> {
   try {
     const path = dataPath();
     const raw = await readFile(path, "utf-8");
@@ -41,8 +42,11 @@ export async function getAdminConfig(): Promise<AdminConfig> {
   }
 }
 
+/** Dedupe par requête (React cache) pour accélérer home + projects */
+export const getAdminConfig = cache(getAdminConfigUncached);
+
 export async function setAdminConfig(config: Partial<AdminConfig>): Promise<AdminConfig> {
-  const current = await getAdminConfig();
+  const current = await getAdminConfigUncached();
   const next: AdminConfig = {
     featuredIds: config.featuredIds ?? current.featuredIds,
     visibility: config.visibility ?? current.visibility,

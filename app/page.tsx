@@ -1,4 +1,4 @@
-// app/page.tsx — SERVER COMPONENT
+// app/page.tsx — SERVER COMPONENT (streaming pour premier paint plus rapide)
 import { Suspense } from "react";
 import { fetchVideos } from "@/lib/videos";
 import { getAdminConfig } from "@/lib/admin-config";
@@ -19,7 +19,7 @@ type Item = {
 
 export const dynamic = "force-dynamic";
 
-export default async function HomePage() {
+async function HomeHero() {
   const [videos, config] = await Promise.all([fetchVideos(), getAdminConfig()]);
 
   const normalized: Item[] = (videos || []).map((v) => ({
@@ -36,9 +36,6 @@ export default async function HomePage() {
 
   const byId = new Map(normalized.map((v) => [v.id, v]));
 
-  // Featured :
-  // - si l’admin a défini un ordre (même vide), on le respecte
-  // - sinon, fallback sur les 5 plus récents
   const useFeaturedOverride = config.hasFeaturedOverride;
   const latest = useFeaturedOverride
     ? (config.featuredIds || [])
@@ -53,14 +50,25 @@ export default async function HomePage() {
         .slice(0, 5);
 
   return (
-    <main className="relative min-h-[100svh]">
-      {/* Préchargement du manifest en fond pour accélérer /projects */}
+    <>
       <Suspense fallback={null}>
         <PreloadVimeo />
       </Suspense>
-
-      {/* Section interactive (player, vignettes) – composant client */}
       <ClientHeroSection items={latest} />
+    </>
+  );
+}
+
+function HomeHeroFallback() {
+  return <div className="relative min-h-[80svh]" aria-hidden />;
+}
+
+export default function HomePage() {
+  return (
+    <main className="relative min-h-[100svh]">
+      <Suspense fallback={<HomeHeroFallback />}>
+        <HomeHero />
+      </Suspense>
     </main>
   );
 }

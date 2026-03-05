@@ -114,10 +114,10 @@ export default function AboutPage() {
             </a>
           </Block>
 
-          {/* ASCII antn en bas à droite */}
+          {/* ASCII antn en bas à droite — grand, blanc, bien visible */}
           <div className="mt-auto pt-10 lg:pt-16 flex justify-end">
             <pre
-              className="text-white/25 font-mono text-[10px] leading-tight select-none"
+              className="text-white font-mono leading-tight select-none text-sm sm:text-base md:text-lg lg:text-xl xl:text-2xl"
               style={{ fontFamily: "ui-monospace, monospace" }}
               aria-hidden
             >

@@ -1,10 +1,9 @@
 // app/header.tsx
 "use client";
-// Import Next.js helpers for client-side navigation links and reading the current route.
+import { useEffect } from "react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 
-// Define the navigation structure so items can be rendered dynamically.
 const LINKS = [
   { href: "/", label: "home" },
   { href: "/projects", label: "projects" },
@@ -14,6 +13,14 @@ const LINKS = [
 export default function Header() {
   const pathname = usePathname();
   const router = useRouter();
+
+  // Précharger /projects en arrière-plan quand on est sur home ou about
+  useEffect(() => {
+    if (pathname === "/" || pathname === "/about") {
+      router.prefetch("/projects");
+    }
+  }, [pathname]);
+
   if (pathname === "/admin") return null;
 
   return (

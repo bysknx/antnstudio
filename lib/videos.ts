@@ -1,5 +1,6 @@
 // lib/videos.ts — source vidéos : manifest local (public/videos/manifest.json)
 
+import { cache } from "react";
 import rawManifest from "@/public/videos/manifest.json";
 
 export interface VideoItem {
@@ -40,7 +41,10 @@ function normalizeVideo(v: VideoItem): VideoItem {
   };
 }
 
-export async function fetchVideos(): Promise<VideoItem[]> {
+async function fetchVideosUncached(): Promise<VideoItem[]> {
   const data = rawManifest as VideoItem[];
   return data.map(normalizeVideo);
 }
+
+/** Dedupe par requête pour accélérer home + projects */
+export const fetchVideos = cache(fetchVideosUncached);
