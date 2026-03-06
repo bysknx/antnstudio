@@ -21,9 +21,7 @@ const MEDIA_URL =
   process.env.NEXT_PUBLIC_MEDIA_URL ?? "https://media.antn.studio";
 
 function normalizeVideo(v: VideoItem): VideoItem {
-  const url = v.url?.startsWith("http")
-    ? v.url
-    : `${MEDIA_URL}/${v.filename}`;
+  const url = v.url?.startsWith("http") ? v.url : `${MEDIA_URL}/${v.filename}`;
   const thumbFilename = v.filename.replace(".mp4", ".jpg");
   // Thumbnails served from Vercel (same domain) to avoid cross-origin blocking
   const thumbnail = v.thumbnail?.startsWith("/")

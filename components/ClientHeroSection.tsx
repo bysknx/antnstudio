@@ -8,6 +8,7 @@ import HeroPlayer from "@/components/ui/HeroPlayer";
 type Item = {
   id: string;
   title: string;
+  client?: string;
   createdAt: string | null;
   thumbnail?: string;
   poster?: string;

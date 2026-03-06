@@ -8,6 +8,7 @@ import ClientHeroSection from "@/components/ClientHeroSection";
 type Item = {
   id: string;
   title: string;
+  client?: string;
   createdAt: string | null;
   thumbnail?: string;
   poster?: string;
@@ -25,6 +26,7 @@ async function HomeHero() {
   const normalized: Item[] = (videos || []).map((v) => ({
     id: v.id,
     title: v.title,
+    client: v.client,
     createdAt: v.year ? `${v.year}-01-01T00:00:00.000Z` : null,
     thumbnail: "",
     poster: "",
@@ -38,9 +40,9 @@ async function HomeHero() {
 
   const useFeaturedOverride = config.hasFeaturedOverride;
   const latest = useFeaturedOverride
-    ? (config.featuredIds || [])
+    ? ((config.featuredIds || [])
         .map((id) => byId.get(id))
-        .filter(Boolean) as Item[]
+        .filter(Boolean) as Item[])
     : normalized
         .sort(
           (a, b) =>

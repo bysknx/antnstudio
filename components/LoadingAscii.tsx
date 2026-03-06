@@ -45,7 +45,9 @@ export default function LoadingAscii({ force = false }: { force?: boolean }) {
       if (typeof window !== "undefined") {
         localStorage.setItem(ASCII_TTL_KEY, String(Date.now()));
       }
-    } catch { /* ignore */ }
+    } catch {
+      /* ignore */
+    }
     setShowReady(true);
     setTimeout(() => {
       setStage("fading");
@@ -76,13 +78,17 @@ export default function LoadingAscii({ force = false }: { force?: boolean }) {
   useEffect(() => {
     if (typeof window === "undefined") return;
 
-    const reduce = window.matchMedia?.("(prefers-reduced-motion: reduce)").matches;
+    const reduce = window.matchMedia?.(
+      "(prefers-reduced-motion: reduce)",
+    ).matches;
     let show = !reduce;
     if (!force) {
       try {
         if (sessionStorage.getItem(SEEN_KEY)) show = false;
         else sessionStorage.setItem(SEEN_KEY, "1");
-      } catch { /* ignore */ }
+      } catch {
+        /* ignore */
+      }
     }
     if (!show) {
       document.documentElement.removeAttribute("data-app-loading");
@@ -105,9 +111,16 @@ export default function LoadingAscii({ force = false }: { force?: boolean }) {
     const timers: ReturnType<typeof setTimeout>[] = [];
     BOOT_LINES.forEach((line, i) => {
       if (line.suffix !== null) {
-        timers.push(setTimeout(() => setCompletedLines(i + 1), LOGO_FADE_MS + line.delay + 200));
+        timers.push(
+          setTimeout(
+            () => setCompletedLines(i + 1),
+            LOGO_FADE_MS + line.delay + 200,
+          ),
+        );
       } else {
-        timers.push(setTimeout(() => setCompletedLines(i), LOGO_FADE_MS + line.delay));
+        timers.push(
+          setTimeout(() => setCompletedLines(i), LOGO_FADE_MS + line.delay),
+        );
       }
     });
 
@@ -142,18 +155,23 @@ export default function LoadingAscii({ force = false }: { force?: boolean }) {
       className="fixed inset-0 z-[9999] bg-black text-white font-mono overflow-hidden crt-screen"
     >
       {/* VHS / terminal: grain + scanlines + CRT */}
-      <div className="pointer-events-none absolute inset-0 z-0 grain" style={{ opacity: 0.14 }} />
+      <div
+        className="pointer-events-none absolute inset-0 z-0 grain"
+        style={{ opacity: 0.14 }}
+      />
       <div
         className="pointer-events-none absolute inset-0 z-0 crt-scanlines"
         style={{
-          backgroundImage: "repeating-linear-gradient(to bottom, transparent 0, transparent 2px, rgba(0,0,0,.15) 2px, rgba(0,0,0,.15) 4px)",
+          backgroundImage:
+            "repeating-linear-gradient(to bottom, transparent 0, transparent 2px, rgba(0,0,0,.15) 2px, rgba(0,0,0,.15) 4px)",
           backgroundSize: "100% 4px",
         }}
       />
       <div
         className="pointer-events-none absolute inset-0 z-0 crt-scanlines-alt"
         style={{
-          backgroundImage: "linear-gradient(to bottom, rgba(255,255,255,.03) 1px, transparent 1px)",
+          backgroundImage:
+            "linear-gradient(to bottom, rgba(255,255,255,.03) 1px, transparent 1px)",
           backgroundSize: "100% 3px",
           opacity: 0.4,
         }}
@@ -179,8 +197,12 @@ export default function LoadingAscii({ force = false }: { force?: boolean }) {
           {/* Lignes de boot une par une */}
           <div className="w-full space-y-2 text-sm">
             {BOOT_LINES.map((line, i) => {
-              const shown = completedLines > i || (i === BOOT_LINES.length - 1 && completedLines >= i);
-              const done = completedLines > i || (i === BOOT_LINES.length - 1 && videoReady);
+              const shown =
+                completedLines > i ||
+                (i === BOOT_LINES.length - 1 && completedLines >= i);
+              const done =
+                completedLines > i ||
+                (i === BOOT_LINES.length - 1 && videoReady);
               if (!shown) return null;
 
               return (
@@ -188,7 +210,13 @@ export default function LoadingAscii({ force = false }: { force?: boolean }) {
                   <span className="text-white/40">{line.text}</span>
                   <span className="text-white/20 flex-1">{DOTS}</span>
                   {done ? (
-                    <span className={i === BOOT_LINES.length - 1 ? "text-white" : "text-white/50"}>
+                    <span
+                      className={
+                        i === BOOT_LINES.length - 1
+                          ? "text-white"
+                          : "text-white/50"
+                      }
+                    >
                       {line.suffix ?? "OK"}
                     </span>
                   ) : (
@@ -209,7 +237,7 @@ export default function LoadingAscii({ force = false }: { force?: boolean }) {
 
       <style jsx global>{`
         .crt-screen {
-          box-shadow: inset 0 0 100px rgba(0,0,0,.3);
+          box-shadow: inset 0 0 100px rgba(0, 0, 0, 0.3);
         }
         .crt-content {
           filter: contrast(1.02);
@@ -217,11 +245,21 @@ export default function LoadingAscii({ force = false }: { force?: boolean }) {
           transform-origin: center center;
         }
         .crt-vignette {
-          background: radial-gradient(ellipse at center, transparent 55%, rgba(0,0,0,.25) 100%);
+          background: radial-gradient(
+            ellipse at center,
+            transparent 55%,
+            rgba(0, 0, 0, 0.25) 100%
+          );
         }
         @keyframes antnFadeIn {
-          from { opacity: 0; transform: translateY(4px); }
-          to { opacity: 1; transform: translateY(0); }
+          from {
+            opacity: 0;
+            transform: translateY(4px);
+          }
+          to {
+            opacity: 1;
+            transform: translateY(0);
+          }
         }
       `}</style>
     </div>

@@ -79,7 +79,8 @@ export default function ProjectsClient({ initialItems }: Props) {
     try {
       const cached =
         typeof window !== "undefined"
-          ? (sessionStorage.getItem("__VIDEO_PREFETCH") || sessionStorage.getItem("__VIMEO_PREFETCH"))
+          ? sessionStorage.getItem("__VIDEO_PREFETCH") ||
+            sessionStorage.getItem("__VIMEO_PREFETCH")
           : null;
       if (cached) {
         const j = JSON.parse(cached);

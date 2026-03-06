@@ -21,7 +21,12 @@ export async function POST(req: NextRequest) {
     featuredIds?: string[];
     visibility?: Record<string, boolean>;
     hasFeaturedOverride?: boolean;
-    siteConfig?: { title?: string; description?: string; ogImage?: string; analyticsId?: string };
+    siteConfig?: {
+      title?: string;
+      description?: string;
+      ogImage?: string;
+      analyticsId?: string;
+    };
   } = {};
   try {
     body = await req.json();

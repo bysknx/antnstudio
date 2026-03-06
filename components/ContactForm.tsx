@@ -8,9 +8,12 @@ export function ContactForm({ className = "", hideTitle }: Props) {
   const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     const form = e.currentTarget;
-    const name = (form.elements.namedItem("name") as HTMLInputElement)?.value || "";
-    const email = (form.elements.namedItem("email") as HTMLInputElement)?.value || "";
-    const message = (form.elements.namedItem("message") as HTMLTextAreaElement)?.value || "";
+    const name =
+      (form.elements.namedItem("name") as HTMLInputElement)?.value || "";
+    const email =
+      (form.elements.namedItem("email") as HTMLInputElement)?.value || "";
+    const message =
+      (form.elements.namedItem("message") as HTMLTextAreaElement)?.value || "";
 
     const subject = encodeURIComponent(`Contact antn.studio — ${name}`);
     const body = encodeURIComponent(

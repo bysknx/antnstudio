@@ -61,7 +61,9 @@
   /* Fond & texte via Tailwind (override propre) */
   body {
     @apply bg-zinc-950 text-zinc-200;
-    transition: opacity 320ms ease, filter 320ms ease;
+    transition:
+      opacity 320ms ease,
+      filter 320ms ease;
   }
 
   iframe.hero-iframe {
@@ -248,8 +250,12 @@
     animation: none !important;
     opacity: 0.7;
   }
-  html[data-app-loading="visible"] body > :not(#boot):not([data-loader="ascii"]),
-  html[data-app-loading="fading"] body > :not(#boot):not([data-loader="ascii"]) {
+  html[data-app-loading="visible"]
+    body
+    > :not(#boot):not([data-loader="ascii"]),
+  html[data-app-loading="fading"]
+    body
+    > :not(#boot):not([data-loader="ascii"]) {
     filter: none !important;
     opacity: 1 !important;
   }

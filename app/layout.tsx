@@ -59,7 +59,11 @@ export async function generateMetadata(): Promise<Metadata> {
   };
 }
 
-export default function RootLayout({ children }: { children: React.ReactNode }) {
+export default function RootLayout({
+  children,
+}: {
+  children: React.ReactNode;
+}) {
   return (
     <html lang="fr" className="dark">
       <head>
@@ -81,7 +85,12 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <link rel="preload" href="/projects-pen.html" as="document" />
 
         {/* Préchargement du manifest vidéo */}
-        <link rel="preload" href="/api/vimeo" as="fetch" crossOrigin="anonymous" />
+        <link
+          rel="preload"
+          href="/api/vimeo"
+          as="fetch"
+          crossOrigin="anonymous"
+        />
       </head>
       <body className="overflow-x-hidden">
         {/* Boot shell: first paint = loader screen. Hides the rest until dismissal. */}
@@ -93,8 +102,8 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <style
           dangerouslySetInnerHTML={{
             __html: `html[data-booting] body > *:not(#boot){ visibility:hidden }`,
-        }}
-      />
+          }}
+        />
 
         {/* Fullscreen ASCII loader */}
         <LoadingAscii />

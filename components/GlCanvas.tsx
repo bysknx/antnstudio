@@ -45,7 +45,8 @@ export default function GlCanvas({
     style.pointerEvents = "none";
     style.background = "transparent";
 
-    const getRatio = () => Math.max(1, Math.floor(window.devicePixelRatio || 1));
+    const getRatio = () =>
+      Math.max(1, Math.floor(window.devicePixelRatio || 1));
 
     const state = {
       ratio: getRatio(),
@@ -85,7 +86,13 @@ export default function GlCanvas({
       state.cols = Math.max(2, Math.floor(innerW / (state.spacing * ratio)));
       state.rows = Math.max(2, Math.floor(innerH / (state.spacing * ratio)));
 
-      const dots: Array<{ x: number; y: number; ox: number; oy: number; size: number }> = [];
+      const dots: Array<{
+        x: number;
+        y: number;
+        ox: number;
+        oy: number;
+        size: number;
+      }> = [];
       for (let i = 0; i < state.cols; i++) {
         const x = Math.floor(
           (innerW / Math.max(1, state.cols - 1)) * i + state.padding * ratio,
@@ -106,10 +113,15 @@ export default function GlCanvas({
       mouseRef.current.y = e.clientY * ratio;
     }
 
-    const getAngle = (a: { x: number; y: number }, b: { x: number; y: number }) =>
-      Math.atan2(b.y - a.y, b.x - a.x);
+    const getAngle = (
+      a: { x: number; y: number },
+      b: { x: number; y: number },
+    ) => Math.atan2(b.y - a.y, b.x - a.x);
 
-    const getDistance = (a: { x: number; y: number }, b: { x: number; y: number }) => {
+    const getDistance = (
+      a: { x: number; y: number },
+      b: { x: number; y: number },
+    ) => {
       const dx = a.x - b.x;
       const dy = a.y - b.y;
       return Math.hypot(dx, dy);
@@ -189,7 +201,9 @@ export default function GlCanvas({
     resize();
     window.addEventListener("resize", resize, { passive: true });
     window.addEventListener("pointermove", onPointerMove, { passive: true });
-    document.addEventListener("visibilitychange", onVisChange, { passive: true });
+    document.addEventListener("visibilitychange", onVisChange, {
+      passive: true,
+    });
 
     rafRef.current = requestAnimationFrame(render);
 

@@ -1,644 +1,1141 @@
 <!doctype html>
 <html lang="fr">
-<head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Projects &mdash; antn.studio</title>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Projects &mdash; antn.studio</title>
 
-  <link href="https://fonts.cdnfonts.com/css/thegoodmonolith" rel="stylesheet" />
-  <link href="https://fonts.cdnfonts.com/css/pp-neue-montreal" rel="stylesheet" />
+    <link
+      href="https://fonts.cdnfonts.com/css/thegoodmonolith"
+      rel="stylesheet"
+    />
+    <link
+      href="https://fonts.cdnfonts.com/css/pp-neue-montreal"
+      rel="stylesheet"
+    />
 
-  <style>
-    :root{
-      --spacing-base: 1rem;
-      --color-text: #fff;
-      --font-size-base: 14px;
-      --border-radius: 10px;
-      --hover-scale: 1.05;
+    <style>
+      :root {
+        --spacing-base: 1rem;
+        --color-text: #fff;
+        --font-size-base: 14px;
+        --border-radius: 10px;
+        --hover-scale: 1.05;
 
-      /* Vignette page */
-      --page-vignette-size: 180px;
-      --page-vignette-color: rgba(0,0,0,.85);
-      --page-vignette-strong-size: 90px;
-      --page-vignette-strong-color: rgba(0,0,0,.92);
-      --page-vignette-extreme-size: 36px;
-      --page-vignette-extreme-color: rgba(0,0,0,1);
+        /* Vignette page */
+        --page-vignette-size: 180px;
+        --page-vignette-color: rgba(0, 0, 0, 0.85);
+        --page-vignette-strong-size: 90px;
+        --page-vignette-strong-color: rgba(0, 0, 0, 0.92);
+        --page-vignette-extreme-size: 36px;
+        --page-vignette-extreme-color: rgba(0, 0, 0, 1);
 
-      /* Matrice fixe (fond) */
-      --m-bg: #0b0b0b;
-      --m-dot-color: rgba(255,255,255,.08);
-      --m-dot-size: 1.1px;
-      --m-dot-space: 22px;
+        /* Matrice fixe (fond) */
+        --m-bg: #0b0b0b;
+        --m-dot-color: rgba(255, 255, 255, 0.08);
+        --m-dot-size: 1.1px;
+        --m-dot-space: 22px;
 
-      /* Effets */
-      --halo-color: rgba(255,255,255,0.25);
-    }
+        /* Effets */
+        --halo-color: rgba(255, 255, 255, 0.25);
+      }
 
-    /* ===== Embed Footer Mode ===== */
-    :root[data-embed-footer="1"] .header,
-    :root[data-embed-footer="1"] .container,
-    :root[data-embed-footer="1"] .project-title,
-    :root[data-embed-footer="1"] .page-vignette-container { display: none !important; }
-    :root[data-embed-footer="1"] .footer { position: static !important; }
-    :root[data-embed-footer="1"] body { overflow: hidden; height: auto; }
+      /* ===== Embed Footer Mode ===== */
+      :root[data-embed-footer="1"] .header,
+      :root[data-embed-footer="1"] .container,
+      :root[data-embed-footer="1"] .project-title,
+      :root[data-embed-footer="1"] .page-vignette-container {
+        display: none !important;
+      }
+      :root[data-embed-footer="1"] .footer {
+        position: static !important;
+      }
+      :root[data-embed-footer="1"] body {
+        overflow: hidden;
+        height: auto;
+      }
 
-    *{margin:0;padding:0;box-sizing:border-box;user-select:none}
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+        user-select: none;
+      }
 
-    body{
-      font-family:"PP Neue Montreal",system-ui,-apple-system,Segoe UI,Roboto,sans-serif;
-      color:#fff; overflow:hidden; position:relative;
-      background-color: var(--m-bg);
-      background-image:
-        radial-gradient(circle, var(--m-dot-color) var(--m-dot-size), transparent calc(var(--m-dot-size) + 0.01px));
-      background-size: var(--m-dot-space) var(--m-dot-space);
-      background-position: 0 0;
-      background-attachment: fixed;
-    }
+      body {
+        font-family:
+          "PP Neue Montreal",
+          system-ui,
+          -apple-system,
+          Segoe UI,
+          Roboto,
+          sans-serif;
+        color: #fff;
+        overflow: hidden;
+        position: relative;
+        background-color: var(--m-bg);
+        background-image: radial-gradient(
+          circle,
+          var(--m-dot-color) var(--m-dot-size),
+          transparent calc(var(--m-dot-size) + 0.01px)
+        );
+        background-size: var(--m-dot-space) var(--m-dot-space);
+        background-position: 0 0;
+        background-attachment: fixed;
+      }
 
-    /* Grain leger */
-    body::before{
-      content:""; position:fixed; inset:-50%;
-      background:url("https://assets.iceable.com/img/noise-transparent.png") repeat 0 0/300px 300px;
-      animation:noise .3s steps(5) infinite; opacity:.22; pointer-events:none; z-index:100;
-    }
-    @keyframes noise{
-      0%{transform:translate(0,0)}
-      50%{transform:translate(-2%,-3%)}
-      100%{transform:translate(1%,0)}
-    }
+      /* Grain leger */
+      body::before {
+        content: "";
+        position: fixed;
+        inset: -50%;
+        background: url("https://assets.iceable.com/img/noise-transparent.png")
+          repeat 0 0/300px 300px;
+        animation: noise 0.3s steps(5) infinite;
+        opacity: 0.22;
+        pointer-events: none;
+        z-index: 100;
+      }
+      @keyframes noise {
+        0% {
+          transform: translate(0, 0);
+        }
+        50% {
+          transform: translate(-2%, -3%);
+        }
+        100% {
+          transform: translate(1%, 0);
+        }
+      }
 
-    a{position:relative;color:var(--color-text);text-decoration:none;font-weight:700;font-size:var(--font-size-base)}
-    a::after{content:"";position:absolute;inset:0 0 0 auto;width:0;background:var(--color-text);z-index:-1;transition:width .3s cubic-bezier(.34,1.56,.64,1)}
-    a:hover{color:#000;mix-blend-mode:difference}
-    a:hover::after{width:100%}
-    p{font-size:14px;font-weight:600;letter-spacing:-.01em}
+      a {
+        position: relative;
+        color: var(--color-text);
+        text-decoration: none;
+        font-weight: 700;
+        font-size: var(--font-size-base);
+      }
+      a::after {
+        content: "";
+        position: absolute;
+        inset: 0 0 0 auto;
+        width: 0;
+        background: var(--color-text);
+        z-index: -1;
+        transition: width 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+      }
+      a:hover {
+        color: #000;
+        mix-blend-mode: difference;
+      }
+      a:hover::after {
+        width: 100%;
+      }
+      p {
+        font-size: 14px;
+        font-weight: 600;
+        letter-spacing: -0.01em;
+      }
 
-    /* ===== Header / Footer ===== */
-    .header,.footer{
-      position:absolute; left:0; width:100vw; padding:1.2rem; z-index:10000;
-      display:grid; grid-template-columns:repeat(12,1fr); column-gap:var(--spacing-base)
-    }
-    .header{top:0}
-    .footer{bottom:0}
+      /* ===== Header / Footer ===== */
+      .header,
+      .footer {
+        position: absolute;
+        left: 0;
+        width: 100vw;
+        padding: 1.2rem;
+        z-index: 10000;
+        display: grid;
+        grid-template-columns: repeat(12, 1fr);
+        column-gap: var(--spacing-base);
+      }
+      .header {
+        top: 0;
+      }
+      .footer {
+        bottom: 0;
+      }
 
-    /* On neutralise les styles "bulle" cote header uniquement */
-    .header, .header *{
-      background: transparent;
-      box-shadow: none;
-      backdrop-filter: none;
-      -webkit-backdrop-filter: none;
-      border: 0;
-    }
+      /* On neutralise les styles "bulle" cote header uniquement */
+      .header,
+      .header * {
+        background: transparent;
+        box-shadow: none;
+        backdrop-filter: none;
+        -webkit-backdrop-filter: none;
+        border: 0;
+      }
 
-    /* === YEARS (menu) === */
-    .legacy-year-menu{grid-column:1 / span 4; position:relative;}
-    .legacy-years-toggle{
-      display:inline-flex; align-items:center; gap:.55rem;
-      font-weight:800; font-size:13px; letter-spacing:.06em; text-transform:uppercase;
-      color:#e9e9e9; cursor:pointer; padding:.4rem .6rem .4rem .2rem;
-      border-radius:999px; user-select:none; position:relative;
-    }
-    .legacy-years-toggle::before{
-      content:""; width:6px; height:6px; border-radius:50%;
-      background:#e9e9e9; opacity:.9; display:inline-block; animation: blink 2.4s ease-in-out infinite;
-    }
-    @keyframes blink{0%,90%,100%{opacity:.9}45%{opacity:.3}}
-    .chev{width:8px;height:8px;border-right:2px solid #e9e9e9;border-bottom:2px solid #e9e9e9;transform:rotate(45deg); transition:transform .2s ease; margin-left:.2rem;}
-    .legacy-year-menu.open .chev{ transform:rotate(-135deg); }
+      /* === YEARS (menu) === */
+      .legacy-year-menu {
+        grid-column: 1 / span 4;
+        position: relative;
+      }
+      .legacy-years-toggle {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.55rem;
+        font-weight: 800;
+        font-size: 13px;
+        letter-spacing: 0.06em;
+        text-transform: uppercase;
+        color: #e9e9e9;
+        cursor: pointer;
+        padding: 0.4rem 0.6rem 0.4rem 0.2rem;
+        border-radius: 999px;
+        user-select: none;
+        position: relative;
+      }
+      .legacy-years-toggle::before {
+        content: "";
+        width: 6px;
+        height: 6px;
+        border-radius: 50%;
+        background: #e9e9e9;
+        opacity: 0.9;
+        display: inline-block;
+        animation: blink 2.4s ease-in-out infinite;
+      }
+      @keyframes blink {
+        0%,
+        90%,
+        100% {
+          opacity: 0.9;
+        }
+        45% {
+          opacity: 0.3;
+        }
+      }
+      .chev {
+        width: 8px;
+        height: 8px;
+        border-right: 2px solid #e9e9e9;
+        border-bottom: 2px solid #e9e9e9;
+        transform: rotate(45deg);
+        transition: transform 0.2s ease;
+        margin-left: 0.2rem;
+      }
+      .legacy-year-menu.open .chev {
+        transform: rotate(-135deg);
+      }
 
-    .legacy-years-panel{
-      position:absolute; left:0; top:2.6rem; z-index:10001;
-      display:flex; flex-direction:column; gap:.35rem;
-      overflow:hidden;
-      max-height:0; padding:0; opacity:0; transform:translateY(-4px); pointer-events:none;
-      transition: max-height .35s ease, padding .2s ease, opacity .2s ease, transform .2s ease;
-    }
-    .legacy-year-menu.open .legacy-years-panel{
-      max-height:50vh; padding:.45rem .4rem .55rem .4rem; opacity:1; transform:none; pointer-events:auto;
-    }
-    .legacy-years-panel::before{
-      content:""; position:absolute; inset:-.2rem -1rem -.6rem -1rem; border-radius:8px;
-      backdrop-filter: blur(6px); -webkit-backdrop-filter: blur(6px);
-      background: rgba(0,0,0,.06); z-index:-1; opacity:0; transition: opacity .2s ease;
-    }
-    .legacy-year-menu.open .legacy-years-panel::before{ opacity:1; }
+      .legacy-years-panel {
+        position: absolute;
+        left: 0;
+        top: 2.6rem;
+        z-index: 10001;
+        display: flex;
+        flex-direction: column;
+        gap: 0.35rem;
+        overflow: hidden;
+        max-height: 0;
+        padding: 0;
+        opacity: 0;
+        transform: translateY(-4px);
+        pointer-events: none;
+        transition:
+          max-height 0.35s ease,
+          padding 0.2s ease,
+          opacity 0.2s ease,
+          transform 0.2s ease;
+      }
+      .legacy-year-menu.open .legacy-years-panel {
+        max-height: 50vh;
+        padding: 0.45rem 0.4rem 0.55rem 0.4rem;
+        opacity: 1;
+        transform: none;
+        pointer-events: auto;
+      }
+      .legacy-years-panel::before {
+        content: "";
+        position: absolute;
+        inset: -0.2rem -1rem -0.6rem -1rem;
+        border-radius: 8px;
+        backdrop-filter: blur(6px);
+        -webkit-backdrop-filter: blur(6px);
+        background: rgba(0, 0, 0, 0.06);
+        z-index: -1;
+        opacity: 0;
+        transition: opacity 0.2s ease;
+      }
+      .legacy-year-menu.open .legacy-years-panel::before {
+        opacity: 1;
+      }
 
-    .years{ display:flex; flex-direction:column; gap:.35rem; }
-    .year-btn{
-      all:unset; cursor:pointer; color:#bcbcbc; font-weight:700; letter-spacing:-.01em;
-      padding:.22rem .55rem; border-radius:6px; transition:color .2s ease, background .2s ease; display:block;
-    }
-    .year-btn:hover{ color:#fff; background:rgba(255,255,255,0.05);}
-    .year-btn[aria-pressed="true"]{ color:#fff; background:rgba(255,255,255,0.08);}
+      .years {
+        display: flex;
+        flex-direction: column;
+        gap: 0.35rem;
+      }
+      .year-btn {
+        all: unset;
+        cursor: pointer;
+        color: #bcbcbc;
+        font-weight: 700;
+        letter-spacing: -0.01em;
+        padding: 0.22rem 0.55rem;
+        border-radius: 6px;
+        transition:
+          color 0.2s ease,
+          background 0.2s ease;
+        display: block;
+      }
+      .year-btn:hover {
+        color: #fff;
+        background: rgba(255, 255, 255, 0.05);
+      }
+      .year-btn[aria-pressed="true"] {
+        color: #fff;
+        background: rgba(255, 255, 255, 0.08);
+      }
 
-    .years-close{
-      all:unset; cursor:pointer; align-self:flex-start; margin-top:.25rem;
-      color:#ddd; font-weight:800; font-size:10px; letter-spacing:.14em; text-transform:uppercase;
-      opacity:.8; padding:.2rem .5rem;
-    }
-    .years-close:hover{ opacity:1; }
+      .years-close {
+        all: unset;
+        cursor: pointer;
+        align-self: flex-start;
+        margin-top: 0.25rem;
+        color: #ddd;
+        font-weight: 800;
+        font-size: 10px;
+        letter-spacing: 0.14em;
+        text-transform: uppercase;
+        opacity: 0.8;
+        padding: 0.2rem 0.5rem;
+      }
+      .years-close:hover {
+        opacity: 1;
+      }
 
-    /* Footer */
-    .coordinates-section{grid-column:1 / span 4;font-family:"TheGoodMonolith",monospace}
-    .links-section{grid-column:5 / span 4;display:flex;justify-content:center;gap:1rem;align-items:center}
-    .links-section a{display:flex;align-items:center;justify-content:center;color:#fff;transition:opacity .3s ease}
-    .links-section a:hover{opacity:.8}
-    .info-section{grid-column:9 / span 4;text-align:right;font-family:"TheGoodMonolith",monospace}
-    @media (max-width:900px){
-      .footer{grid-template-rows:auto auto auto}
-      .coordinates-section{grid-column:1 / span 6}
-      .links-section{grid-column:1 / span 12;order:3;margin-top:6px;justify-content:flex-start;gap:1.2rem}
-      .info-section{grid-column:7 / span 6}
-    }
+      /* Footer */
+      .coordinates-section {
+        grid-column: 1 / span 4;
+        font-family: "TheGoodMonolith", monospace;
+      }
+      .links-section {
+        grid-column: 5 / span 4;
+        display: flex;
+        justify-content: center;
+        gap: 1rem;
+        align-items: center;
+      }
+      .links-section a {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: #fff;
+        transition: opacity 0.3s ease;
+      }
+      .links-section a:hover {
+        opacity: 0.8;
+      }
+      .info-section {
+        grid-column: 9 / span 4;
+        text-align: right;
+        font-family: "TheGoodMonolith", monospace;
+      }
+      @media (max-width: 900px) {
+        .footer {
+          grid-template-rows: auto auto auto;
+        }
+        .coordinates-section {
+          grid-column: 1 / span 6;
+        }
+        .links-section {
+          grid-column: 1 / span 12;
+          order: 3;
+          margin-top: 6px;
+          justify-content: flex-start;
+          gap: 1.2rem;
+        }
+        .info-section {
+          grid-column: 7 / span 6;
+        }
+      }
 
-    /* ===== Canvas / grid ===== */
-    .container{position:relative;width:100vw;height:100vh;overflow:hidden;cursor:grab; z-index:1;-webkit-user-select:none;user-select:none;-webkit-touch-callout:none;}
-    .canvas{position:absolute;will-change:transform;-webkit-user-select:none;user-select:none;}
+      /* ===== Canvas / grid ===== */
+      .container {
+        position: relative;
+        width: 100vw;
+        height: 100vh;
+        overflow: hidden;
+        cursor: grab;
+        z-index: 1;
+        -webkit-user-select: none;
+        user-select: none;
+        -webkit-touch-callout: none;
+      }
+      .canvas {
+        position: absolute;
+        will-change: transform;
+        -webkit-user-select: none;
+        user-select: none;
+      }
 
-    .item{position:absolute;overflow:hidden;background:#000;cursor:pointer;border-radius:var(--border-radius);-webkit-user-select:none;user-select:none;}
-    .item-image-container{position:relative;width:100%;height:100%;overflow:hidden;border-radius:inherit}
-    .item-image-container::before{content:"";position:absolute;inset:0;background: radial-gradient(circle at center, transparent 55%, var(--halo-color) 130%);opacity:0;transition:opacity .35s ease}
-    .item img{width:100%;height:100%;object-fit:cover;pointer-events:none;transition:transform .3s ease, filter .45s ease;filter: grayscale(100%) contrast(1.1) brightness(0.82)}
-    .item:hover img{transform:scale(var(--hover-scale)); filter:none}
-    .item:hover .item-image-container::before{opacity:.8}
+      .item {
+        position: absolute;
+        overflow: hidden;
+        background: #000;
+        cursor: pointer;
+        border-radius: var(--border-radius);
+        -webkit-user-select: none;
+        user-select: none;
+      }
+      .item-image-container {
+        position: relative;
+        width: 100%;
+        height: 100%;
+        overflow: hidden;
+        border-radius: inherit;
+      }
+      .item-image-container::before {
+        content: "";
+        position: absolute;
+        inset: 0;
+        background: radial-gradient(
+          circle at center,
+          transparent 55%,
+          var(--halo-color) 130%
+        );
+        opacity: 0;
+        transition: opacity 0.35s ease;
+      }
+      .item img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        pointer-events: none;
+        transition:
+          transform 0.3s ease,
+          filter 0.45s ease;
+        filter: grayscale(100%) contrast(1.1) brightness(0.82);
+      }
+      .item:hover img {
+        transform: scale(var(--hover-scale));
+        filter: none;
+      }
+      .item:hover .item-image-container::before {
+        opacity: 0.8;
+      }
 
-    .item-caption{position:absolute;left:0;bottom:0;width:100%;padding:10px;z-index:2;background:linear-gradient(to top, rgba(0,0,0,.7), transparent);-webkit-user-select:none;user-select:none;}
-    .item-name{font-size:12px;text-transform:uppercase;letter-spacing:-.03em;margin-bottom:2px;overflow:hidden;height:16px;-webkit-user-select:none;user-select:none;}
-    .item-number{font:400 10px/1 "TheGoodMonolith",monospace;color:#888;overflow:hidden;height:14px;-webkit-user-select:none;user-select:none;}
+      .item-caption {
+        position: absolute;
+        left: 0;
+        bottom: 0;
+        width: 100%;
+        padding: 10px;
+        z-index: 2;
+        background: linear-gradient(to top, rgba(0, 0, 0, 0.7), transparent);
+        -webkit-user-select: none;
+        user-select: none;
+      }
+      .item-name {
+        font-size: 12px;
+        text-transform: uppercase;
+        letter-spacing: -0.03em;
+        margin-bottom: 2px;
+        overflow: hidden;
+        height: 16px;
+        -webkit-user-select: none;
+        user-select: none;
+      }
+      .item-number {
+        font:
+          400 10px/1 "TheGoodMonolith",
+          monospace;
+        color: #888;
+        overflow: hidden;
+        height: 14px;
+        -webkit-user-select: none;
+        user-select: none;
+      }
 
-    /* Styles restants non utilises pour overlay local (laisse inoffensif) */
-    .expanded-item{display:none}
-    .overlay{display:none}
+      /* Styles restants non utilises pour overlay local (laisse inoffensif) */
+      .expanded-item {
+        display: none;
+      }
+      .overlay {
+        display: none;
+      }
 
-    .page-vignette-container{position:fixed;inset:0;pointer-events:none;z-index:9998}
-    .page-vignette{position:absolute;inset:0;box-shadow:inset 0 0 var(--page-vignette-size) var(--page-vignette-color)}
-    .page-vignette-strong{position:absolute;inset:0;box-shadow:inset 0 0 var(--page-vignette-strong-size) var(--page-vignette-strong-color)}
-    .page-vignette-extreme{position:absolute;inset:0;box-shadow:inset 0 0 var(--page-vignette-extreme-size) var(--page-vignette-extreme-color)}
+      .page-vignette-container {
+        position: fixed;
+        inset: 0;
+        pointer-events: none;
+        z-index: 9998;
+      }
+      .page-vignette {
+        position: absolute;
+        inset: 0;
+        box-shadow: inset 0 0 var(--page-vignette-size)
+          var(--page-vignette-color);
+      }
+      .page-vignette-strong {
+        position: absolute;
+        inset: 0;
+        box-shadow: inset 0 0 var(--page-vignette-strong-size)
+          var(--page-vignette-strong-color);
+      }
+      .page-vignette-extreme {
+        position: absolute;
+        inset: 0;
+        box-shadow: inset 0 0 var(--page-vignette-extreme-size)
+          var(--page-vignette-extreme-color);
+      }
 
-    .project-title{position:absolute;inset:0;display:grid;place-items:center;pointer-events:none;z-index:10002}
-    .project-title p{position:relative;height:42px}
-    .project-title p .word{display:inline-block;font-size:36px;letter-spacing:-.03em;text-transform:uppercase}
+      .project-title {
+        position: absolute;
+        inset: 0;
+        display: grid;
+        place-items: center;
+        pointer-events: none;
+        z-index: 10002;
+      }
+      .project-title p {
+        position: relative;
+        height: 42px;
+      }
+      .project-title p .word {
+        display: inline-block;
+        font-size: 36px;
+        letter-spacing: -0.03em;
+        text-transform: uppercase;
+      }
 
-    .links-section a{font-weight:700;font-size:13px}
+      .links-section a {
+        font-weight: 700;
+        font-size: 13px;
+      }
 
-    /* ======= AJUSTEMENTS MERGES ======= */
+      /* ======= AJUSTEMENTS MERGES ======= */
 
-    /* header sous la nav Next mais au-dessus du fond */
-    .header { z-index: 60; }
-    /* panneau years au-dessus si necessaire */
-    .legacy-years-panel { z-index: 70; }
-    /* pas de texte parasite au centre */
-    .project-title { display: none !important; }
+      /* header sous la nav Next mais au-dessus du fond */
+      .header {
+        z-index: 60;
+      }
+      /* panneau years au-dessus si necessaire */
+      .legacy-years-panel {
+        z-index: 70;
+      }
+      /* pas de texte parasite au centre */
+      .project-title {
+        display: none !important;
+      }
 
-    /* Footer typographies & hover uniformises (icons) */
-    .links-section a {
-      color: #fff;
-      text-decoration: none;
-    }
+      /* Footer typographies & hover uniformises (icons) */
+      .links-section a {
+        color: #fff;
+        text-decoration: none;
+      }
 
-    .coordinates-section,
-    .info-section { font-family: "TheGoodMonolith", monospace; font-weight: 400; }
+      .coordinates-section,
+      .info-section {
+        font-family: "TheGoodMonolith", monospace;
+        font-weight: 400;
+      }
 
-    /* safety: la grille dessinee reste visible a travers */
-    body { overflow: hidden; }
-  </style>
-</head>
-<body>
-  <!-- ===== HEADER ===== -->
-  <div class="header">
-    <div class="legacy-year-menu" id="legacyYears">
-      <div class="legacy-years-toggle" id="legacyYearsToggle" role="button" aria-expanded="false" aria-controls="legacyYearsPanel">
-        <span>+ YEARS</span>
-        <span class="chev" aria-hidden="true"></span>
-      </div>
-      <div class="legacy-years-panel" id="legacyYearsPanel">
-        <div class="years" id="years"></div>
-        <button class="years-close" id="legacyYearsClose">Close</button>
+      /* safety: la grille dessinee reste visible a travers */
+      body {
+        overflow: hidden;
+      }
+    </style>
+  </head>
+  <body>
+    <!-- ===== HEADER ===== -->
+    <div class="header">
+      <div class="legacy-year-menu" id="legacyYears">
+        <div
+          class="legacy-years-toggle"
+          id="legacyYearsToggle"
+          role="button"
+          aria-expanded="false"
+          aria-controls="legacyYearsPanel"
+        >
+          <span>+ YEARS</span>
+          <span class="chev" aria-hidden="true"></span>
+        </div>
+        <div class="legacy-years-panel" id="legacyYearsPanel">
+          <div class="years" id="years"></div>
+          <button class="years-close" id="legacyYearsClose">Close</button>
+        </div>
       </div>
     </div>
-  </div>
 
-  <!-- ===== FOOTER ===== -->
-  <div class="footer">
-    <div class="coordinates-section"><p>48.7264&deg; N, 2.2770&deg; E</p></div>
-    <div class="links-section" id="socials"></div>
-    <div class="info-section"><p>Est. 2025 &bull; antn.studio</p></div>
-  </div>
+    <!-- ===== FOOTER ===== -->
+    <div class="footer">
+      <div class="coordinates-section">
+        <p>48.7264&deg; N, 2.2770&deg; E</p>
+      </div>
+      <div class="links-section" id="socials"></div>
+      <div class="info-section"><p>Est. 2025 &bull; antn.studio</p></div>
+    </div>
 
-  <!-- ===== GRID ===== -->
-  <div class="container">
-    <div class="canvas" id="canvas"></div>
-  </div>
+    <!-- ===== GRID ===== -->
+    <div class="container">
+      <div class="canvas" id="canvas"></div>
+    </div>
 
-  <div class="project-title"><p></p></div>
+    <div class="project-title"><p></p></div>
 
-  <div class="page-vignette-container">
-    <div class="page-vignette"></div>
-    <div class="page-vignette-strong"></div>
-    <div class="page-vignette-extreme"></div>
-  </div>
+    <div class="page-vignette-container">
+      <div class="page-vignette"></div>
+      <div class="page-vignette-strong"></div>
+      <div class="page-vignette-extreme"></div>
+    </div>
 
-  <script src="https://cdn.jsdelivr.net/npm/gsap@3.12.5/dist/gsap.min.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/gsap@3.12.5/dist/CustomEase.min.js"></script>
-  <script src="https://unpkg.com/split-type"></script>
+    <script src="https://cdn.jsdelivr.net/npm/gsap@3.12.5/dist/gsap.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/gsap@3.12.5/dist/CustomEase.min.js"></script>
+    <script src="https://unpkg.com/split-type"></script>
 
-  <script>
-  (function(){
-    /* ===== Embed Footer flag (tout en haut de l'IIFE) ===== */
-    const params = new URLSearchParams(location.search);
-    const embedFooter = params.get('embed') === 'footer';
-    if (embedFooter) {
-      document.documentElement.setAttribute('data-embed-footer','1');
-    }
+    <script>
+      (function () {
+        /* ===== Embed Footer flag (tout en haut de l'IIFE) ===== */
+        const params = new URLSearchParams(location.search);
+        const embedFooter = params.get("embed") === "footer";
+        if (embedFooter) {
+          document.documentElement.setAttribute("data-embed-footer", "1");
+        }
 
-    const { gsap, CustomEase, SplitType } = window;
-    gsap.registerPlugin(CustomEase);
-    CustomEase.create("hop","0.9,0,0.1,1");
+        const { gsap, CustomEase, SplitType } = window;
+        gsap.registerPlugin(CustomEase);
+        CustomEase.create("hop", "0.9,0,0.1,1");
 
-    /* ===== Data ===== */
-    let PROJECTS = []; // { id, title, year, image, poster?, embed?, src?, videoSrc?, link? }
-    let HAS_PARENT_DATA = false;
-    let REQUESTED_PARENT = false;
+        /* ===== Data ===== */
+        let PROJECTS = []; // { id, title, year, image, poster?, embed?, src?, videoSrc?, link? }
+        let HAS_PARENT_DATA = false;
+        let REQUESTED_PARENT = false;
 
-    // parsing annee depuis le titre
-    function yearFromTitle(t){
-      if(!t || typeof t !== "string") return null;
-      const m = t.match(/(?:^|\D)(20\d{2}|19\d{2})(?:\D|$)/);
-      const y = m ? parseInt(m[1],10) : null;
-      if(y && y>=1900 && y<=2100) return y;
-      return null;
-    }
+        // parsing annee depuis le titre
+        function yearFromTitle(t) {
+          if (!t || typeof t !== "string") return null;
+          const m = t.match(/(?:^|\D)(20\d{2}|19\d{2})(?:\D|$)/);
+          const y = m ? parseInt(m[1], 10) : null;
+          if (y && y >= 1900 && y <= 2100) return y;
+          return null;
+        }
 
-    // --- PATCH: on preserve les champs video & poster ---
-    function pickPoster(it){
-      return (
-        it.poster ||
-        it.thumbnail ||
-        (it.pictures && it.pictures.sizes && it.pictures.sizes.length
-          ? it.pictures.sizes[it.pictures.sizes.length - 1].link
-          : null) ||
-        it.picture ||
-        it.thumb ||
-        ""
-      );
-    }
+        // --- PATCH: on preserve les champs video & poster ---
+        function pickPoster(it) {
+          return (
+            it.poster ||
+            it.thumbnail ||
+            (it.pictures && it.pictures.sizes && it.pictures.sizes.length
+              ? it.pictures.sizes[it.pictures.sizes.length - 1].link
+              : null) ||
+            it.picture ||
+            it.thumb ||
+            ""
+          );
+        }
 
-    function normalizeEmbed(url){
-      if(!url) return null;
-      try{
-        const u = new URL(url, "https://player.vimeo.com");
-        const set = (k,v) => u.searchParams.set(k,v);
-        set("autoplay","1");
-        set("muted","1");
-        set("controls","1");
-        set("playsinline","1");
-        set("pip","1");
-        set("title","0");
-        set("byline","0");
-        return u.toString();
-      }catch(e){
-        return url;
-      }
-    }
+        function normalizeEmbed(url) {
+          if (!url) return null;
+          try {
+            const u = new URL(url, "https://player.vimeo.com");
+            const set = (k, v) => u.searchParams.set(k, v);
+            set("autoplay", "1");
+            set("muted", "1");
+            set("controls", "1");
+            set("playsinline", "1");
+            set("pip", "1");
+            set("title", "0");
+            set("byline", "0");
+            return u.toString();
+          } catch (e) {
+            return url;
+          }
+        }
 
-    function normalize(list){
-      return (Array.isArray(list) ? list : []).map(it => {
-        const title = it.title || it.name || "Untitled";
-        const yFromTitle = yearFromTitle(title);
-        const created = it.createdAt || it.created_time || null;
-        const yFromDate = created ? new Date(created).getFullYear() : (it.year || null);
-        const embed = normalizeEmbed(
-          it.embed ||
-          (it.player && it.player.embed_url) ||
-          it.src ||
-          it.videoSrc ||
-          null
-        );
+        function normalize(list) {
+          return (Array.isArray(list) ? list : []).map((it) => {
+            const title = it.title || it.name || "Untitled";
+            const yFromTitle = yearFromTitle(title);
+            const created = it.createdAt || it.created_time || null;
+            const yFromDate = created
+              ? new Date(created).getFullYear()
+              : it.year || null;
+            const embed = normalizeEmbed(
+              it.embed ||
+                (it.player && it.player.embed_url) ||
+                it.src ||
+                it.videoSrc ||
+                null,
+            );
 
-        return {
-          id: String(it.id ?? (it.uri && it.uri.split("/").pop()) ?? title),
-          title,
-          year: yFromTitle ?? yFromDate ?? new Date().getFullYear(),
-          image: pickPoster(it),
+            return {
+              id: String(it.id ?? (it.uri && it.uri.split("/").pop()) ?? title),
+              title,
+              year: yFromTitle ?? yFromDate ?? new Date().getFullYear(),
+              image: pickPoster(it),
 
-          // champs conserves pour le parent
-          poster: pickPoster(it),
-          embed,
-          src: it.src || null,
-          videoSrc: it.videoSrc || null,
-          link: it.link || null,
-        };
-      });
-    }
-
-    async function loadProjects(){
-      if (HAS_PARENT_DATA) return;
-      try{
-        const res = await fetch("/api/vimeo", { cache:"no-store" });
-        const json = await res.json();
-        if (HAS_PARENT_DATA) return; // parent already provided data
-        const items = normalize(json?.items);
-        PROJECTS = items.filter(p => !!p.image);
-      }catch(e){
-        if (!HAS_PARENT_DATA) PROJECTS = [];
-      }
-    }
-
-    const SOCIALS = [
-      { label: "Instagram", href: "https://www.instagram.com/antnstudio/", icon: '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" width="20" height="20" aria-hidden="true"><path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zm0 5.838c-3.403 0-6.162 2.759-6.162 6.162s2.759 6.163 6.162 6.163 6.162-2.759 6.162-6.163c0-3.403-2.759-6.162-6.162-6.162zm0 10.162c-2.209 0-4-1.79-4-4 0-2.209 1.791-4 4-4s4 1.791 4 4c0 2.21-1.791 4-4 4zm6.406-11.845c-.796 0-1.441.645-1.441 1.44s.645 1.44 1.441 1.44c.795 0 1.439-.645 1.439-1.44s-.644-1.44-1.439-1.44z"/></svg>' },
-      { label: "TikTok", href: "https://www.tiktok.com/@antnstudio", icon: '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" width="20" height="20" aria-hidden="true"><path d="M19.59 6.69a4.83 4.83 0 0 1-3.77-4.25V2h-3.45v13.67a2.89 2.89 0 0 1-5.2 1.74 2.89 2.89 0 0 1 2.31-4.64 2.93 2.93 0 0 1 .88.13V9.4a6.84 6.84 0 0 0-1-.05A6.33 6.33 0 0 0 5 20.1a6.34 6.34 0 0 0 10.86-4.43v-7a8.16 8.16 0 0 0 4.77 1.52v-3.4a4.85 4.85 0 0 1-1-.1z"/></svg>' },
-    ];
-
-    const settings = {
-      baseWidth: 400, smallHeight: 330, largeHeight: 500, itemGap: 65,
-      hoverScale: 1.05, dragEase: 0.075, momentumFactor: 200,
-      bufferZone: 3
-    };
-
-    /* ===== DOM ===== */
-    const container = document.querySelector(".container");
-    const canvas = document.getElementById("canvas");
-    const projectTitleElement = document.querySelector(".project-title p");
-
-    const yearsWrap   = document.getElementById("legacyYears");
-    const yearsToggle = document.getElementById("legacyYearsToggle");
-    const yearsClose  = document.getElementById("legacyYearsClose");
-    const yearsEl     = document.getElementById("years");
-    const socialsEl   = document.getElementById("socials");
-
-    /* Socials */
-    SOCIALS.forEach(s => {
-      const a = document.createElement("a");
-      a.href = s.href; a.target = "_blank"; a.rel = "noreferrer";
-      a.setAttribute("aria-label", s.label);
-      a.innerHTML = s.icon;
-      socialsEl.appendChild(a);
-    });
-
-    /* ===== Years ===== */
-    let uniqueYears = [];
-    const qpYear = new URLSearchParams(location.search).get("year");
-    let activeYear = "All";
-
-    function buildYearsFromProjects(){
-      uniqueYears = Array.from(new Set(PROJECTS.map(p => p.year))).sort((a,b)=>b-a);
-      activeYear = qpYear ? (qpYear === "all" ? "All" : String(qpYear)) : "All";
-    }
-
-    function renderYears(){
-      yearsEl.innerHTML = "";
-      yearsEl.appendChild(makeYearBtn("All"));
-      uniqueYears.forEach(y => yearsEl.appendChild(makeYearBtn(String(y))));
-      updateYearButtons();
-    }
-    function makeYearBtn(label){
-      const b = document.createElement("button");
-      b.className = "year-btn";
-      b.textContent = label;
-      b.addEventListener("click", ()=>{ setActiveYear(label); closeYears(); });
-      return b;
-    }
-    function updateYearButtons(){
-      yearsEl.querySelectorAll(".year-btn").forEach(btn=>{
-        btn.setAttribute("aria-pressed", String(btn.textContent === String(activeYear)));
-      });
-    }
-    function setActiveYear(label){
-      activeYear = label;
-      document.documentElement.setAttribute("data-year", String(label).toLowerCase());
-      resetAndRebuild();
-      updateYearButtons();
-      // PATCH: informer le parent du filtre en cours si besoin
-      window.parent?.postMessage({ type: "REQUEST_YEAR_ACK", value: activeYear === "All" ? "all" : activeYear }, "*");
-    }
-
-    function openYears(){
-      yearsWrap.classList.add("open");
-      yearsToggle.setAttribute("aria-expanded","true");
-    }
-    function closeYears(){
-      yearsWrap.classList.remove("open");
-      yearsToggle.setAttribute("aria-expanded","false");
-    }
-    yearsToggle.addEventListener("click", ()=>{
-      yearsWrap.classList.toggle("open");
-      yearsToggle.setAttribute("aria-expanded", String(yearsWrap.classList.contains("open")));
-    });
-    yearsClose.addEventListener("click", closeYears);
-
-    function currentList(){
-      if(activeYear==="All") return PROJECTS;
-      const y = parseInt(activeYear,10);
-      return PROJECTS.filter(p => p.year === y);
-    }
-
-    /* ===== Grille / rendu infini ===== */
-    const itemSizes = [
-      { width: settings.baseWidth, height: settings.smallHeight },
-      { width: settings.baseWidth, height: settings.largeHeight }
-    ];
-    const cellWidth = settings.baseWidth + 65;
-    const cellHeight = Math.max(settings.smallHeight, settings.largeHeight) + 65;
-    let columns = 4;
-
-    let isDragging=false,startX,startY,targetX=0,targetY=0,currentX=0,currentY=0,dragVX=0,dragVY=0,lastDrag=0;
-    let mouseHasMoved=false,visibleItems=new Set(),lastUpdate=0,lastX=0,lastY=0;
-
-    function getItemSize(row,col){ const idx = Math.abs((row*columns+col)%itemSizes.length); return itemSizes[idx]; }
-    function getItemId(col,row){ return `${col},${row}`; }
-    function getItemPos(col,row){ return { x: col*cellWidth, y: row*cellHeight }; }
-
-    function updateVisibleItems(){
-      const list = currentList();
-      const itemCount = list.length || 1;
-      if(!itemCount) return;
-
-      const buffer = 3;
-      const vw = innerWidth*(1+buffer), vh = innerHeight*(1+buffer);
-      const startCol = Math.floor((-currentX - vw/2)/cellWidth);
-      const endCol   = Math.ceil((-currentX + vw*1.5)/cellWidth);
-      const startRow = Math.floor((-currentY - vh/2)/cellHeight);
-      const endRow   = Math.ceil((-currentY + vh*1.5)/cellHeight);
-
-      const currentSet = new Set();
-
-      for(let row=startRow; row<=endRow; row++){
-        for(let col=startCol; col<=endCol; col++){
-          const id = getItemId(col,row); currentSet.add(id);
-          if(visibleItems.has(id)) continue;
-
-          const size = getItemSize(row,col);
-          const pos = getItemPos(col,row);
-          const idx = Math.abs((row*columns+col) % itemCount);
-          const proj = list[idx];
-
-          const item = document.createElement("div");
-          item.className="item"; item.id=id;
-          item.style.width = `${size.width}px`;
-          item.style.height = `${size.height}px`;
-          item.style.left = `${pos.x}px`;
-          item.style.top  = `${pos.y}px`;
-          item.dataset.width = size.width;
-          item.dataset.height = size.height;
-          item.dataset.year = String(proj.year);
-
-          const imageContainer = document.createElement("div");
-          imageContainer.className = "item-image-container";
-          const img = document.createElement("img");
-          img.src = proj.image || "";
-          img.alt = proj.title;
-          imageContainer.appendChild(img); item.appendChild(imageContainer);
-
-          const caption = document.createElement("div");
-          caption.className = "item-caption";
-          const name = document.createElement("div"); name.className="item-name"; name.textContent = proj.title;
-          const number = document.createElement("div"); number.className="item-number"; number.textContent = String(proj.year);
-          caption.appendChild(name); caption.appendChild(number); item.appendChild(caption);
-
-          // PATCH: clic => notifie le parent d'ouvrir le player
-          item.addEventListener("click", () => {
-            if(mouseHasMoved||isDragging) return;
-            const payload = {
-              id: proj.id,
-              title: proj.title,
-              poster: proj.poster || proj.image,
-              embed: normalizeEmbed(proj.embed || proj.src || proj.videoSrc || null),
-              link: proj.link || null,
-              year: proj.year
+              // champs conserves pour le parent
+              poster: pickPoster(it),
+              embed,
+              src: it.src || null,
+              videoSrc: it.videoSrc || null,
+              link: it.link || null,
             };
-            window.parent?.postMessage({ type: "OPEN_PLAYER", value: payload }, "*");
           });
-
-          canvas.appendChild(item); visibleItems.add(id);
         }
-      }
 
-      // cleanup
-      visibleItems.forEach((id)=>{
-        if(!currentSet.has(id)){
-          const el = document.getElementById(id);
-          if(el && el.parentNode===canvas) canvas.removeChild(el);
-          visibleItems.delete(id);
+        async function loadProjects() {
+          if (HAS_PARENT_DATA) return;
+          try {
+            const res = await fetch("/api/vimeo", { cache: "no-store" });
+            const json = await res.json();
+            if (HAS_PARENT_DATA) return; // parent already provided data
+            const items = normalize(json?.items);
+            PROJECTS = items.filter((p) => !!p.image);
+          } catch (e) {
+            if (!HAS_PARENT_DATA) PROJECTS = [];
+          }
         }
-      });
-    }
 
-    function animate(){
-      const e = settings.dragEase;
-      currentX += (targetX-currentX)*e;
-      currentY += (targetY-currentY)*e;
-      canvas.style.transform = `translate(${currentX}px,${currentY}px)`;
-      const now = Date.now(), dist = Math.hypot(currentX-lastX,currentY-lastY);
-      if(dist>100 || now-lastUpdate>120){ updateVisibleItems(); lastX=currentX; lastY=currentY; lastUpdate=now; }
-      requestAnimationFrame(animate);
-    }
+        const SOCIALS = [
+          {
+            label: "Instagram",
+            href: "https://www.instagram.com/antnstudio/",
+            icon: '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" width="20" height="20" aria-hidden="true"><path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zm0 5.838c-3.403 0-6.162 2.759-6.162 6.162s2.759 6.163 6.162 6.163 6.162-2.759 6.162-6.163c0-3.403-2.759-6.162-6.162-6.162zm0 10.162c-2.209 0-4-1.79-4-4 0-2.209 1.791-4 4-4s4 1.791 4 4c0 2.21-1.791 4-4 4zm6.406-11.845c-.796 0-1.441.645-1.441 1.44s.645 1.44 1.441 1.44c.795 0 1.439-.645 1.439-1.44s-.644-1.44-1.439-1.44z"/></svg>',
+          },
+          {
+            label: "TikTok",
+            href: "https://www.tiktok.com/@antnstudio",
+            icon: '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" width="20" height="20" aria-hidden="true"><path d="M19.59 6.69a4.83 4.83 0 0 1-3.77-4.25V2h-3.45v13.67a2.89 2.89 0 0 1-5.2 1.74 2.89 2.89 0 0 1 2.31-4.64 2.93 2.93 0 0 1 .88.13V9.4a6.84 6.84 0 0 0-1-.05A6.33 6.33 0 0 0 5 20.1a6.34 6.34 0 0 0 10.86-4.43v-7a8.16 8.16 0 0 0 4.77 1.52v-3.4a4.85 4.85 0 0 1-1-.1z"/></svg>',
+          },
+        ];
 
-    // drag / touch
-    const containerEl = container; // alias pour clarte
-    containerEl.addEventListener("mousedown",(e)=>{ isDragging=true; mouseHasMoved=false; startX=e.clientX; startY=e.clientY; containerEl.style.cursor="grabbing"; });
-    addEventListener("mousemove",(e)=>{ if(!isDragging) return; const dx=e.clientX-startX, dy=e.clientY-startY; if(Math.abs(dx)>5||Math.abs(dy)>5) mouseHasMoved=true; const now=Date.now(), dt=Math.max(10, now-lastDrag); lastDrag=now; dragVX=dx/dt; dragVY=dy/dt; targetX+=dx; targetY+=dy; startX=e.clientX; startY=e.clientY; });
-    addEventListener("mouseup",()=>{ if(!isDragging) return; isDragging=false; containerEl.style.cursor="grab"; if(Math.abs(dragVX)>0.1||Math.abs(dragVY)>0.1){ targetX += dragVX*settings.momentumFactor; targetY += dragVY*settings.momentumFactor; } });
+        const settings = {
+          baseWidth: 400,
+          smallHeight: 330,
+          largeHeight: 500,
+          itemGap: 65,
+          hoverScale: 1.05,
+          dragEase: 0.075,
+          momentumFactor: 200,
+          bufferZone: 3,
+        };
 
-    containerEl.addEventListener("touchstart",(e)=>{ isDragging=true; mouseHasMoved=false; startX=e.touches[0].clientX; startY=e.touches[0].clientY; });
-    addEventListener("touchmove",(e)=>{ if(!isDragging) return; const dx=e.touches[0].clientX-startX, dy=e.touches[0].clientY-startY; if(Math.abs(dx)>5||Math.abs(dy)>5) mouseHasMoved=true; targetX+=dx; targetY+=dy; startX=e.touches[0].clientX; startY=e.touches[0].clientY; });
-    addEventListener("touchend",()=>{ isDragging=false; });
+        /* ===== DOM ===== */
+        const container = document.querySelector(".container");
+        const canvas = document.getElementById("canvas");
+        const projectTitleElement = document.querySelector(".project-title p");
 
-    addEventListener("resize",()=>{ updateVisibleItems(); });
+        const yearsWrap = document.getElementById("legacyYears");
+        const yearsToggle = document.getElementById("legacyYearsToggle");
+        const yearsClose = document.getElementById("legacyYearsClose");
+        const yearsEl = document.getElementById("years");
+        const socialsEl = document.getElementById("socials");
 
-    function resetAndRebuild(){
-      const ids=[...visibleItems]; ids.forEach(id=>{ const el=document.getElementById(id); if(el&&el.parentNode===canvas) canvas.removeChild(el); });
-      visibleItems.clear();
-      currentX=currentY=targetX=targetY=lastX=lastY=0; canvas.style.transform="translate(0,0)";
-      updateVisibleItems();
-    }
+        /* Socials */
+        SOCIALS.forEach((s) => {
+          const a = document.createElement("a");
+          a.href = s.href;
+          a.target = "_blank";
+          a.rel = "noreferrer";
+          a.setAttribute("aria-label", s.label);
+          a.innerHTML = s.icon;
+          socialsEl.appendChild(a);
+        });
 
-    /* ====== Messaging avec le parent (Next.js) ====== */
-    window.addEventListener("message", (evt) => {
-      const data = evt && evt.data;
-      if (!data || typeof data !== "object") return;
+        /* ===== Years ===== */
+        let uniqueYears = [];
+        const qpYear = new URLSearchParams(location.search).get("year");
+        let activeYear = "All";
 
-      if (data.type === "SET_STATUS") {
-        let badge = document.getElementById("apiStatusBadge");
-        if (!badge) {
-          badge = document.createElement("div");
-          badge.id = "apiStatusBadge";
-          Object.assign(badge.style, {
-            position: "fixed",
-            right: "10px",
-            bottom: "10px",
-            font: "600 11px/1.4 system-ui, -apple-system, Segoe UI, Roboto, sans-serif",
-            color: "#bbb",
-            background: "rgba(0,0,0,.35)",
-            padding: "6px 8px",
-            borderRadius: "8px",
-            zIndex: 10050,
-            pointerEvents: "none",
+        function buildYearsFromProjects() {
+          uniqueYears = Array.from(new Set(PROJECTS.map((p) => p.year))).sort(
+            (a, b) => b - a,
+          );
+          activeYear = qpYear
+            ? qpYear === "all"
+              ? "All"
+              : String(qpYear)
+            : "All";
+        }
+
+        function renderYears() {
+          yearsEl.innerHTML = "";
+          yearsEl.appendChild(makeYearBtn("All"));
+          uniqueYears.forEach((y) =>
+            yearsEl.appendChild(makeYearBtn(String(y))),
+          );
+          updateYearButtons();
+        }
+        function makeYearBtn(label) {
+          const b = document.createElement("button");
+          b.className = "year-btn";
+          b.textContent = label;
+          b.addEventListener("click", () => {
+            setActiveYear(label);
+            closeYears();
           });
-          document.body.appendChild(badge);
+          return b;
         }
-        const ok = data.value?.ok;
-        const count = data.value?.count ?? 0;
-        badge.textContent = ok ? `Videos OK \u2022 ${count} items` : `Videos KO`;
-      }
+        function updateYearButtons() {
+          yearsEl.querySelectorAll(".year-btn").forEach((btn) => {
+            btn.setAttribute(
+              "aria-pressed",
+              String(btn.textContent === String(activeYear)),
+            );
+          });
+        }
+        function setActiveYear(label) {
+          activeYear = label;
+          document.documentElement.setAttribute(
+            "data-year",
+            String(label).toLowerCase(),
+          );
+          resetAndRebuild();
+          updateYearButtons();
+          // PATCH: informer le parent du filtre en cours si besoin
+          window.parent?.postMessage(
+            {
+              type: "REQUEST_YEAR_ACK",
+              value: activeYear === "All" ? "all" : activeYear,
+            },
+            "*",
+          );
+        }
 
-      if (data.type === "SET_PROJECTS") {
-        HAS_PARENT_DATA = true;
-        PROJECTS = normalize(data.value).filter(p => !!p.image);
-        buildYearsFromProjects();
-        renderYears();
-        setActiveYear(activeYear);
-      }
+        function openYears() {
+          yearsWrap.classList.add("open");
+          yearsToggle.setAttribute("aria-expanded", "true");
+        }
+        function closeYears() {
+          yearsWrap.classList.remove("open");
+          yearsToggle.setAttribute("aria-expanded", "false");
+        }
+        yearsToggle.addEventListener("click", () => {
+          yearsWrap.classList.toggle("open");
+          yearsToggle.setAttribute(
+            "aria-expanded",
+            String(yearsWrap.classList.contains("open")),
+          );
+        });
+        yearsClose.addEventListener("click", closeYears);
 
-      if (data.type === "SET_YEAR") {
-        const value = data.value;
-        document.documentElement.setAttribute("data-year-controlled", "true");
-        setActiveYear(value === "all" ? "All" : String(value));
-        openYears();
-      }
+        function currentList() {
+          if (activeYear === "All") return PROJECTS;
+          const y = parseInt(activeYear, 10);
+          return PROJECTS.filter((p) => p.year === y);
+        }
 
-      // Optionnel : le parent peut demander explicitement les projets/annee
-      if (data.type === "PING") {
-        window.parent?.postMessage({ type: "PONG" }, "*");
-      }
-    });
+        /* ===== Grille / rendu infini ===== */
+        const itemSizes = [
+          { width: settings.baseWidth, height: settings.smallHeight },
+          { width: settings.baseWidth, height: settings.largeHeight },
+        ];
+        const cellWidth = settings.baseWidth + 65;
+        const cellHeight =
+          Math.max(settings.smallHeight, settings.largeHeight) + 65;
+        let columns = 4;
 
-    /* ===== Init ===== */
-    (async function init(){
-      // Signaler au parent qu'on est pret
-      window.parent?.postMessage({ type: "IFRAME_READY" }, "*");
+        let isDragging = false,
+          startX,
+          startY,
+          targetX = 0,
+          targetY = 0,
+          currentX = 0,
+          currentY = 0,
+          dragVX = 0,
+          dragVY = 0,
+          lastDrag = 0;
+        let mouseHasMoved = false,
+          visibleItems = new Set(),
+          lastUpdate = 0,
+          lastX = 0,
+          lastY = 0;
 
-      await loadProjects();      // fetch manifest si le parent n'a pas injecté
-      if (!HAS_PARENT_DATA && PROJECTS.length === 0 && !REQUESTED_PARENT) {
-        REQUESTED_PARENT = true;
-        window.parent?.postMessage({ type: "REQUEST_PROJECTS" }, "*");
-        const y = new URLSearchParams(location.search).get("year");
-        if (y) window.parent?.postMessage({ type: "REQUEST_YEAR" }, "*");
-      }
+        function getItemSize(row, col) {
+          const idx = Math.abs((row * columns + col) % itemSizes.length);
+          return itemSizes[idx];
+        }
+        function getItemId(col, row) {
+          return `${col},${row}`;
+        }
+        function getItemPos(col, row) {
+          return { x: col * cellWidth, y: row * cellHeight };
+        }
 
-      buildYearsFromProjects();
-      renderYears();
-      closeYears();
-      setActiveYear(activeYear);
-      updateVisibleItems();
-      (function animateLoop(){ animate(); })();
-    })();
+        function updateVisibleItems() {
+          const list = currentList();
+          const itemCount = list.length || 1;
+          if (!itemCount) return;
 
-    // Petite anim de titre (subtile)
-    let titleSplit = null;
-    function setAndAnimateTitle(title){
-      if(!projectTitleElement) return;
-      if(titleSplit) titleSplit.revert();
-      projectTitleElement.textContent = title || "";
-      titleSplit = new SplitType(projectTitleElement,{ types:"words" });
-      gsap.set(titleSplit.words,{ y:"100%", opacity:0 });
-      gsap.to(titleSplit.words,{ y:"0%", opacity:1, duration:0.8, stagger:.05, ease:"power3.out" });
-    }
-    // Met a jour le titre au scroll (facultatif)
-    document.addEventListener("pointerup", ()=> {
-      const list = currentList();
-      if(list.length) setAndAnimateTitle(list[Math.floor(Math.random()*list.length)].title);
-    });
-  })();
-  </script>
-</body>
+          const buffer = 3;
+          const vw = innerWidth * (1 + buffer),
+            vh = innerHeight * (1 + buffer);
+          const startCol = Math.floor((-currentX - vw / 2) / cellWidth);
+          const endCol = Math.ceil((-currentX + vw * 1.5) / cellWidth);
+          const startRow = Math.floor((-currentY - vh / 2) / cellHeight);
+          const endRow = Math.ceil((-currentY + vh * 1.5) / cellHeight);
+
+          const currentSet = new Set();
+
+          for (let row = startRow; row <= endRow; row++) {
+            for (let col = startCol; col <= endCol; col++) {
+              const id = getItemId(col, row);
+              currentSet.add(id);
+              if (visibleItems.has(id)) continue;
+
+              const size = getItemSize(row, col);
+              const pos = getItemPos(col, row);
+              const idx = Math.abs((row * columns + col) % itemCount);
+              const proj = list[idx];
+
+              const item = document.createElement("div");
+              item.className = "item";
+              item.id = id;
+              item.style.width = `${size.width}px`;
+              item.style.height = `${size.height}px`;
+              item.style.left = `${pos.x}px`;
+              item.style.top = `${pos.y}px`;
+              item.dataset.width = size.width;
+              item.dataset.height = size.height;
+              item.dataset.year = String(proj.year);
+
+              const imageContainer = document.createElement("div");
+              imageContainer.className = "item-image-container";
+              const img = document.createElement("img");
+              img.src = proj.image || "";
+              img.alt = proj.title;
+              imageContainer.appendChild(img);
+              item.appendChild(imageContainer);
+
+              const caption = document.createElement("div");
+              caption.className = "item-caption";
+              const name = document.createElement("div");
+              name.className = "item-name";
+              name.textContent = proj.title;
+              const number = document.createElement("div");
+              number.className = "item-number";
+              number.textContent = String(proj.year);
+              caption.appendChild(name);
+              caption.appendChild(number);
+              item.appendChild(caption);
+
+              // PATCH: clic => notifie le parent d'ouvrir le player
+              item.addEventListener("click", () => {
+                if (mouseHasMoved || isDragging) return;
+                const payload = {
+                  id: proj.id,
+                  title: proj.title,
+                  poster: proj.poster || proj.image,
+                  embed: normalizeEmbed(
+                    proj.embed || proj.src || proj.videoSrc || null,
+                  ),
+                  link: proj.link || null,
+                  year: proj.year,
+                };
+                window.parent?.postMessage(
+                  { type: "OPEN_PLAYER", value: payload },
+                  "*",
+                );
+              });
+
+              canvas.appendChild(item);
+              visibleItems.add(id);
+            }
+          }
+
+          // cleanup
+          visibleItems.forEach((id) => {
+            if (!currentSet.has(id)) {
+              const el = document.getElementById(id);
+              if (el && el.parentNode === canvas) canvas.removeChild(el);
+              visibleItems.delete(id);
+            }
+          });
+        }
+
+        function animate() {
+          const e = settings.dragEase;
+          currentX += (targetX - currentX) * e;
+          currentY += (targetY - currentY) * e;
+          canvas.style.transform = `translate(${currentX}px,${currentY}px)`;
+          const now = Date.now(),
+            dist = Math.hypot(currentX - lastX, currentY - lastY);
+          if (dist > 100 || now - lastUpdate > 120) {
+            updateVisibleItems();
+            lastX = currentX;
+            lastY = currentY;
+            lastUpdate = now;
+          }
+          requestAnimationFrame(animate);
+        }
+
+        // drag / touch
+        const containerEl = container; // alias pour clarte
+        containerEl.addEventListener("mousedown", (e) => {
+          isDragging = true;
+          mouseHasMoved = false;
+          startX = e.clientX;
+          startY = e.clientY;
+          containerEl.style.cursor = "grabbing";
+        });
+        addEventListener("mousemove", (e) => {
+          if (!isDragging) return;
+          const dx = e.clientX - startX,
+            dy = e.clientY - startY;
+          if (Math.abs(dx) > 5 || Math.abs(dy) > 5) mouseHasMoved = true;
+          const now = Date.now(),
+            dt = Math.max(10, now - lastDrag);
+          lastDrag = now;
+          dragVX = dx / dt;
+          dragVY = dy / dt;
+          targetX += dx;
+          targetY += dy;
+          startX = e.clientX;
+          startY = e.clientY;
+        });
+        addEventListener("mouseup", () => {
+          if (!isDragging) return;
+          isDragging = false;
+          containerEl.style.cursor = "grab";
+          if (Math.abs(dragVX) > 0.1 || Math.abs(dragVY) > 0.1) {
+            targetX += dragVX * settings.momentumFactor;
+            targetY += dragVY * settings.momentumFactor;
+          }
+        });
+
+        containerEl.addEventListener("touchstart", (e) => {
+          isDragging = true;
+          mouseHasMoved = false;
+          startX = e.touches[0].clientX;
+          startY = e.touches[0].clientY;
+        });
+        addEventListener("touchmove", (e) => {
+          if (!isDragging) return;
+          const dx = e.touches[0].clientX - startX,
+            dy = e.touches[0].clientY - startY;
+          if (Math.abs(dx) > 5 || Math.abs(dy) > 5) mouseHasMoved = true;
+          targetX += dx;
+          targetY += dy;
+          startX = e.touches[0].clientX;
+          startY = e.touches[0].clientY;
+        });
+        addEventListener("touchend", () => {
+          isDragging = false;
+        });
+
+        addEventListener("resize", () => {
+          updateVisibleItems();
+        });
+
+        function resetAndRebuild() {
+          const ids = [...visibleItems];
+          ids.forEach((id) => {
+            const el = document.getElementById(id);
+            if (el && el.parentNode === canvas) canvas.removeChild(el);
+          });
+          visibleItems.clear();
+          currentX = currentY = targetX = targetY = lastX = lastY = 0;
+          canvas.style.transform = "translate(0,0)";
+          updateVisibleItems();
+        }
+
+        /* ====== Messaging avec le parent (Next.js) ====== */
+        window.addEventListener("message", (evt) => {
+          const data = evt && evt.data;
+          if (!data || typeof data !== "object") return;
+
+          if (data.type === "SET_STATUS") {
+            let badge = document.getElementById("apiStatusBadge");
+            if (!badge) {
+              badge = document.createElement("div");
+              badge.id = "apiStatusBadge";
+              Object.assign(badge.style, {
+                position: "fixed",
+                right: "10px",
+                bottom: "10px",
+                font: "600 11px/1.4 system-ui, -apple-system, Segoe UI, Roboto, sans-serif",
+                color: "#bbb",
+                background: "rgba(0,0,0,.35)",
+                padding: "6px 8px",
+                borderRadius: "8px",
+                zIndex: 10050,
+                pointerEvents: "none",
+              });
+              document.body.appendChild(badge);
+            }
+            const ok = data.value?.ok;
+            const count = data.value?.count ?? 0;
+            badge.textContent = ok
+              ? `Videos OK \u2022 ${count} items`
+              : `Videos KO`;
+          }
+
+          if (data.type === "SET_PROJECTS") {
+            HAS_PARENT_DATA = true;
+            PROJECTS = normalize(data.value).filter((p) => !!p.image);
+            buildYearsFromProjects();
+            renderYears();
+            setActiveYear(activeYear);
+          }
+
+          if (data.type === "SET_YEAR") {
+            const value = data.value;
+            document.documentElement.setAttribute(
+              "data-year-controlled",
+              "true",
+            );
+            setActiveYear(value === "all" ? "All" : String(value));
+            openYears();
+          }
+
+          // Optionnel : le parent peut demander explicitement les projets/annee
+          if (data.type === "PING") {
+            window.parent?.postMessage({ type: "PONG" }, "*");
+          }
+        });
+
+        /* ===== Init ===== */
+        (async function init() {
+          // Signaler au parent qu'on est pret
+          window.parent?.postMessage({ type: "IFRAME_READY" }, "*");
+
+          await loadProjects(); // fetch manifest si le parent n'a pas injecté
+          if (!HAS_PARENT_DATA && PROJECTS.length === 0 && !REQUESTED_PARENT) {
+            REQUESTED_PARENT = true;
+            window.parent?.postMessage({ type: "REQUEST_PROJECTS" }, "*");
+            const y = new URLSearchParams(location.search).get("year");
+            if (y) window.parent?.postMessage({ type: "REQUEST_YEAR" }, "*");
+          }
+
+          buildYearsFromProjects();
+          renderYears();
+          closeYears();
+          setActiveYear(activeYear);
+          updateVisibleItems();
+          (function animateLoop() {
+            animate();
+          })();
+        })();
+
+        // Petite anim de titre (subtile)
+        let titleSplit = null;
+        function setAndAnimateTitle(title) {
+          if (!projectTitleElement) return;
+          if (titleSplit) titleSplit.revert();
+          projectTitleElement.textContent = title || "";
+          titleSplit = new SplitType(projectTitleElement, { types: "words" });
+          gsap.set(titleSplit.words, { y: "100%", opacity: 0 });
+          gsap.to(titleSplit.words, {
+            y: "0%",
+            opacity: 1,
+            duration: 0.8,
+            stagger: 0.05,
+            ease: "power3.out",
+          });
+        }
+        // Met a jour le titre au scroll (facultatif)
+        document.addEventListener("pointerup", () => {
+          const list = currentList();
+          if (list.length)
+            setAndAnimateTitle(
+              list[Math.floor(Math.random() * list.length)].title,
+            );
+        });
+      })();
+    </script>
+  </body>
 </html>

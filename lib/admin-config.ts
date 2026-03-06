@@ -8,7 +8,15 @@ export type SiteConfig = {
   title?: string;
   description?: string;
   ogImage?: string;
+  ogTitle?: string;
+  canonical?: string;
   analyticsId?: string;
+  gtmId?: string;
+  trackingEvents?: string;
+  preloadStrategy?: string;
+  lazyLoad?: boolean;
+  instagramUrl?: string;
+  tiktokUrl?: string;
 };
 
 export type AdminConfig = {
@@ -23,7 +31,15 @@ const DEFAULT_SITE_CONFIG: SiteConfig = {
   description:
     "Front-end & DA minimale. Expériences web sobres, performantes, accessibles.",
   ogImage: "/cover.jpg",
+  ogTitle: "",
+  canonical: "",
   analyticsId: "",
+  gtmId: "",
+  trackingEvents: "",
+  preloadStrategy: "auto",
+  lazyLoad: false,
+  instagramUrl: "https://www.instagram.com/antnstudio/",
+  tiktokUrl: "https://www.tiktok.com/@antnstudio",
 };
 
 const DEFAULT_CONFIG: AdminConfig = {
@@ -47,16 +63,26 @@ async function getAdminConfigUncached(): Promise<AdminConfig> {
     const data = JSON.parse(raw) as Partial<AdminConfig>;
     // Old configs without hasFeaturedOverride: treat as no override (fallback to default 5).
     // Otherwise empty featuredIds would be treated as "override with zero" incorrectly.
-    const hasStoredOverride = Object.prototype.hasOwnProperty.call(data, "hasFeaturedOverride");
-    const hasFeaturedOverride = hasStoredOverride ? Boolean(data.hasFeaturedOverride) : false;
+    const hasStoredOverride = Object.prototype.hasOwnProperty.call(
+      data,
+      "hasFeaturedOverride",
+    );
+    const hasFeaturedOverride = hasStoredOverride
+      ? Boolean(data.hasFeaturedOverride)
+      : false;
     const siteConfig =
       data.siteConfig && typeof data.siteConfig === "object"
         ? { ...DEFAULT_SITE_CONFIG, ...data.siteConfig }
         : DEFAULT_SITE_CONFIG;
 
     return {
-      featuredIds: Array.isArray(data.featuredIds) ? data.featuredIds : DEFAULT_CONFIG.featuredIds,
-      visibility: data.visibility && typeof data.visibility === "object" ? data.visibility : DEFAULT_CONFIG.visibility,
+      featuredIds: Array.isArray(data.featuredIds)
+        ? data.featuredIds
+        : DEFAULT_CONFIG.featuredIds,
+      visibility:
+        data.visibility && typeof data.visibility === "object"
+          ? data.visibility
+          : DEFAULT_CONFIG.visibility,
       hasFeaturedOverride,
       siteConfig,
     };
@@ -68,7 +94,9 @@ async function getAdminConfigUncached(): Promise<AdminConfig> {
 /** Dedupe par requête (React cache) pour accélérer home + projects */
 export const getAdminConfig = cache(getAdminConfigUncached);
 
-export async function setAdminConfig(config: Partial<AdminConfig>): Promise<AdminConfig> {
+export async function setAdminConfig(
+  config: Partial<AdminConfig>,
+): Promise<AdminConfig> {
   const current = await getAdminConfigUncached();
   const next: AdminConfig = {
     featuredIds: config.featuredIds ?? current.featuredIds,
@@ -81,8 +109,12 @@ export async function setAdminConfig(config: Partial<AdminConfig>): Promise<Admi
           : current.hasFeaturedOverride,
     siteConfig:
       config.siteConfig !== undefined
-        ? { ...DEFAULT_SITE_CONFIG, ...current.siteConfig, ...config.siteConfig }
-        : current.siteConfig ?? DEFAULT_SITE_CONFIG,
+        ? {
+            ...DEFAULT_SITE_CONFIG,
+            ...current.siteConfig,
+            ...config.siteConfig,
+          }
+        : (current.siteConfig ?? DEFAULT_SITE_CONFIG),
   };
   try {
     const dir = join(process.cwd(), DATA_DIR);

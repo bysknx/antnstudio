@@ -99,7 +99,8 @@ export default function FooterFromPen() {
           justify-content: center;
           color: #fff;
           text-decoration: none;
-          transition: color 0.3s cubic-bezier(0.34, 1.56, 0.64, 1),
+          transition:
+            color 0.3s cubic-bezier(0.34, 1.56, 0.64, 1),
             opacity 0.3s ease;
         }
         .links-section a:hover {

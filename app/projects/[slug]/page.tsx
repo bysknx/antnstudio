@@ -50,8 +50,7 @@ export default async function ProjectPage({ params }: PageProps) {
     new Date(
       project.createdAt || project.created_time || Date.now(),
     ).getFullYear();
-  const videoUrl: string =
-    project.link || project.url || project.embed || "#";
+  const videoUrl: string = project.link || project.url || project.embed || "#";
 
   return (
     <main className="container mx-auto px-6 py-16">

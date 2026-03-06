@@ -27,14 +27,18 @@ export async function POST(req: NextRequest) {
 
   const name = file.name.replace(/[^a-zA-Z0-9._-]/g, "_");
   if (!name.toLowerCase().endsWith(".mp4")) {
-    return NextResponse.json({ error: "Format attendu : MP4" }, { status: 400 });
+    return NextResponse.json(
+      { error: "Format attendu : MP4" },
+      { status: 400 },
+    );
   }
 
   // En production (Vercel) le filesystem est read-only : utiliser S3 presigned URL ou API VPS
   if (process.env.VERCEL) {
     return NextResponse.json(
       {
-        error: "Upload direct non disponible en production. Utiliser une URL S3 presignée ou un endpoint sur ton VPS.",
+        error:
+          "Upload direct non disponible en production. Utiliser une URL S3 presignée ou un endpoint sur ton VPS.",
       },
       { status: 501 },
     );
@@ -46,12 +50,14 @@ export async function POST(req: NextRequest) {
     const bytes = await file.arrayBuffer();
     const path = join(dir, name);
     await writeFile(path, new Uint8Array(bytes));
-    const mediaUrl = process.env.NEXT_PUBLIC_MEDIA_URL || "https://media.antn.studio";
+    const mediaUrl =
+      process.env.NEXT_PUBLIC_MEDIA_URL || "https://media.antn.studio";
     return NextResponse.json({
       ok: true,
       filename: name,
       url: `${mediaUrl}/${name}`,
-      message: "Fichier enregistré dans .data/uploads. Copie-le sur ton VPS puis ajoute une entrée dans public/videos/manifest.json.",
+      message:
+        "Fichier enregistré dans .data/uploads. Copie-le sur ton VPS puis ajoute une entrée dans public/videos/manifest.json.",
     });
   } catch (e) {
     const message = e instanceof Error ? e.message : "Erreur écriture";

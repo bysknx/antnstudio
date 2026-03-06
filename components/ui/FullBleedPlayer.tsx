@@ -82,9 +82,10 @@ export default function FullBleedPlayer({
         <div className="pointer-events-auto absolute right-6 top-6">
           <button
             onClick={onClose}
-            className="rounded-full bg-black/70 px-4 py-1.5 text-sm font-medium text-white transition-colors duration-200 hover:bg-white hover:text-black"
+            className="rounded border border-white/20 bg-black/70 px-2.5 py-1 text-xs font-mono text-white/80 transition-colors duration-200 hover:bg-white/10 hover:text-white"
+            aria-label="Close"
           >
-            Close
+            ×
           </button>
         </div>
 
@@ -100,35 +101,33 @@ export default function FullBleedPlayer({
         )}
       </div>
 
-      {/* Vidéo plein écran */}
-      <div className="absolute inset-0 flex items-center justify-center p-4">
-        <div className="relative mx-auto h-full w-full max-w-6xl overflow-hidden rounded-lg shadow-[0_25px_120px_rgba(0,0,0,0.55)] ring-1 ring-white/5">
-          {poster ? (
-            <div
-              aria-hidden
-              className="pointer-events-none absolute inset-0 overflow-hidden"
-            >
-              <img
-                src={poster}
-                alt=""
-                className="h-full w-full object-cover opacity-70 blur-[1px]"
-                loading="lazy"
-              />
-              <div className="absolute inset-0 bg-black/65" />
-            </div>
-          ) : null}
+      {/* Vidéo plein écran — 100% largeur et hauteur */}
+      <div className="absolute inset-0">
+        {poster ? (
+          <div
+            aria-hidden
+            className="pointer-events-none absolute inset-0 overflow-hidden"
+          >
+            <img
+              src={poster}
+              alt=""
+              className="h-full w-full object-cover opacity-70 blur-[1px]"
+              loading="lazy"
+            />
+            <div className="absolute inset-0 bg-black/65" />
+          </div>
+        ) : null}
 
-          <video
-            key={embed}
-            className="relative inset-0 h-full w-full rounded-lg"
-            src={embed}
-            title={title ?? "video"}
-            autoPlay
-            controls
-            playsInline
-            style={{ objectFit: "contain" }}
-          />
-        </div>
+        <video
+          key={embed}
+          className="absolute inset-0 h-full w-full"
+          src={embed}
+          title={title ?? "video"}
+          autoPlay
+          controls
+          playsInline
+          style={{ objectFit: "contain" }}
+        />
       </div>
     </div>
   );

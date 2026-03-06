@@ -21,7 +21,7 @@ export default function Header() {
     }
   }, [pathname]);
 
-  if (pathname?.startsWith("/admin")) return null;
+  if (pathname != null && pathname.startsWith("/admin")) return null;
 
   return (
     // Fixed, translucent header that stays on top of the viewport.
@@ -39,14 +39,18 @@ export default function Header() {
           {LINKS.map((l) => {
             // Mark link active when the current route matches its href (home is exact match).
             const active =
-              l.href === "/" ? pathname === "/" : pathname.startsWith(l.href);
+              l.href === "/"
+                ? pathname === "/"
+                : (pathname?.startsWith(l.href) ?? false);
             return (
               <Link
                 key={l.href}
                 href={l.href}
                 prefetch={true}
                 onMouseEnter={() =>
-                  l.href === "/projects" ? router.prefetch("/projects") : undefined
+                  l.href === "/projects"
+                    ? router.prefetch("/projects")
+                    : undefined
                 }
                 className={`px-3 py-1 rounded-full text-sm transition ${
                   active

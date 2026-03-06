@@ -17,6 +17,9 @@ type Slide = {
   alt: string;
   durationMs: number;
   durationSeconds?: number;
+  year?: number | null;
+  client?: string;
+  title?: string;
 };
 
 const DEFAULT_DURATION_MS = 15000;
@@ -40,6 +43,11 @@ function buildSlide(item: VideoItem): Slide | null {
       typeof item.duration === "number" && item.duration > 0
         ? item.duration
         : undefined,
+    year: item.year,
+    client: item.client,
+    title: item.title?.includes(" — ")
+      ? item.title.split(" — ")[1]
+      : item.title,
   };
 }
 
@@ -75,7 +83,8 @@ export default function HeroPlayer({
 
   useEffect(() => {
     if (items && items.length) {
-      setSlides(toSlides(items));
+      const slidesData = toSlides(items);
+      setSlides(slidesData);
       setIndex(0);
       return;
     }
@@ -117,7 +126,7 @@ export default function HeroPlayer({
       const p = Math.min(1, (now - startRef.current) / target);
       setProgress(p);
       if (p >= 1) {
-        setIndex((i) => (i + 1) % slides.length);
+        setIndex((i: number) => (i + 1) % slides.length);
         return;
       }
       rafRef.current = requestAnimationFrame(tick);
@@ -149,7 +158,8 @@ export default function HeroPlayer({
     return () => {
       cancelled = true;
       if (rafRef.current) cancelAnimationFrame(rafRef.current);
-      if (safetyTimeoutRef.current) window.clearTimeout(safetyTimeoutRef.current);
+      if (safetyTimeoutRef.current)
+        window.clearTimeout(safetyTimeoutRef.current);
     };
   }, [slides, index, onReady, readyTimeoutMs, startProgress]);
 
@@ -231,19 +241,14 @@ export default function HeroPlayer({
   if (!totalSlides) return null;
   const current = slides[index];
 
-  const runtimeSeconds =
-    current.durationSeconds ?? Math.round(current.durationMs / 1000);
-  const minutes = Math.floor(runtimeSeconds / 60)
-    .toString()
-    .padStart(2, "0");
-  const seconds = Math.floor(runtimeSeconds % 60)
-    .toString()
-    .padStart(2, "0");
-  const stats = [
-    { label: "Now Playing", value: current.alt },
-    { label: "Duration", value: `${minutes}:${seconds}` },
-    { label: "Slide", value: `${index + 1}/${totalSlides}` },
-  ] as { label: string; value: string }[];
+  const metadata = [
+    current.year != null && { label: "Année", value: String(current.year) },
+    current.client && { label: "Client", value: current.client },
+    (current.title || current.alt) && {
+      label: "Titre",
+      value: current.title || current.alt,
+    },
+  ].filter(Boolean) as { label: string; value: string }[];
 
   return (
     <section
@@ -276,8 +281,8 @@ export default function HeroPlayer({
 
       <div className="pointer-events-none absolute inset-0 shadow-[inset_0_0_240px_rgba(0,0,0,0.55)]" />
 
-      <div className="absolute right-6 top-1/2 -translate-y-1/2 flex w-[160px] flex-col gap-3 z-[5]">
-        {slides.map((_, i) => {
+      <div className="absolute right-6 top-1/2 -translate-y-1/2 flex w-[140px] flex-col gap-2 z-[5] items-end">
+        {slides.map((s: Slide, i: number) => {
           const active = i === index;
           const pct = active ? progress : 0;
           return (
@@ -287,10 +292,10 @@ export default function HeroPlayer({
               onClick={() => goTo(i)}
               aria-label={`Afficher le projet ${i + 1}`}
               className={[
-                "group relative w-full overflow-hidden rounded-full cursor-pointer transition-all",
+                "group relative overflow-hidden rounded-full cursor-pointer transition-all duration-200",
                 active
-                  ? "h-[11px] bg-white/35 ring-1 ring-white/60"
-                  : "h-[7px] bg-white/12 hover:bg-white/22",
+                  ? "h-[8px] w-full max-w-[140px] bg-white/35 ring-1 ring-white/60"
+                  : "h-[4px] w-1/2 max-w-[60px] bg-white/12 hover:bg-white/22",
               ].join(" ")}
             >
               <span
@@ -306,16 +311,14 @@ export default function HeroPlayer({
       </div>
 
       <div className="pointer-events-none absolute inset-x-0 bottom-[6.5rem] flex justify-center px-4 sm:bottom-[7rem]">
-        <div className="pointer-events-auto max-w-[280px] rounded border border-white/10 bg-black/50 px-3 py-2 text-[10px] backdrop-blur-sm">
+        <div className="pointer-events-auto w-fit max-w-[90vw] rounded border border-white/10 bg-black/50 px-3 py-2 text-[10px] backdrop-blur-sm">
           <ul className="flex flex-wrap items-baseline gap-x-4 gap-y-1 font-mono">
-            {stats.map((entry) => (
+            {metadata.map((entry) => (
               <li key={entry.label} className="flex items-baseline gap-1.5">
                 <span className="uppercase tracking-wider text-white/45">
                   {entry.label}
                 </span>
-                <span className="text-white/80 truncate max-w-[140px]">
-                  {entry.value}
-                </span>
+                <span className="text-white/80 max-w-max">{entry.value}</span>
               </li>
             ))}
           </ul>

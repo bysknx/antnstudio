@@ -31,7 +31,11 @@ export default function ChromeFrame({ children }: PropsWithChildren) {
 
       {/* About : fond grain léger uniquement (pas de grille réactive) */}
       {showGrainOnly && (
-        <div id="gl-layer" className="pointer-events-none fixed inset-0 z-0" aria-hidden>
+        <div
+          id="gl-layer"
+          className="pointer-events-none fixed inset-0 z-0"
+          aria-hidden
+        >
           <div className="grain" />
         </div>
       )}
