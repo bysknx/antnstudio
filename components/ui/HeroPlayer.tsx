@@ -253,7 +253,7 @@ export default function HeroPlayer({
   return (
     <section
       id="hero-root"
-      className="relative h-[100svh] w-full overflow-hidden bg-black"
+      className="relative h-[100svh] w-full overflow-hidden bg-black touch-none"
     >
       <div className="absolute inset-0">
         <video

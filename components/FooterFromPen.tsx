@@ -125,7 +125,7 @@ export default function FooterFromPen() {
             grid-column: 1 / span 12;
             order: 3;
             margin-top: 6px;
-            justify-content: flex-start;
+            justify-content: center;
             gap: 1.2rem;
           }
           .info-section {
