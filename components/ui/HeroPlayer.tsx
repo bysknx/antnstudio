@@ -260,7 +260,7 @@ export default function HeroPlayer({
           key={index}
           ref={videoRef}
           data-cover
-          className={`hero-iframe transition-opacity duration-300 ${
+          className={`hero-iframe object-cover min-h-full min-w-full transition-opacity duration-300 ${
             visible ? "opacity-100" : "opacity-0"
           }`}
           src={current.src}
