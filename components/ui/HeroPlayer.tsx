@@ -91,7 +91,7 @@ export default function HeroPlayer({
     let stop = false;
     (async () => {
       try {
-        const res = await fetch("/api/vimeo", { cache: "no-store" });
+        const res = await fetch("/api/videos", { cache: "no-store" });
         const json = await res.json();
         const apiItems: VideoItem[] = Array.isArray(json?.items)
           ? json.items

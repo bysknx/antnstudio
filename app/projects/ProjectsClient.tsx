@@ -79,8 +79,7 @@ export default function ProjectsClient({ initialItems }: Props) {
     try {
       const cached =
         typeof window !== "undefined"
-          ? sessionStorage.getItem("__VIDEO_PREFETCH") ||
-            sessionStorage.getItem("__VIMEO_PREFETCH")
+          ? sessionStorage.getItem("__VIDEO_PREFETCH")
           : null;
       if (cached) {
         const j = JSON.parse(cached);
@@ -102,7 +101,7 @@ export default function ProjectsClient({ initialItems }: Props) {
     let stop = false;
     (async () => {
       try {
-        const res = await fetch("/api/vimeo", { cache: "no-store" });
+        const res = await fetch("/api/videos", { cache: "no-store" });
         const json = await res.json();
         const itemsRaw: VideoItem[] = Array.isArray(json?.items)
           ? json.items

@@ -2,7 +2,7 @@
 import { Suspense } from "react";
 import { fetchVideos } from "@/lib/videos";
 import { getAdminConfig } from "@/lib/admin-config";
-import PreloadVimeo from "@/components/PreloadVimeo";
+import PreloadVideos from "@/components/PreloadVideos";
 import ClientHeroSection from "@/components/ClientHeroSection";
 
 type Item = {
@@ -54,7 +54,7 @@ async function HomeHero() {
   return (
     <>
       <Suspense fallback={null}>
-        <PreloadVimeo />
+        <PreloadVideos />
       </Suspense>
       <ClientHeroSection items={latest} />
     </>

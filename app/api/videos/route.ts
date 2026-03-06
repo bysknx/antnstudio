@@ -1,4 +1,4 @@
-// app/api/vimeo/route.ts
+// app/api/videos/route.ts
 // Sert le manifest vidéo (public/videos/manifest.json) au format attendu par le front
 import { NextResponse } from "next/server";
 import { readFile } from "fs/promises";
@@ -40,7 +40,6 @@ export async function GET() {
           year: v.year,
           filename: v.filename,
           url,
-          // Champs compat HeroPlayer / ProjectsClient
           embed: url,
           link: url,
           duration: v.duration,

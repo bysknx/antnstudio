@@ -15,7 +15,7 @@ function slugify(input: string) {
 export default async function sitemap() {
   const base = getSiteUrl();
 
-  const res = await fetch(`${base}/api/vimeo`, {
+  const res = await fetch(`${base}/api/videos`, {
     cache: "no-store",
   }).catch(() => null);
 

@@ -630,7 +630,7 @@
         function normalizeEmbed(url) {
           if (!url) return null;
           try {
-            const u = new URL(url, "https://player.vimeo.com");
+            const u = new URL(url, window.location.origin);
             const set = (k, v) => u.searchParams.set(k, v);
             set("autoplay", "1");
             set("muted", "1");
@@ -680,7 +680,7 @@
         async function loadProjects() {
           if (HAS_PARENT_DATA) return;
           try {
-            const res = await fetch("/api/vimeo", { cache: "no-store" });
+            const res = await fetch("/api/videos", { cache: "no-store" });
             const json = await res.json();
             if (HAS_PARENT_DATA) return; // parent already provided data
             const items = normalize(json?.items);

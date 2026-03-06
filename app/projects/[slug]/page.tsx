@@ -3,7 +3,7 @@ import { notFound } from "next/navigation";
 import Link from "next/link";
 import { getSiteUrl } from "@/lib/constants";
 
-export const dynamic = "force-dynamic"; // on lit /api/vimeo (manifest vidéo) à la requête
+export const dynamic = "force-dynamic"; // on lit /api/videos (manifest vidéo) à la requête
 
 function slugify(input: string) {
   return input
@@ -17,7 +17,7 @@ function slugify(input: string) {
 async function getProjects() {
   // Route Handler interne — en SSR une URL relative marche aussi
   const base = getSiteUrl();
-  const url = `${base}/api/vimeo`.replace(/\/{2,}/g, "/").replace(":/", "://");
+  const url = `${base}/api/videos`.replace(/\/{2,}/g, "/").replace(":/", "://");
 
   const res = await fetch(url, { cache: "no-store" }).catch(() => null);
   if (!res || !res.ok) return { items: [] as any[] };

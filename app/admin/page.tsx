@@ -376,11 +376,11 @@ function AdminDashboard() {
 
   const loadData = useCallback(() => {
     Promise.all([
-      fetch("/api/vimeo", { cache: "no-store" }).then((r) => r.json()),
+      fetch("/api/videos", { cache: "no-store" }).then((r) => r.json()),
       fetch("/api/admin/config", { cache: "no-store" }).then((r) => r.json()),
     ])
-    .then(([vimeo, cfg]) => {
-      const items = Array.isArray(vimeo?.items) ? vimeo.items : [];
+    .then(([videosRes, cfg]) => {
+      const items = Array.isArray(videosRes?.items) ? videosRes.items : [];
       const vidList = items.map(
         (v: {
           id: string;

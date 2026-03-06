@@ -87,7 +87,7 @@ export default function RootLayout({
         {/* Préchargement du manifest vidéo */}
         <link
           rel="preload"
-          href="/api/vimeo"
+          href="/api/videos"
           as="fetch"
           crossOrigin="anonymous"
         />
