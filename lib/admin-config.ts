@@ -4,16 +4,33 @@ import { cache } from "react";
 import { readFile, writeFile, mkdir } from "fs/promises";
 import { join } from "path";
 
+export type SiteConfig = {
+  title?: string;
+  description?: string;
+  ogImage?: string;
+  analyticsId?: string;
+};
+
 export type AdminConfig = {
   featuredIds: string[];
   visibility: Record<string, boolean>;
   hasFeaturedOverride?: boolean;
+  siteConfig?: SiteConfig;
+};
+
+const DEFAULT_SITE_CONFIG: SiteConfig = {
+  title: "antn.studio — Anthony",
+  description:
+    "Front-end & DA minimale. Expériences web sobres, performantes, accessibles.",
+  ogImage: "/cover.jpg",
+  analyticsId: "",
 };
 
 const DEFAULT_CONFIG: AdminConfig = {
   featuredIds: [],
   visibility: {},
   hasFeaturedOverride: false,
+  siteConfig: DEFAULT_SITE_CONFIG,
 };
 
 const CONFIG_FILENAME = "admin-config.json";
@@ -32,10 +49,16 @@ async function getAdminConfigUncached(): Promise<AdminConfig> {
     // Otherwise empty featuredIds would be treated as "override with zero" incorrectly.
     const hasStoredOverride = Object.prototype.hasOwnProperty.call(data, "hasFeaturedOverride");
     const hasFeaturedOverride = hasStoredOverride ? Boolean(data.hasFeaturedOverride) : false;
+    const siteConfig =
+      data.siteConfig && typeof data.siteConfig === "object"
+        ? { ...DEFAULT_SITE_CONFIG, ...data.siteConfig }
+        : DEFAULT_SITE_CONFIG;
+
     return {
       featuredIds: Array.isArray(data.featuredIds) ? data.featuredIds : DEFAULT_CONFIG.featuredIds,
       visibility: data.visibility && typeof data.visibility === "object" ? data.visibility : DEFAULT_CONFIG.visibility,
       hasFeaturedOverride,
+      siteConfig,
     };
   } catch {
     return { ...DEFAULT_CONFIG };
@@ -56,6 +79,10 @@ export async function setAdminConfig(config: Partial<AdminConfig>): Promise<Admi
         : config.featuredIds !== undefined
           ? true
           : current.hasFeaturedOverride,
+    siteConfig:
+      config.siteConfig !== undefined
+        ? { ...DEFAULT_SITE_CONFIG, ...current.siteConfig, ...config.siteConfig }
+        : current.siteConfig ?? DEFAULT_SITE_CONFIG,
   };
   try {
     const dir = join(process.cwd(), DATA_DIR);

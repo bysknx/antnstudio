@@ -149,7 +149,7 @@ export default function AboutPage() {
       </div>
 
       {/* Logo ASCII en bas à droite — position fixe type marque */}
-      <div className="pointer-events-none absolute bottom-6 right-4 lg:bottom-8 lg:right-8 lg:pr-4">
+      <div className="pointer-events-none absolute bottom-24 right-4 lg:bottom-28 lg:right-8 lg:pr-4">
         <pre
           className="text-white font-mono leading-tight select-none text-xs sm:text-sm md:text-base lg:text-lg"
           style={{ fontFamily: "ui-monospace, monospace" }}

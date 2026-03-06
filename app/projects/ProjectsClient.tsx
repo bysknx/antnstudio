@@ -214,6 +214,7 @@ export default function ProjectsClient({ initialItems }: Props) {
         open={open}
         onClose={() => setOpen(false)}
         title={current?.title || current?.name}
+        year={current?.year}
         poster={
           current?.poster ||
           current?.thumbnail ||
