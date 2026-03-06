@@ -59,6 +59,19 @@ export default function ProjectsClient({ initialItems }: Props) {
     iframeRef.current?.contentWindow?.postMessage(msg, "*");
   };
 
+  useEffect(() => {
+    const html = document.documentElement;
+    const body = document.body;
+    const prevHtml = html.style.overscrollBehaviorY;
+    const prevBody = body.style.overscrollBehaviorY;
+    html.style.overscrollBehaviorY = "none";
+    body.style.overscrollBehaviorY = "none";
+    return () => {
+      html.style.overscrollBehaviorY = prevHtml;
+      body.style.overscrollBehaviorY = prevBody;
+    };
+  }, []);
+
   /** 1) Warm-start depuis sessionStorage si pas d’items */
   useEffect(() => {
     if (projects && projects.length) return;
@@ -173,7 +186,7 @@ export default function ProjectsClient({ initialItems }: Props) {
   }, [projects, year]);
 
   return (
-    <>
+    <div className="fixed inset-0 overflow-hidden">
       <iframe
         ref={iframeRef}
         src={src}
@@ -209,6 +222,6 @@ export default function ProjectsClient({ initialItems }: Props) {
         }
         embed={current?.embed || current?.src || current?.videoSrc}
       />
-    </>
+    </div>
   );
 }

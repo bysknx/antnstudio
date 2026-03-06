@@ -1,7 +1,17 @@
 "use client";
 
 import { useCallback, useEffect, useState } from "react";
+import Link from "next/link";
 import { useRouter } from "next/navigation";
+
+const ADMIN_ASCII =
+  "                   ░██                 ░██           \n" +
+  "                  ░██                               \n" +
+  " ░██████    ░████████ ░█████████████  ░██░████████  \n" +
+  "      ░██  ░██    ░██ ░██   ░██   ░██ ░██░██    ░██ \n" +
+  " ░███████  ░██    ░██ ░██   ░██   ░██ ░██░██    ░██ \n" +
+  "░██   ░██  ░██   ░███ ░██   ░██   ░██ ░██░██    ░██ \n" +
+  " ░█████░██  ░█████░██ ░██   ░██   ░██ ░██░██    ░██ \n";
 
 function LoginForm({ onSuccess }: { onSuccess: () => void }) {
   const [password, setPassword] = useState("");
@@ -40,9 +50,18 @@ function LoginForm({ onSuccess }: { onSuccess: () => void }) {
 
   return (
     <div className="mx-auto flex min-h-[60svh] max-w-sm flex-col justify-center px-4">
-      <h1 className="mb-6 text-xl font-semibold text-zinc-100">
-        Admin antn.studio
-      </h1>
+      <div className="mb-6 flex flex-col items-center">
+        <pre className="text-[10px] font-mono text-zinc-500 tracking-widest uppercase mb-2">
+          admin
+        </pre>
+        <pre
+          className="text-center whitespace-pre font-mono text-zinc-100 text-sm leading-tight"
+          style={{ fontFamily: "ui-monospace, monospace" }}
+          aria-hidden
+        >
+          {ADMIN_ASCII}
+        </pre>
+      </div>
       <form onSubmit={submit} className="space-y-4">
         <label className="block text-sm text-zinc-400">
           Mot de passe
@@ -69,10 +88,6 @@ function LoginForm({ onSuccess }: { onSuccess: () => void }) {
           {loading ? "Connexion…" : "Accéder à l’admin"}
         </button>
       </form>
-      <p className="mt-6 text-xs text-zinc-500">
-        Configure <code className="rounded bg-zinc-800 px-1">ADMIN_SECRET</code>{" "}
-        dans ton .env.local pour activer l’accès.
-      </p>
     </div>
   );
 }
@@ -407,10 +422,12 @@ function AdminDashboard() {
           Upload de versions de travail pour les clients : liens privés, section
           commentaires et téléchargement possible.
         </p>
-        <div className="rounded-lg border border-white/10 bg-zinc-900/50 p-6 text-zinc-500 text-sm">
-          À venir : projets privés, commentaires, lien de téléchargement. Nécessite
-          un backend (stockage fichiers + métadonnées, auth par lien secret).
-        </div>
+        <Link
+          href="/admin/review"
+          className="inline-block rounded-lg border border-white/10 bg-zinc-900/50 px-4 py-3 text-sm text-zinc-200 hover:bg-white/10 transition"
+        >
+          Ouvrir la page Review →
+        </Link>
       </section>
 
       <p className="text-xs text-zinc-500">

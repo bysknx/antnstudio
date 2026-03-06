@@ -242,9 +242,7 @@ export default function HeroPlayer({
   const stats = [
     { label: "Now Playing", value: current.alt },
     { label: "Duration", value: `${minutes}:${seconds}` },
-    { label: "Slide", value: `${index + 1} / ${totalSlides}` },
-    { label: "Loop", value: "Enabled" },
-    { label: "Autoplay", value: "Muted" },
+    { label: "Slide", value: `${index + 1}/${totalSlides}` },
   ] as { label: string; value: string }[];
 
   return (
@@ -307,15 +305,17 @@ export default function HeroPlayer({
         })}
       </div>
 
-      <div className="pointer-events-none absolute inset-x-0 bottom-[6.5rem] flex justify-center px-6 sm:bottom-[7rem]">
-        <div className="pointer-events-auto w-full max-w-xl rounded-lg border border-white/12 bg-black/65 px-5 py-4 text-xs text-white/75 backdrop-blur-sm">
-          <ul className="grid gap-y-2 gap-x-6 sm:grid-cols-2">
+      <div className="pointer-events-none absolute inset-x-0 bottom-[6.5rem] flex justify-center px-4 sm:bottom-[7rem]">
+        <div className="pointer-events-auto max-w-[280px] rounded border border-white/10 bg-black/50 px-3 py-2 text-[10px] backdrop-blur-sm">
+          <ul className="flex flex-wrap items-baseline gap-x-4 gap-y-1 font-mono">
             {stats.map((entry) => (
-              <li key={entry.label} className="flex flex-col gap-[2px]">
-                <span className="text-[10px] uppercase tracking-[0.18em] text-white/45">
+              <li key={entry.label} className="flex items-baseline gap-1.5">
+                <span className="uppercase tracking-wider text-white/45">
                   {entry.label}
                 </span>
-                <span className="text-sm text-white/85">{entry.value}</span>
+                <span className="text-white/80 truncate max-w-[140px]">
+                  {entry.value}
+                </span>
               </li>
             ))}
           </ul>

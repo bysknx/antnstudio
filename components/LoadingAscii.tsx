@@ -139,20 +139,29 @@ export default function LoadingAscii({ force = false }: { force?: boolean }) {
         opacity: stage === "fading" ? 0 : 1,
         transition: `opacity ${FADE_OUT_MS}ms ease`,
       }}
-      className="fixed inset-0 z-[9999] bg-black text-white font-mono overflow-hidden"
+      className="fixed inset-0 z-[9999] bg-black text-white font-mono overflow-hidden crt-screen"
     >
-      {/* VHS / terminal: grain + scanlines */}
-      <div className="pointer-events-none absolute inset-0 z-0 grain opacity-100" style={{ opacity: 0.12 }} />
+      {/* VHS / terminal: grain + scanlines + CRT */}
+      <div className="pointer-events-none absolute inset-0 z-0 grain" style={{ opacity: 0.14 }} />
       <div
-        className="pointer-events-none absolute inset-0 z-0 opacity-[0.06]"
+        className="pointer-events-none absolute inset-0 z-0 crt-scanlines"
         style={{
-          backgroundImage: "linear-gradient(to bottom, rgba(255,255,255,.3) 1px, transparent 1px)",
-          backgroundSize: "100% 3px",
+          backgroundImage: "repeating-linear-gradient(to bottom, transparent 0, transparent 2px, rgba(0,0,0,.15) 2px, rgba(0,0,0,.15) 4px)",
+          backgroundSize: "100% 4px",
         }}
       />
+      <div
+        className="pointer-events-none absolute inset-0 z-0 crt-scanlines-alt"
+        style={{
+          backgroundImage: "linear-gradient(to bottom, rgba(255,255,255,.03) 1px, transparent 1px)",
+          backgroundSize: "100% 3px",
+          opacity: 0.4,
+        }}
+      />
+      <div className="pointer-events-none absolute inset-0 z-0 crt-vignette" />
 
-      {/* Contenu aligné en bas : les lignes "poussent" le logo vers le haut */}
-      <div className="absolute inset-0 flex flex-col items-center justify-end pb-16 sm:pb-24 px-4">
+      {/* Logo centré au chargement, poussé vers le haut par les lignes */}
+      <div className="absolute inset-0 flex flex-col items-center justify-center px-4 crt-content">
         <div className="w-full max-w-lg flex flex-col items-center">
           {/* Logo ASCII — apparaît en fondu puis est poussé par les lignes */}
           <pre
@@ -199,6 +208,17 @@ export default function LoadingAscii({ force = false }: { force?: boolean }) {
       </div>
 
       <style jsx global>{`
+        .crt-screen {
+          box-shadow: inset 0 0 100px rgba(0,0,0,.3);
+        }
+        .crt-content {
+          filter: contrast(1.02);
+          transform: perspective(1400px) rotateX(0.3deg);
+          transform-origin: center center;
+        }
+        .crt-vignette {
+          background: radial-gradient(ellipse at center, transparent 55%, rgba(0,0,0,.25) 100%);
+        }
         @keyframes antnFadeIn {
           from { opacity: 0; transform: translateY(4px); }
           to { opacity: 1; transform: translateY(0); }

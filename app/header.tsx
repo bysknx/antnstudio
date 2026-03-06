@@ -21,7 +21,7 @@ export default function Header() {
     }
   }, [pathname]);
 
-  if (pathname === "/admin") return null;
+  if (pathname?.startsWith("/admin")) return null;
 
   return (
     // Fixed, translucent header that stays on top of the viewport.
