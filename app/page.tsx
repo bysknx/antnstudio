@@ -39,17 +39,37 @@ async function HomeHero() {
   const byId = new Map(normalized.map((v) => [v.id, v]));
 
   const useFeaturedOverride = config.hasFeaturedOverride;
-  const latest = useFeaturedOverride
-    ? ((config.featuredIds || [])
-        .map((id) => byId.get(id))
-        .filter(Boolean) as Item[])
-    : normalized
+  const featuredIds = Array.isArray(config.featuredIds)
+    ? config.featuredIds
+    : [];
+
+  let latest: Item[];
+  if (useFeaturedOverride) {
+    const featured = featuredIds
+      .map((id) => byId.get(id))
+      .filter(Boolean) as Item[];
+
+    if (featured.length > 0) {
+      latest = featured;
+    } else {
+      // Fallback : aucune sélection manuelle → dernières vidéos par date
+      latest = [...normalized]
         .sort(
           (a, b) =>
             new Date(b.createdAt || 0).getTime() -
             new Date(a.createdAt || 0).getTime(),
         )
         .slice(0, 5);
+    }
+  } else {
+    latest = [...normalized]
+      .sort(
+        (a, b) =>
+          new Date(b.createdAt || 0).getTime() -
+          new Date(a.createdAt || 0).getTime(),
+      )
+      .slice(0, 5);
+  }
 
   return (
     <>

@@ -115,9 +115,9 @@ export default function AboutPage() {
           </ul>
         </div>
 
-        {/* Colonne droite : [ FOR NEW PROJECT ], [ SOCIALS ] */}
+        {/* Colonne droite : [ FOR NEW PROJECTS ], [ SOCIALS ] */}
         <div className="flex-shrink-0 w-full lg:w-[320px] flex flex-col space-y-6">
-          <Block label="For new project">
+          <Block label="For new projects">
             <a
               href="mailto:anthony@antn.studio"
               className="text-white/90 hover:text-white transition underline underline-offset-2"
