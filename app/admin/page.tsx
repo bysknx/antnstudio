@@ -1,7 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useRef, useState } from "react";
-import { useRouter } from "next/navigation";
+import { useCallback, useRef, useState } from "react";
 import type { SiteConfig } from "@/lib/admin-config";
 
 const ADMIN_ASCII =
@@ -13,7 +12,7 @@ const ADMIN_ASCII =
   "░██   ░██  ░██   ░███ ░██   ░██   ░██ ░██░██    ░██ \n" +
   " ░█████░██  ░█████░██ ░██   ░██   ░██ ░██░██    ░██ \n";
 
-function LoginForm({ onSuccess }: { onSuccess: () => void }) {
+export function LoginForm({ onSuccess }: { onSuccess: () => void }) {
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
@@ -1048,47 +1047,12 @@ function ConfigTab({
 
 export default function AdminPage() {
   const router = useRouter();
-  const [authenticated, setAuthenticated] = useState<boolean | null>(null);
-
-  useEffect(() => {
-    let cancelled = false;
-    fetch("/api/admin/auth")
-      .then((r) => r.json())
-      .then((data) => {
-        if (!cancelled) setAuthenticated(!!data.ok);
-      })
-      .catch(() => {
-        if (!cancelled) setAuthenticated(false);
-      });
-    return () => {
-      cancelled = true;
-    };
-  }, []);
 
   const handleSuccess = useCallback(() => {
-    setAuthenticated(true);
     router.refresh();
   }, [router]);
 
-  if (authenticated === null) {
-    return (
-      <main className="flex min-h-[50svh] items-center justify-center">
-        <p className="text-zinc-500">Chargement…</p>
-      </main>
-    );
-  }
-
-  if (!authenticated) {
-    return (
-      <main>
-        <LoginForm onSuccess={handleSuccess} />
-      </main>
-    );
-  }
-
   return (
-    <main>
-      <AdminDashboard />
-    </main>
+    <LoginForm onSuccess={handleSuccess} />
   );
 }

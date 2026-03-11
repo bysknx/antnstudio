@@ -41,8 +41,8 @@
 @layer base {
   html,
   body {
-    background-color: #0a0a0b;
-    color: #e5e7eb;
+    background-color: #050505;
+    color: #f5f0e8;
   }
 
   h1,
@@ -60,10 +60,11 @@
 
   /* Fond & texte via Tailwind (override propre) */
   body {
-    @apply bg-zinc-950 text-zinc-200;
+    background-color: #050505;
+    color: #f5f0e8;
     transition:
-      opacity 320ms ease,
-      filter 320ms ease;
+      opacity 200ms ease,
+      filter 200ms ease;
   }
 
   iframe.hero-iframe {
@@ -265,26 +266,6 @@
    Utilitaires UI
 ================== */
 @layer utilities {
-  /* Carte “liquid glass” (sobre, non bleutée) */
-  .glass-panel {
-    background: rgba(24, 24, 27, 0.6); /* zinc-900 ~ */
-    -webkit-backdrop-filter: blur(10px);
-    backdrop-filter: blur(10px);
-    border: 1px solid rgba(255, 255, 255, 0.06);
-    box-shadow:
-      inset 0 0 0.5px rgba(255, 255, 255, 0.22),
-      0 8px 30px rgba(0, 0, 0, 0.35);
-    border-radius: 1rem; /* cohérent avec tes cartes */
-  }
-
-  /* Variante utilitaire “glass” avec @apply (si tu la réutilises) */
-  .glass {
-    @apply bg-zinc-900/90 backdrop-blur-xl border border-white/10;
-    box-shadow:
-      inset 0 0 0.5px rgba(255, 255, 255, 0.25),
-      0 8px 30px rgba(0, 0, 0, 0.35);
-  }
-
   /* Conteneur global : correspond à la classe que tu utilises dans ta page */
   .container {
     max-width: 1100px;
@@ -292,6 +273,71 @@
     padding-inline: clamp(16px, 4vw, 32px);
     width: 100%;
   }
+
+  /* Boutons principaux (REF-BUTTONS adapté, opaque) */
+  .btn {
+    padding: 10px 22px;
+    border-radius: 70px;
+    font-size: 0.85rem;
+    font-weight: 500;
+    border: 1px solid #222222;
+    background: #161616;
+    color: #f5f0e8;
+    cursor: pointer;
+    transition:
+      border-color 200ms ease,
+      background 200ms ease,
+      border-radius 200ms ease,
+      color 200ms ease;
+  }
+  .btn:hover {
+    border-color: #333333;
+    background: #1c1c1e;
+    border-radius: 8px;
+  }
+  .btn:disabled {
+    opacity: 0.6;
+    cursor: default;
+  }
+
+  .icon-btn {
+    width: 44px;
+    height: 44px;
+    border-radius: 70px;
+    border: 1px solid #222222;
+    background: #161616;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition:
+      border-color 200ms ease,
+      background 200ms ease,
+      border-radius 200ms ease,
+      color 200ms ease;
+  }
+  .icon-btn:hover {
+    border-color: #333333;
+    background: #1c1c1e;
+    border-radius: 8px;
+  }
+}
+
+/* Palette UI antn.studio déclarée en fin de fichier pour override explicite */
+:root {
+  --surface-base: #050505;
+  --surface-raised: #0a0a0a;
+  --surface-elevated: #111111;
+  --surface-overlay: #161616;
+
+  --border-subtle: #222222;
+
+  --text-primary: #f5f0e8;
+  --text-secondary: #8a8a8a;
+  --text-tertiary: #666666;
+
+  --accent-green: #a8f08a;
+  --accent-red: #f87171;
 }
 
 /* ===== START PATCH: chrome hidden during ASCII loader & hide canvas on home ===== */

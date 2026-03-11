@@ -1,6 +1,7 @@
 // app/layout.tsx
 import type { Metadata } from "next";
 import "./globals.css";
+import { GeistSans } from "geist/font/sans";
 
 import LoadingAscii from "@/components/LoadingAscii";
 import ClientFade from "@/components/ClientFade";
@@ -92,7 +93,7 @@ export default function RootLayout({
           crossOrigin="anonymous"
         />
       </head>
-      <body className="overflow-x-hidden">
+      <body className={`${GeistSans.className} overflow-x-hidden`}>
         {/* Boot shell: first paint = loader screen. Hides the rest until dismissal. */}
         <script
           dangerouslySetInnerHTML={{
