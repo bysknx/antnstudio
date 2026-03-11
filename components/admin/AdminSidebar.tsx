@@ -56,11 +56,6 @@ export function AdminSidebar({
               {ADMIN_ASCII_COMPACT}
             </pre>
           )}
-          {collapsed && (
-            <span className="text-[10px] uppercase tracking-[0.12em] text-[var(--text-secondary)] font-mono">
-              antn
-            </span>
-          )}
         </div>
         <button
           type="button"

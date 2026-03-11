@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import type { ReactNode } from "react";
 import { AdminSidebar } from "@/components/admin/AdminSidebar";
+import AdminLogin from "@/components/admin/AdminLogin";
 
 type AdminLayoutProps = {
   children: ReactNode;
@@ -28,11 +29,25 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
     };
   }, []);
 
-  // Login plein écran sans shell
-  if (authenticated === false || authenticated === null) {
-    return <>{children}</>;
+  // Phase de chargement initiale : écran neutre sans shell
+  if (authenticated === null) {
+    return (
+      <div className="flex min-h-screen items-center justify-center bg-[#050505] text-[var(--text-secondary)]">
+        <p className="text-sm font-mono">Chargement…</p>
+      </div>
+    );
   }
 
+  // Non authentifié : login plein écran, aucune sidebar / aucune page enfant
+  if (!authenticated) {
+    return (
+      <div className="flex min-h-screen items-center justify-center bg-[#050505] text-[var(--text-primary)]">
+        <AdminLogin onSuccess={() => setAuthenticated(true)} />
+      </div>
+    );
+  }
+
+  // Authentifié : shell complet + pages enfants
   return (
     <div className="min-h-screen bg-[#050505] text-[var(--text-primary)]">
       <div className="hidden lg:flex">
