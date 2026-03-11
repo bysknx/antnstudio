@@ -41,9 +41,7 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
           onToggleCollapsed={() => setCollapsed((v) => !v)}
         />
         <main className="flex-1 min-h-screen overflow-x-hidden">
-          <div className="px-6 py-6 lg:px-10 lg:py-8">
-            {children}
-          </div>
+          <div className="px-6 py-6 lg:px-10 lg:py-8">{children}</div>
         </main>
       </div>
 
@@ -83,4 +81,3 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
     </div>
   );
 }
-

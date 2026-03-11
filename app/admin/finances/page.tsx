@@ -7,12 +7,9 @@ export default function AdminFinancesPage() {
         <p className="text-xs font-mono uppercase tracking-[0.16em] text-[var(--text-secondary)]">
           /admin/finances
         </p>
-        <h1 className="text-xl font-semibold tracking-[-0.04em]">
-          Finances
-        </h1>
+        <h1 className="text-xl font-semibold tracking-[-0.04em]">Finances</h1>
         <p className="text-sm text-[var(--text-secondary)]">Coming soon.</p>
       </div>
     </main>
   );
 }
-

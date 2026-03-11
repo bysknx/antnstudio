@@ -1,7 +1,8 @@
 "use client";
 
-import { useCallback, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import type { SiteConfig } from "@/lib/admin-config";
+import { useRouter } from "next/navigation";
 
 const ADMIN_ASCII =
   "                   ░██                 ░██           \n" +
@@ -12,7 +13,7 @@ const ADMIN_ASCII =
   "░██   ░██  ░██   ░███ ░██   ░██   ░██ ░██░██    ░██ \n" +
   " ░█████░██  ░█████░██ ░██   ░██   ░██ ░██░██    ░██ \n";
 
-export function LoginForm({ onSuccess }: { onSuccess: () => void }) {
+function LoginForm({ onSuccess }: { onSuccess: () => void }) {
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
@@ -378,72 +379,72 @@ function AdminDashboard() {
       fetch("/api/videos", { cache: "no-store" }).then((r) => r.json()),
       fetch("/api/admin/config", { cache: "no-store" }).then((r) => r.json()),
     ])
-    .then(([videosRes, cfg]) => {
-      const items = Array.isArray(videosRes?.items) ? videosRes.items : [];
-      const vidList = items.map(
-        (v: {
-          id: string;
-          title: string;
-          filename?: string;
-          year?: number;
-          url?: string;
-          embed?: string;
-        }) => ({
-          id: v.id,
-          title: v.title,
-          filename: v.filename,
-          year: v.year,
-          url: v.url || v.embed,
-        }),
-      );
-      setVideos(vidList);
-      const vis =
-        cfg?.visibility && typeof cfg.visibility === "object"
-          ? cfg.visibility
-          : {};
-      const featIds = Array.isArray(cfg?.featuredIds) ? cfg.featuredIds : [];
-      const hasOverride =
-        typeof cfg?.hasFeaturedOverride === "boolean"
-          ? cfg.hasFeaturedOverride
-          : false;
-      setConfig({
-        featuredIds: featIds,
-        visibility: vis,
-        hasFeaturedOverride: hasOverride,
-        siteConfig: cfg?.siteConfig ?? {},
+      .then(([videosRes, cfg]) => {
+        const items = Array.isArray(videosRes?.items) ? videosRes.items : [];
+        const vidList = items.map(
+          (v: {
+            id: string;
+            title: string;
+            filename?: string;
+            year?: number;
+            url?: string;
+            embed?: string;
+          }) => ({
+            id: v.id,
+            title: v.title,
+            filename: v.filename,
+            year: v.year,
+            url: v.url || v.embed,
+          }),
+        );
+        setVideos(vidList);
+        const vis =
+          cfg?.visibility && typeof cfg.visibility === "object"
+            ? cfg.visibility
+            : {};
+        const featIds = Array.isArray(cfg?.featuredIds) ? cfg.featuredIds : [];
+        const hasOverride =
+          typeof cfg?.hasFeaturedOverride === "boolean"
+            ? cfg.hasFeaturedOverride
+            : false;
+        setConfig({
+          featuredIds: featIds,
+          visibility: vis,
+          hasFeaturedOverride: hasOverride,
+          siteConfig: cfg?.siteConfig ?? {},
+        });
+        const defaultFive = [...vidList]
+          .sort(
+            (a: { year?: number }, b: { year?: number }) =>
+              (b.year ?? 0) - (a.year ?? 0),
+          )
+          .slice(0, 5)
+          .map((x) => x.id);
+        const loadedFeatured =
+          hasOverride && featIds.length > 0
+            ? featIds
+            : hasOverride && featIds.length === 0
+              ? []
+              : defaultFive;
+        setLoadedSnapshot({
+          visibility: vidList.reduce(
+            (acc: Record<string, boolean>, v: { id: string }) => {
+              acc[v.id] = vis[v.id] !== false;
+              return acc;
+            },
+            {},
+          ),
+          featuredIds: loadedFeatured,
+          hasFeaturedOverride: hasOverride,
+        });
+      })
+      .catch(() => {
+        setLoadedSnapshot({
+          visibility: {},
+          featuredIds: [],
+          hasFeaturedOverride: false,
+        });
       });
-      const defaultFive = [...vidList]
-        .sort(
-          (a: { year?: number }, b: { year?: number }) =>
-            (b.year ?? 0) - (a.year ?? 0),
-        )
-        .slice(0, 5)
-        .map((x) => x.id);
-      const loadedFeatured =
-        hasOverride && featIds.length > 0
-          ? featIds
-          : hasOverride && featIds.length === 0
-            ? []
-            : defaultFive;
-      setLoadedSnapshot({
-        visibility: vidList.reduce(
-          (acc: Record<string, boolean>, v: { id: string }) => {
-            acc[v.id] = vis[v.id] !== false;
-            return acc;
-          },
-          {},
-        ),
-        featuredIds: loadedFeatured,
-        hasFeaturedOverride: hasOverride,
-      });
-    })
-    .catch(() => {
-      setLoadedSnapshot({
-        visibility: {},
-        featuredIds: [],
-        hasFeaturedOverride: false,
-      });
-    });
   }, []);
 
   useEffect(() => {
@@ -1052,7 +1053,5 @@ export default function AdminPage() {
     router.refresh();
   }, [router]);
 
-  return (
-    <LoginForm onSuccess={handleSuccess} />
-  );
+  return <LoginForm onSuccess={handleSuccess} />;
 }

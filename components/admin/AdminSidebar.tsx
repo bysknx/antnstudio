@@ -1,4 +1,4 @@
- "use client";
+"use client";
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
@@ -12,8 +12,7 @@ import {
   PanelLeftClose,
 } from "lucide-react";
 
-const ADMIN_ASCII_COMPACT =
-  " ░██   ADMIN\n" + " ░██   PANEL\n";
+const ADMIN_ASCII_COMPACT = " ░██   ADMIN\n" + " ░██   PANEL\n";
 
 type AdminSidebarProps = {
   collapsed: boolean;
@@ -109,4 +108,3 @@ export function AdminSidebar({
     </aside>
   );
 }
-
