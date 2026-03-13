@@ -68,13 +68,14 @@ export default function ProjectsClient({ initialItems }: Props) {
     [projects],
   );
 
+  console.log("[ProjectsClient]", {
+    projectsLen: projects?.length,
+    itemsWithImageLen: itemsWithImage.length,
+    sample: projects?.[0],
+  });
+
   return (
     <div className="fixed inset-0 overflow-hidden">
-      {console.log("[ProjectsClient]", {
-        projectsLen: projects?.length,
-        itemsWithImageLen: itemsWithImage.length,
-        sample: projects?.[0],
-      })}
       <ProjectsGrid items={itemsWithImage} onOpenVideo={handleOpenVideo} />
       <FullBleedPlayer
         open={open}
