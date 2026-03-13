@@ -16,6 +16,10 @@ export async function GET() {
     );
     const raw = await readFile(manifestPath, "utf-8");
     const videos = JSON.parse(raw);
+    console.log(
+      "[/api/videos] raw videos",
+      Array.isArray(videos) ? videos.length : "not-array",
+    );
 
     const mediaUrl =
       process.env.NEXT_PUBLIC_MEDIA_URL || "https://media.antn.studio";
@@ -48,10 +52,12 @@ export async function GET() {
         };
       },
     );
+    console.log("[/api/videos] items", items.length);
 
     return NextResponse.json({ items });
   } catch (e: unknown) {
     const message = e instanceof Error ? e.message : "manifest fetch failed";
+    console.error("[/api/videos] error", message);
     return NextResponse.json({ items: [], error: message }, { status: 500 });
   }
 }

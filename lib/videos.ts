@@ -41,7 +41,13 @@ function normalizeVideo(v: VideoItem): VideoItem {
 
 async function fetchVideosUncached(): Promise<VideoItem[]> {
   const data = rawManifest as VideoItem[];
-  return data.map(normalizeVideo);
+  console.log(
+    "[fetchVideosUncached] manifest count",
+    Array.isArray(data) ? data.length : "not-array",
+  );
+  const normalized = data.map(normalizeVideo);
+  console.log("[fetchVideosUncached] after normalize", normalized.length);
+  return normalized;
 }
 
 /** Dedupe par requête pour accélérer home + projects */

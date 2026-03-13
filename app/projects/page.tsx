@@ -7,6 +7,7 @@ export const revalidate = 0;
 
 export default async function Page() {
   const [videos, config] = await Promise.all([fetchVideos(), getAdminConfig()]);
+  console.log("[/projects] fetchVideos", videos.length);
 
   let items: VideoItem[] = videos.map((v) => ({
     id: v.id,
@@ -22,6 +23,8 @@ export default async function Page() {
   if (config.visibility && Object.keys(config.visibility).length > 0) {
     items = items.filter((v) => config.visibility[v.id] !== false);
   }
+
+  console.log("[/projects] initialItems", items.length);
 
   return <ProjectsClient initialItems={items} />;
 }

@@ -81,7 +81,7 @@ export function AdminSidebar({
               onClick={onCloseMobile}
               className={`group flex items-center ${
                 collapsed ? "justify-center" : "justify-start"
-              } gap-3 rounded-[8px] px-2.5 py-2.5 text-sm transition-colors duration-200 ease-in-out ${
+              } gap-3 rounded-sm px-2.5 py-2.5 text-sm transition-colors duration-200 ease-in-out ${
                 active
                   ? "bg-[#161616] text-[var(--text-primary)]"
                   : "text-[var(--text-secondary)] hover:bg-[#161616]"
@@ -94,7 +94,7 @@ export function AdminSidebar({
                 <span className="truncate tracking-[-0.02em]">{label}</span>
               )}
               {active && !collapsed && (
-                <span className="ml-auto h-4 w-[3px] rounded-full bg-[var(--text-primary)]" />
+                <span className="ml-auto h-4 w-[3px] rounded-sm bg-[var(--text-primary)]" />
               )}
             </Link>
           );

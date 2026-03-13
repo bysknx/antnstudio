@@ -58,7 +58,7 @@ export default function AdminLogin({ onSuccess }: AdminLoginProps) {
     <div className="mx-auto flex min-h-[60svh] max-w-sm flex-col justify-center px-4">
       <div className="mb-6 flex flex-col items-center">
         <pre
-          className="whitespace-pre text-center font-mono text-sm leading-tight text-zinc-100"
+          className="whitespace-pre text-center font-mono text-sm leading-tight text-[var(--text-primary)]"
           style={{ fontFamily: "ui-monospace, monospace" }}
           aria-hidden
         >
@@ -66,27 +66,27 @@ export default function AdminLogin({ onSuccess }: AdminLoginProps) {
         </pre>
       </div>
       <form onSubmit={submit} className="space-y-4">
-        <label className="block text-sm text-zinc-400">
+        <label className="block text-sm text-[var(--text-secondary)]">
           Mot de passe
           <input
             name="password"
             type="password"
             value={password}
             onChange={(e) => setPassword(e.target.value)}
-            className="mt-1 w-full rounded-md border border-white/10 bg-zinc-900/80 px-3 py-2 text-zinc-100"
+            className="mt-1 w-full rounded-sm border border-[#222222] bg-[#111111] px-3 py-2 text-sm text-[var(--text-primary)]"
             autoComplete="current-password"
             required
           />
         </label>
         {error && (
-          <p className="text-sm text-red-400" role="alert">
+          <p className="text-sm text-[#f87171]" role="alert">
             {error}
           </p>
         )}
         <button
           type="submit"
           disabled={loading}
-          className="w-full rounded-md bg-white px-4 py-2 text-sm font-medium text-black transition hover:bg-zinc-200 disabled:opacity-50"
+          className="w-full rounded-sm bg-[#f5f0e8] px-4 py-2 text-sm font-medium text-[#0a0a0a] transition-colors duration-200 ease-in-out disabled:opacity-50"
         >
           {loading ? "Connexion…" : "access"}
         </button>

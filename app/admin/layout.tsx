@@ -32,7 +32,7 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
   // Phase de chargement initiale : écran neutre sans shell
   if (authenticated === null) {
     return (
-      <div className="flex min-h-screen items-center justify-center bg-[#050505] text-[var(--text-secondary)]">
+      <div className="flex min-h-screen items-center justify-center bg-[#0a0a0a] text-[var(--text-secondary)]">
         <p className="text-sm font-mono">Chargement…</p>
       </div>
     );
@@ -41,7 +41,7 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
   // Non authentifié : login plein écran, aucune sidebar / aucune page enfant
   if (!authenticated) {
     return (
-      <div className="flex min-h-screen items-center justify-center bg-[#050505] text-[var(--text-primary)]">
+      <div className="flex min-h-screen items-center justify-center bg-[#0a0a0a] text-[var(--text-primary)]">
         <AdminLogin onSuccess={() => setAuthenticated(true)} />
       </div>
     );
@@ -49,7 +49,7 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
 
   // Authentifié : shell complet + pages enfants
   return (
-    <div className="min-h-screen bg-[#050505] text-[var(--text-primary)]">
+    <div className="min-h-screen bg-[#0a0a0a] text-[var(--text-primary)]">
       <div className="hidden lg:flex">
         <AdminSidebar
           collapsed={collapsed}
@@ -62,7 +62,7 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
 
       {/* Mobile shell */}
       <div className="lg:hidden">
-        <header className="flex items-center justify-between border-b border-[#222222] bg-[#050505] px-4 py-3">
+        <header className="flex items-center justify-between border-b border-[#222222] bg-[#0a0a0a] px-4 py-3">
           <span className="text-xs font-mono uppercase tracking-[0.16em] text-[var(--text-secondary)]">
             antn.studio admin
           </span>
@@ -76,7 +76,7 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
           </button>
         </header>
         {mobileOpen && (
-          <div className="fixed inset-0 z-40 bg-black">
+          <div className="fixed inset-0 z-40 bg-[#0a0a0a]">
             <div className="flex h-full">
               <AdminSidebar
                 collapsed={false}

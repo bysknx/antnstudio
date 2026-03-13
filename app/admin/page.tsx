@@ -3,15 +3,6 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import type { SiteConfig } from "@/lib/admin-config";
 
-const ADMIN_ASCII =
-  "                   ░██                 ░██           \n" +
-  "                  ░██                               \n" +
-  " ░██████    ░████████ ░█████████████  ░██░████████  \n" +
-  "      ░██  ░██    ░██ ░██   ░██   ░██ ░██░██    ░██ \n" +
-  " ░███████  ░██    ░██ ░██   ░██   ░██ ░██░██    ░██ \n" +
-  "░██   ░██  ░██   ░███ ░██   ░██   ░██ ░██░██    ░██ \n" +
-  " ░█████░██  ░█████░██ ░██   ░██   ░██ ░██░██    ░██ \n";
-
 type VideoEntry = {
   id: string;
   title: string;
@@ -221,13 +212,13 @@ function UploadOverlay({
 
   return (
     <div
-      className="fixed inset-0 z-[100] flex items-center justify-center bg-black/90 backdrop-blur-md transition-opacity duration-300"
+      className="fixed inset-0 z-[100] flex items-center justify-center bg-[#0a0a0a] transition-opacity duration-300"
       onClick={(e) => e.target === e.currentTarget && onClose()}
     >
       <div
         className={`flex flex-col items-center justify-center px-12 py-16 transition-colors ${
-          dragOver ? "border-white/30" : "border-white/10"
-        } border-2 border-dashed rounded-lg`}
+          dragOver ? "border-[#ffffff4d]" : "border-[#ffffff1a]"
+        } border-2 border-dashed rounded-sm bg-[#111111]`}
         onDragOver={(e) => {
           e.preventDefault();
           setDragOver(true);
@@ -254,18 +245,20 @@ function UploadOverlay({
           strokeWidth="1.5"
           strokeLinecap="round"
           strokeLinejoin="round"
-          className="text-white/60 mb-4"
+          className="text-[var(--text-primary)]/70 mb-4"
         >
           <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
           <polyline points="17 8 12 3 7 8" />
           <line x1="12" y1="3" x2="12" y2="15" />
         </svg>
-        <p className="text-zinc-400 text-sm mb-2">
+        <p className="text-sm mb-2 text-[var(--text-secondary)]">
           {uploading ? "Envoi…" : "Cliquez ou déposez un fichier vidéo"}
         </p>
         {result && (
           <p
-            className={`text-xs ${result.ok ? "text-emerald-500" : "text-red-400"}`}
+            className={`text-xs ${
+              result.ok ? "text-[#a8f08a]" : "text-[#f87171]"
+            }`}
           >
             {result.message}
           </p>
@@ -496,13 +489,9 @@ function AdminDashboard() {
       {/* Header + tabs */}
       <div className="flex items-center justify-between gap-4 flex-wrap mb-8">
         <div className="flex items-center gap-6">
-          <pre
-            className="whitespace-pre font-mono text-zinc-100 text-sm leading-tight"
-            style={{ fontFamily: "ui-monospace, monospace" }}
-            aria-hidden
-          >
-            {ADMIN_ASCII}
-          </pre>
+          <h1 className="text-lg font-mono text-[var(--text-primary)] tracking-[0.16em] uppercase">
+            Dashboard
+          </h1>
           <nav className="flex gap-1">
             <button
               type="button"
@@ -667,7 +656,7 @@ function CheckboxCross({
 }) {
   return (
     <label className="flex items-center gap-2 shrink-0 cursor-pointer">
-      <span className="text-xs text-zinc-500">{label}</span>
+      <span className="text-xs text-[var(--text-secondary)]">{label}</span>
       <button
         type="button"
         role="checkbox"
@@ -676,26 +665,15 @@ function CheckboxCross({
           e.preventDefault();
           onChange();
         }}
-        className={`w-4 h-4 rounded border flex items-center justify-center transition ${
-          checked
-            ? "bg-white/20 border-white/40"
-            : "bg-transparent border-white/20 hover:border-white/40"
+        className={`w-8 h-[18px] rounded-sm border border-[#222222] flex items-center px-[2px] transition-colors duration-200 ease-in-out ${
+          checked ? "bg-[#f5f0e8]" : "bg-[#222222]"
         }`}
       >
-        {checked && (
-          <svg
-            width="10"
-            height="10"
-            viewBox="0 0 10 10"
-            className="text-white"
-            stroke="currentColor"
-            strokeWidth="2"
-            strokeLinecap="round"
-          >
-            <line x1="1" y1="1" x2="9" y2="9" />
-            <line x1="9" y1="1" x2="1" y2="9" />
-          </svg>
-        )}
+        <span
+          className={`inline-block h-3 w-3 rounded-sm bg-[#0a0a0a] transform transition-transform duration-200 ease-in-out ${
+            checked ? "translate-x-[14px]" : "translate-x-0"
+          }`}
+        />
       </button>
     </label>
   );

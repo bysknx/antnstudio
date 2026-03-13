@@ -1,6 +1,7 @@
 // app/about/page.tsx — About, style console, blocs [ SECTION ], ASCII
 import type { ReactNode } from "react";
 import Link from "next/link";
+import { getAdminConfig } from "@/lib/admin-config";
 
 const ASCII_ART = [
   "░▒▓██████▓▒░░▒▓███████▓▒░▒▓████████▓▒░▒▓███████▓▒░  ",
@@ -37,18 +38,8 @@ function Block({ label, children }: { label: string; children: ReactNode }) {
   );
 }
 
-const SOCIALS = [
-  {
-    label: "Instagram",
-    href: "https://www.instagram.com/antnstudio/",
-    icon: "instagram",
-  },
-  {
-    label: "TikTok",
-    href: "https://www.tiktok.com/@antnstudio",
-    icon: "tiktok",
-  },
-];
+const DEFAULT_INSTAGRAM = "https://www.instagram.com/antnstudio/";
+const DEFAULT_TIKTOK = "https://www.tiktok.com/@antnstudio";
 
 const EXPERIENCES = [
   { title: "CEO", company: "antn.studio", dates: "2019 - Present" },
@@ -64,7 +55,16 @@ const EXPERIENCES = [
   },
 ];
 
-export default function AboutPage() {
+export default async function AboutPage() {
+  const config = await getAdminConfig();
+  const instagramUrl = config.siteConfig?.instagramUrl ?? DEFAULT_INSTAGRAM;
+  const tiktokUrl = config.siteConfig?.tiktokUrl ?? DEFAULT_TIKTOK;
+
+  const socials = [
+    { label: "Instagram", href: instagramUrl, icon: "instagram" as const },
+    { label: "TikTok", href: tiktokUrl, icon: "tiktok" as const },
+  ].filter((s) => s.href);
+
   return (
     <main className="relative min-h-[100svh] w-full overflow-hidden">
       {/* Breadcrumb C:\ANTN\ABOUT */}
@@ -128,7 +128,7 @@ export default function AboutPage() {
 
           <Block label="Socials">
             <div className="flex items-center gap-4">
-              {SOCIALS.map((s) => (
+              {socials.map((s) => (
                 <Link
                   key={s.label}
                   href={s.href}

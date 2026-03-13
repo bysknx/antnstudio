@@ -1,3 +1,33 @@
+/* ===== Admin design tokens & scrollbars (Tailwind v4) ===== */
+
+@theme {
+  --color-surface: #111111;
+  --color-surface-hover: #161616;
+  --color-border: #222222;
+  --color-warm-white: #f5f0e8;
+  --color-muted: #999999;
+
+  --radius-default: 0px;
+  --radius-sm: 2px;
+}
+
+* {
+  scrollbar-color: #444444 #222222;
+  scrollbar-width: thin;
+}
+
+*::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+*::-webkit-scrollbar-track {
+  background: #222222;
+}
+
+*::-webkit-scrollbar-thumb {
+  background: #444444;
+}
 /* ================================
    Tailwind v4 core + plugins
 ================================ */
@@ -41,7 +71,7 @@
 @layer base {
   html,
   body {
-    background-color: #050505;
+    background-color: #0a0a0a;
     color: #f5f0e8;
   }
 
@@ -60,7 +90,7 @@
 
   /* Fond & texte via Tailwind (override propre) */
   body {
-    background-color: #050505;
+    background-color: #0a0a0a;
     color: #f5f0e8;
     transition:
       opacity 200ms ease,
@@ -277,7 +307,7 @@
   /* Boutons principaux (REF-BUTTONS adapté, opaque) */
   .btn {
     padding: 10px 22px;
-    border-radius: 70px;
+    border-radius: 2px;
     font-size: 0.85rem;
     font-weight: 500;
     border: 1px solid #222222;
@@ -293,7 +323,6 @@
   .btn:hover {
     border-color: #333333;
     background: #1c1c1e;
-    border-radius: 8px;
   }
   .btn:disabled {
     opacity: 0.6;
@@ -303,7 +332,7 @@
   .icon-btn {
     width: 44px;
     height: 44px;
-    border-radius: 70px;
+    border-radius: 2px;
     border: 1px solid #222222;
     background: #161616;
     display: inline-flex;
@@ -319,7 +348,6 @@
   .icon-btn:hover {
     border-color: #333333;
     background: #1c1c1e;
-    border-radius: 8px;
   }
 }
 
@@ -353,11 +381,3 @@ html[data-home="1"] #gl-layer {
 /* ===== END PATCH ===== */
 
 /* blur rules removed — caused body-level blur in Next.js app router */
-
-@import url("https://fonts.cdnfonts.com/css/thegoodmonolith");
-@import url("https://fonts.cdnfonts.com/css/pp-neue-montreal");
-
-.footer-pen-mono {
-  font-family: "TheGoodMonolith", monospace;
-  font-synthesis-weight: none;
-}

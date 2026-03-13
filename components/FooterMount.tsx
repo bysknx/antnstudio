@@ -4,8 +4,8 @@ import FooterFromPen from "./FooterFromPen";
 
 export default function FooterMount() {
   const pathname = usePathname();
-  // Masquer sur /projects (l’iframe inclut son propre footer)
-  if (pathname?.startsWith("/projects")) return null;
+  // Masquer uniquement sur l'admin ; /projects affiche le footer public
+  if (pathname?.startsWith("/admin")) return null;
   return (
     <div
       className="pointer-events-none fixed inset-x-0 bottom-0 z-[60]"

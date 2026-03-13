@@ -1,0 +1,343 @@
+/* GRID-SPEC pixel-perfect — variables alignées sur projects-pen.html */
+.root {
+  --border-radius: 10px;
+  --hover-scale: 1.05;
+  --page-vignette-size: 180px;
+  --page-vignette-color: rgba(0, 0, 0, 0.85);
+  --page-vignette-strong-size: 90px;
+  --page-vignette-strong-color: rgba(0, 0, 0, 0.92);
+  --page-vignette-extreme-size: 36px;
+  --page-vignette-extreme-color: rgba(0, 0, 0, 1);
+  --m-bg: #0b0b0b;
+  --m-dot-color: rgba(255, 255, 255, 0.08);
+  --m-dot-size: 1.1px;
+  --m-dot-space: 22px;
+  --halo-color: rgba(255, 255, 255, 0.25);
+}
+
+.root {
+  position: fixed;
+  inset: 0;
+  width: 100vw;
+  height: 100vh;
+  overflow: hidden;
+  background-color: var(--m-bg);
+  background-image: radial-gradient(
+    circle,
+    var(--m-dot-color) var(--m-dot-size),
+    transparent calc(var(--m-dot-size) + 0.01px)
+  );
+  background-size: var(--m-dot-space) var(--m-dot-space);
+  background-position: 0 0;
+  background-attachment: fixed;
+  opacity: 0;
+  transition: opacity 0.6s ease-out;
+  will-change: opacity;
+  color: #f5f0e8;
+  font-family:
+    "PP Neue Montreal",
+    system-ui,
+    -apple-system,
+    Segoe UI,
+    Roboto,
+    sans-serif;
+  -webkit-user-select: none;
+  user-select: none;
+  -webkit-touch-callout: none;
+}
+
+.rootVisible {
+  opacity: 1;
+}
+
+/* Grain overlay — GRID-SPEC */
+.grain {
+  position: fixed;
+  inset: -50%;
+  background: url("https://assets.iceable.com/img/noise-transparent.png") repeat
+    0 0 / 300px 300px;
+  animation: noise 0.3s steps(5) infinite;
+  opacity: 0.22;
+  pointer-events: none;
+  z-index: 100;
+}
+@keyframes noise {
+  0% {
+    transform: translate(0, 0);
+  }
+  50% {
+    transform: translate(-2%, -3%);
+  }
+  100% {
+    transform: translate(1%, 0);
+  }
+}
+
+/* Vignettes — 3 couches GRID-SPEC */
+.vignetteContainer {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 9998;
+}
+.vignette {
+  position: absolute;
+  inset: 0;
+  box-shadow: inset 0 0 var(--page-vignette-size) var(--page-vignette-color);
+}
+.vignetteStrong {
+  position: absolute;
+  inset: 0;
+  box-shadow: inset 0 0 var(--page-vignette-strong-size)
+    var(--page-vignette-strong-color);
+}
+.vignetteExtreme {
+  position: absolute;
+  inset: 0;
+  box-shadow: inset 0 0 var(--page-vignette-extreme-size)
+    var(--page-vignette-extreme-color);
+}
+
+/* Menu années overlay (bouton + YEARS + panneau flottant) — comme CodePen original */
+.yearMenu {
+  position: absolute;
+  top: 0;
+  left: 0;
+  padding: 1.2rem;
+  z-index: 10000;
+}
+.yearToggle {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.55rem;
+  font-weight: 800;
+  font-size: 13px;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: #e9e9e9;
+  cursor: pointer;
+  padding: 0.4rem 0.6rem 0.4rem 0.2rem;
+  border-radius: 999px;
+  user-select: none;
+  position: relative;
+  background: transparent;
+  border: none;
+}
+.yearToggle::before {
+  content: "";
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: #e9e9e9;
+  opacity: 0.9;
+  display: inline-block;
+  animation: blink 2.4s ease-in-out infinite;
+}
+@keyframes blink {
+  0%, 90%, 100% {
+    opacity: 0.9;
+  }
+  45% {
+    opacity: 0.3;
+  }
+}
+.yearChev {
+  width: 8px;
+  height: 8px;
+  border-right: 2px solid #e9e9e9;
+  border-bottom: 2px solid #e9e9e9;
+  transform: rotate(45deg);
+  transition: transform 0.2s ease;
+  margin-left: 0.2rem;
+}
+.yearMenu.open .yearChev {
+  transform: rotate(-135deg);
+}
+.yearsPanel {
+  position: absolute;
+  left: 0;
+  top: 2.6rem;
+  z-index: 10001;
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+  overflow: hidden;
+  max-height: 0;
+  padding: 0;
+  opacity: 0;
+  transform: translateY(-4px);
+  pointer-events: none;
+  transition:
+    max-height 0.35s ease,
+    padding 0.2s ease,
+    opacity 0.2s ease,
+    transform 0.2s ease;
+}
+.yearsPanel::before {
+  content: "";
+  position: absolute;
+  inset: -0.2rem -1rem -0.6rem -1rem;
+  border-radius: 8px;
+  background: rgba(0, 0, 0, 0.25);
+  z-index: -1;
+  opacity: 0;
+  transition: opacity 0.2s ease;
+}
+.yearMenu.open .yearsPanel {
+  max-height: 50vh;
+  padding: 0.45rem 0.4rem 0.55rem 0.4rem;
+  opacity: 1;
+  transform: none;
+  pointer-events: auto;
+}
+.yearMenu.open .yearsPanel::before {
+  opacity: 1;
+}
+.years {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+}
+.yearBtn {
+  all: unset;
+  cursor: pointer;
+  color: #bcbcbc;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+  padding: 0.22rem 0.55rem;
+  border-radius: 6px;
+  transition:
+    color 0.2s ease,
+    background 0.2s ease;
+  display: block;
+}
+.yearBtn:hover {
+  color: #f5f0e8;
+  background: rgba(255, 255, 255, 0.05);
+}
+.yearBtn[aria-pressed="true"] {
+  color: #f5f0e8;
+  background: rgba(255, 255, 255, 0.08);
+}
+.yearsClose {
+  all: unset;
+  cursor: pointer;
+  align-self: flex-start;
+  margin-top: 0.25rem;
+  color: #ddd;
+  font-weight: 800;
+  font-size: 10px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  opacity: 0.8;
+  padding: 0.2rem 0.5rem;
+}
+.yearsClose:hover {
+  opacity: 1;
+}
+
+/* Zone grille (container + canvas) — pleine largeur viewport */
+.gridWrap {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  cursor: grab;
+  z-index: 1;
+  -webkit-user-select: none;
+  user-select: none;
+  -webkit-touch-callout: none;
+}
+.gridWrap.grabbing {
+  cursor: grabbing;
+}
+.canvas {
+  position: absolute;
+  will-change: transform;
+  top: 0;
+  left: 0;
+  -webkit-user-select: none;
+  user-select: none;
+}
+
+/* Items (cards) — appliqués via JS sur éléments créés en DOM, classes globales */
+/* Ces sélecteurs sont utilisés par les éléments créés dans le canvas qui ont className = styles.item etc. */
+
+.item {
+  position: absolute;
+  overflow: hidden;
+  background: #000;
+  cursor: pointer;
+  border-radius: var(--border-radius);
+  -webkit-user-select: none;
+  user-select: none;
+  border: 1px solid #222;
+}
+.itemImageContainer {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  border-radius: inherit;
+}
+.itemImageContainer::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(
+    circle at center,
+    transparent 55%,
+    var(--halo-color) 130%
+  );
+  opacity: 0;
+  transition: opacity 0.35s ease;
+}
+.item img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  pointer-events: none;
+  transition:
+    transform 0.3s ease,
+    filter 0.45s ease;
+  filter: grayscale(100%) contrast(1.1) brightness(0.82);
+}
+.item:hover img {
+  transform: scale(var(--hover-scale));
+  filter: none;
+}
+.item:hover .itemImageContainer::before {
+  opacity: 0.8;
+}
+
+.itemCaption {
+  position: absolute;
+  left: 0;
+  bottom: 0;
+  width: 100%;
+  padding: 10px;
+  z-index: 2;
+  background: linear-gradient(to top, rgba(0, 0, 0, 0.7), transparent);
+  -webkit-user-select: none;
+  user-select: none;
+}
+.itemName {
+  font-size: 12px;
+  text-transform: uppercase;
+  letter-spacing: -0.03em;
+  margin-bottom: 2px;
+  overflow: hidden;
+  height: 16px;
+  color: #f5f0e8;
+  -webkit-user-select: none;
+  user-select: none;
+}
+.itemNumber {
+  font:
+    400 10px/1 "TheGoodMonolith",
+    monospace;
+  color: #888;
+  overflow: hidden;
+  height: 14px;
+  -webkit-user-select: none;
+  user-select: none;
+}

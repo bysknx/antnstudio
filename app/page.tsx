@@ -4,6 +4,7 @@ import { fetchVideos } from "@/lib/videos";
 import { getAdminConfig } from "@/lib/admin-config";
 import PreloadVideos from "@/components/PreloadVideos";
 import ClientHeroSection from "@/components/ClientHeroSection";
+import FeaturedGrid from "@/components/FeaturedGrid";
 
 type Item = {
   id: string;
@@ -28,8 +29,8 @@ async function HomeHero() {
     title: v.title,
     client: v.client,
     createdAt: v.year ? `${v.year}-01-01T00:00:00.000Z` : null,
-    thumbnail: "",
-    poster: "",
+    thumbnail: v.thumbnail ?? "",
+    poster: v.thumbnail ?? "",
     embed: v.url,
     link: v.url,
     url: v.url,
@@ -77,6 +78,15 @@ async function HomeHero() {
         <PreloadVideos />
       </Suspense>
       <ClientHeroSection items={latest} />
+      <FeaturedGrid
+        items={latest.map((v) => ({
+          id: v.id,
+          title: v.title,
+          year: v.year,
+          thumbnail: v.thumbnail,
+          url: v.url,
+        }))}
+      />
     </>
   );
 }

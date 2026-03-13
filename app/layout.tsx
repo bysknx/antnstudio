@@ -7,27 +7,9 @@ import LoadingAscii from "@/components/LoadingAscii";
 import ClientFade from "@/components/ClientFade";
 import ChromeFrame from "@/components/ChromeFrame";
 import FooterMount from "@/components/FooterMount";
+import { VideoDataProvider } from "@/components/VideoDataProvider";
 import Header from "./header";
 import { getAdminConfig } from "@/lib/admin-config";
-
-const BOOT_SCRIPT = String.raw`(function () {
-  try {
-    var TTL = 15 * 60 * 1000;
-    var k = "antn_ascii_loader_last_seen";
-    var last = +localStorage.getItem(k);
-    if (last && (Date.now() - last) <= TTL) {
-      document.documentElement.removeAttribute("data-app-loading");
-      return;
-    }
-    document.documentElement.setAttribute("data-booting", "");
-    document.documentElement.setAttribute("data-app-loading", "visible");
-    var box = document.createElement("div");
-    box.id = "boot";
-    box.style.cssText = "position:fixed;inset:0;background:#000;z-index:2147483647;opacity:0;transition:opacity 400ms ease-out";
-    (document.body || document.documentElement).appendChild(box);
-    requestAnimationFrame(function () { try { box.style.opacity = "1"; } catch (e) {} });
-  } catch (e) {}
-})();`;
 
 export async function generateMetadata(): Promise<Metadata> {
   const config = await getAdminConfig();
@@ -82,9 +64,6 @@ export default function RootLayout({
         <link rel="preconnect" href="https://media.antn.studio" />
         <link rel="dns-prefetch" href="https://media.antn.studio" />
 
-        {/* Preloads the pen to smooth the first open */}
-        <link rel="preload" href="/projects-pen.html" as="document" />
-
         {/* Préchargement du manifest vidéo */}
         <link
           rel="preload"
@@ -94,28 +73,18 @@ export default function RootLayout({
         />
       </head>
       <body className={`${GeistSans.className} overflow-x-hidden`}>
-        {/* Boot shell: first paint = loader screen. Hides the rest until dismissal. */}
-        <script
-          dangerouslySetInnerHTML={{
-            __html: BOOT_SCRIPT,
-          }}
-        />
-        <style
-          dangerouslySetInnerHTML={{
-            __html: `html[data-booting] body > *:not(#boot){ visibility:hidden }`,
-          }}
-        />
-
         {/* Fullscreen ASCII loader */}
         <LoadingAscii />
 
         {/* Header global (nav) */}
         <Header />
 
-        {/* Transitions de page + chrome visuel */}
-        <ClientFade>
-          <ChromeFrame>{children}</ChromeFrame>
-        </ClientFade>
+        {/* Transitions de page + chrome visuel + préchargement global des vidéos */}
+        <VideoDataProvider>
+          <ClientFade>
+            <ChromeFrame>{children}</ChromeFrame>
+          </ClientFade>
+        </VideoDataProvider>
 
         {/* Footer global issu du pen (fixed via son propre style) */}
         <FooterMount />
