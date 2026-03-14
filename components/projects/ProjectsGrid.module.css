@@ -134,7 +134,9 @@
   animation: blink 2.4s ease-in-out infinite;
 }
 @keyframes blink {
-  0%, 90%, 100% {
+  0%,
+  90%,
+  100% {
     opacity: 0.9;
   }
   45% {

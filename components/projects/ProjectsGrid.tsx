@@ -468,11 +468,7 @@ export default function ProjectsGrid({
 
   if (items.length === 0) {
     return (
-      <div
-        className={`${styles.root} ${
-          hasMounted ? styles.rootVisible : ""
-        }`}
-      >
+      <div className={`${styles.root} ${hasMounted ? styles.rootVisible : ""}`}>
         <div className={styles.grain} aria-hidden />
         <div className={styles.vignetteContainer} aria-hidden>
           <div className={styles.vignette} />
@@ -498,11 +494,7 @@ export default function ProjectsGrid({
   }
 
   return (
-    <div
-      className={`${styles.root} ${
-        hasMounted ? styles.rootVisible : ""
-      }`}
-    >
+    <div className={`${styles.root} ${hasMounted ? styles.rootVisible : ""}`}>
       <div className={styles.grain} aria-hidden />
       <div className={styles.vignetteContainer} aria-hidden>
         <div className={styles.vignette} />
