@@ -19,11 +19,18 @@ export type SiteConfig = {
   tiktokUrl?: string;
 };
 
+export type ProjectMetaEntry = {
+  version?: string;
+  status?: "draft" | "en_review" | "valide";
+  reviewToken?: string;
+};
+
 export type AdminConfig = {
   featuredIds: string[];
   visibility: Record<string, boolean>;
   hasFeaturedOverride?: boolean;
   siteConfig?: SiteConfig;
+  projectMeta?: Record<string, ProjectMetaEntry>;
 };
 
 const DEFAULT_SITE_CONFIG: SiteConfig = {
@@ -47,6 +54,7 @@ const DEFAULT_CONFIG: AdminConfig = {
   visibility: {},
   hasFeaturedOverride: false,
   siteConfig: DEFAULT_SITE_CONFIG,
+  projectMeta: {},
 };
 
 const CONFIG_FILENAME = "admin-config.json";
@@ -75,6 +83,11 @@ async function getAdminConfigUncached(): Promise<AdminConfig> {
         ? { ...DEFAULT_SITE_CONFIG, ...data.siteConfig }
         : DEFAULT_SITE_CONFIG;
 
+    const projectMeta =
+      data.projectMeta && typeof data.projectMeta === "object"
+        ? data.projectMeta
+        : (DEFAULT_CONFIG.projectMeta ?? {});
+
     return {
       featuredIds: Array.isArray(data.featuredIds)
         ? data.featuredIds
@@ -85,6 +98,7 @@ async function getAdminConfigUncached(): Promise<AdminConfig> {
           : DEFAULT_CONFIG.visibility,
       hasFeaturedOverride,
       siteConfig,
+      projectMeta,
     };
   } catch {
     return { ...DEFAULT_CONFIG };
@@ -115,6 +129,10 @@ export async function setAdminConfig(
             ...config.siteConfig,
           }
         : (current.siteConfig ?? DEFAULT_SITE_CONFIG),
+    projectMeta:
+      config.projectMeta !== undefined
+        ? { ...(current.projectMeta ?? {}), ...config.projectMeta }
+        : (current.projectMeta ?? {}),
   };
   try {
     const dir = join(process.cwd(), DATA_DIR);

@@ -1,7 +1,11 @@
-// app/api/admin/config/route.ts — lecture / écriture config admin (featured, visibility)
+// app/api/admin/config/route.ts — lecture / écriture config admin (featured, visibility, projectMeta)
 import { NextRequest, NextResponse } from "next/server";
 import { cookies } from "next/headers";
-import { getAdminConfig, setAdminConfig } from "@/lib/admin-config";
+import {
+  getAdminConfig,
+  setAdminConfig,
+  type AdminConfig,
+} from "@/lib/admin-config";
 
 const COOKIE_NAME = "admin_session";
 
@@ -17,17 +21,7 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "Non autorisé" }, { status: 401 });
   }
 
-  let body: {
-    featuredIds?: string[];
-    visibility?: Record<string, boolean>;
-    hasFeaturedOverride?: boolean;
-    siteConfig?: {
-      title?: string;
-      description?: string;
-      ogImage?: string;
-      analyticsId?: string;
-    };
-  } = {};
+  let body: Partial<AdminConfig> = {};
   try {
     body = await req.json();
   } catch {

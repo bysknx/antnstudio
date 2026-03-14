@@ -33,13 +33,19 @@ export async function GET() {
         filename: string;
         url: string;
         duration: number | null;
+        thumbnail?: string;
       }) => {
         const url = v.url || `${mediaUrl}/${v.filename}`;
         const displayTitle = v.client ? `${v.client} — ${v.title}` : v.title;
+        const thumbnail =
+          v.thumbnail && v.thumbnail.startsWith("/")
+            ? v.thumbnail
+            : `/thumbs/${v.filename.replace(/\.mp4$/i, ".jpg")}`;
 
         return {
           id: v.id,
           title: displayTitle,
+          projectTitle: v.title,
           client: v.client,
           year: v.year,
           filename: v.filename,
@@ -48,7 +54,7 @@ export async function GET() {
           link: url,
           duration: v.duration,
           createdAt: v.year ? `${v.year}-01-01T00:00:00.000Z` : null,
-          thumbnail: null,
+          thumbnail,
         };
       },
     );
