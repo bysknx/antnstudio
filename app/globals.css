@@ -272,6 +272,15 @@
   }
 }
 
+@keyframes settingsFloatingFadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
 /* prefers-reduced-motion: couper les anims */
 @media (prefers-reduced-motion: reduce) {
   .ascii-block {

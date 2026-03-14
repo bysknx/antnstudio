@@ -267,7 +267,7 @@ PHASE 4 — Polish + Fixes publics
 
 - ✅ Dashboard `/admin` refait : quick actions en haut ; stats en une ligne (Vercel bientôt) ; finances 2 colonnes, tendance vert/rouge ; activité récente (manifest uniquement, pas de mock) ; section « Projets récents » (3 derniers, thumb + nom + client, lien vers /admin/projects)
 - ✅ `/admin/projects` : liste complète + menu ⋯ + toggles (étape ⑤)
-- ✅ `/admin/settings` : infos personnelles, config site (titre, meta, socials), gestion accès (changer mdp), clés API (statut env .env), préférences (date, devise) ; données via /api/admin/config + change-password + env-status
+- ✅ `/admin/settings` : infos personnelles, config site (titre, meta, socials), gestion accès (changer mdp), clés API (statut env .env), préférences (date, devise) ; données via /api/admin/config + change-password + env-status ; bouton Enregistrer flottant (fixed bottom-right, visible uniquement si modifications), changement mdp indépendant (bouton activé si 3 champs remplis)
 - ✅ `/admin/finances` (étape ⑧) : graphique barres recharts (revenus/dépenses 12 mois), solde net, filtres année + vue (mois/trimestre/année), sections Revenus et Dépenses (récurrentes + ponctuelles) — données mock
 
 ### Phase 3 — Factures + Client — ~10%

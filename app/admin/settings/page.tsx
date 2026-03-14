@@ -365,7 +365,12 @@ export default function AdminSettingsPage() {
             )}
             <button
               type="submit"
-              disabled={pwSaving}
+              disabled={
+                pwSaving ||
+                !pwCurrent.trim() ||
+                !pwNew.trim() ||
+                !pwConfirm.trim()
+              }
               className="rounded-lg border border-[#222] bg-[#161616] px-4 py-2 font-mono text-sm text-[#F5F0E8] transition-colors duration-200 hover:border-[#222] hover:bg-[#1a1a1a] disabled:opacity-50"
             >
               {pwSaving ? "…" : "Changer le mot de passe"}
@@ -451,18 +456,23 @@ export default function AdminSettingsPage() {
       </section>
 
       {hasChanges && (
-        <div className="mt-10 flex items-center gap-4">
+        <div
+          className="fixed z-50 transition-opacity duration-200 ease-out"
+          style={{
+            bottom: "24px",
+            right: "24px",
+            animation: "settingsFloatingFadeIn 0.2s ease-out",
+          }}
+        >
           <button
             type="button"
             onClick={save}
             disabled={saving}
-            className="rounded-lg border border-[#222] bg-[#161616] px-4 py-2 font-mono text-sm text-[#F5F0E8] transition-colors duration-200 hover:border-[#222] hover:bg-[#1a1a1a] disabled:opacity-50"
+            className="border-none bg-[#F5F0E8] py-3 font-semibold text-[#0a0a0a] transition-opacity duration-200 ease-out hover:opacity-90 disabled:opacity-50"
+            style={{ padding: "12px 24px", fontWeight: 600 }}
           >
             {saving ? "…" : saveOk ? "Enregistré" : "Enregistrer"}
           </button>
-          <span className="text-xs text-[#8a8a8a]">
-            Modifications non enregistrées
-          </span>
         </div>
       )}
     </main>
