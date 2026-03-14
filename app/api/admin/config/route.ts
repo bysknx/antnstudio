@@ -11,7 +11,8 @@ const COOKIE_NAME = "admin_session";
 
 export async function GET() {
   const config = await getAdminConfig();
-  return NextResponse.json(config);
+  const { adminPasswordHash: _, ...safe } = config;
+  return NextResponse.json(safe);
 }
 
 export async function POST(req: NextRequest) {
@@ -28,6 +29,8 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "Body JSON invalide" }, { status: 400 });
   }
 
-  const config = await setAdminConfig(body);
-  return NextResponse.json(config);
+  const { adminPasswordHash: _pw, ...safeBody } = body;
+  const config = await setAdminConfig(safeBody);
+  const { adminPasswordHash: __, ...safe } = config;
+  return NextResponse.json(safe);
 }

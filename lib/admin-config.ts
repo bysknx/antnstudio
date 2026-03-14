@@ -25,12 +25,28 @@ export type ProjectMetaEntry = {
   reviewToken?: string;
 };
 
+export type Profile = {
+  name?: string;
+  email?: string;
+  phone?: string;
+  address?: string;
+  siret?: string;
+};
+
+export type Preferences = {
+  dateFormat?: string;
+  currency?: string;
+};
+
 export type AdminConfig = {
   featuredIds: string[];
   visibility: Record<string, boolean>;
   hasFeaturedOverride?: boolean;
   siteConfig?: SiteConfig;
   projectMeta?: Record<string, ProjectMetaEntry>;
+  profile?: Profile;
+  preferences?: Preferences;
+  adminPasswordHash?: string;
 };
 
 const DEFAULT_SITE_CONFIG: SiteConfig = {
@@ -55,6 +71,8 @@ const DEFAULT_CONFIG: AdminConfig = {
   hasFeaturedOverride: false,
   siteConfig: DEFAULT_SITE_CONFIG,
   projectMeta: {},
+  profile: {},
+  preferences: {},
 };
 
 const CONFIG_FILENAME = "admin-config.json";
@@ -64,7 +82,7 @@ function dataPath(): string {
   return join(process.cwd(), DATA_DIR, CONFIG_FILENAME);
 }
 
-async function getAdminConfigUncached(): Promise<AdminConfig> {
+export async function getAdminConfigUncached(): Promise<AdminConfig> {
   try {
     const path = dataPath();
     const raw = await readFile(path, "utf-8");
@@ -88,6 +106,16 @@ async function getAdminConfigUncached(): Promise<AdminConfig> {
         ? data.projectMeta
         : (DEFAULT_CONFIG.projectMeta ?? {});
 
+    const profile =
+      data.profile && typeof data.profile === "object"
+        ? data.profile
+        : (DEFAULT_CONFIG.profile ?? {});
+
+    const preferences =
+      data.preferences && typeof data.preferences === "object"
+        ? data.preferences
+        : (DEFAULT_CONFIG.preferences ?? {});
+
     return {
       featuredIds: Array.isArray(data.featuredIds)
         ? data.featuredIds
@@ -99,6 +127,12 @@ async function getAdminConfigUncached(): Promise<AdminConfig> {
       hasFeaturedOverride,
       siteConfig,
       projectMeta,
+      profile,
+      preferences,
+      adminPasswordHash:
+        typeof data.adminPasswordHash === "string"
+          ? data.adminPasswordHash
+          : undefined,
     };
   } catch {
     return { ...DEFAULT_CONFIG };
@@ -133,6 +167,18 @@ export async function setAdminConfig(
       config.projectMeta !== undefined
         ? { ...(current.projectMeta ?? {}), ...config.projectMeta }
         : (current.projectMeta ?? {}),
+    profile:
+      config.profile !== undefined
+        ? { ...(current.profile ?? {}), ...config.profile }
+        : (current.profile ?? {}),
+    preferences:
+      config.preferences !== undefined
+        ? { ...(current.preferences ?? {}), ...config.preferences }
+        : (current.preferences ?? {}),
+    adminPasswordHash:
+      config.adminPasswordHash !== undefined
+        ? config.adminPasswordHash
+        : current.adminPasswordHash,
   };
   try {
     const dir = join(process.cwd(), DATA_DIR);

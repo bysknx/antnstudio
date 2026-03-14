@@ -1,7 +1,9 @@
 // app/api/admin/auth/route.ts
-// Protection basique par mot de passe (ADMIN_SECRET). Pour une vraie auth, prévoir NextAuth ou équivalent.
+// Auth par mot de passe : hash en config (si défini) ou ADMIN_SECRET (env).
 import { NextResponse } from "next/server";
 import { cookies } from "next/headers";
+import { scryptSync, timingSafeEqual } from "crypto";
+import { getAdminConfigUncached } from "@/lib/admin-config";
 
 const COOKIE_NAME = "admin_session";
 const COOKIE_OPTIONS = {
@@ -12,9 +14,19 @@ const COOKIE_OPTIONS = {
   maxAge: 60 * 60 * 24 * 7, // 7 jours
 };
 
+function verifyStoredPassword(password: string, stored: string): boolean {
+  const [saltHex, keyHex] = stored.split(":");
+  if (!saltHex || !keyHex) return false;
+  const salt = Buffer.from(saltHex, "hex");
+  const key = scryptSync(password, salt, 64);
+  const storedKey = Buffer.from(keyHex, "hex");
+  return timingSafeEqual(key, storedKey);
+}
+
 export async function GET() {
-  const secret = process.env.ADMIN_SECRET;
-  if (!secret) {
+  const config = await getAdminConfigUncached();
+  const hasAuth = config.adminPasswordHash || process.env.ADMIN_SECRET;
+  if (!hasAuth) {
     return NextResponse.json({ ok: false }, { status: 501 });
   }
   const store = await cookies();
@@ -24,8 +36,10 @@ export async function GET() {
 }
 
 export async function POST(request: Request) {
-  const secret = process.env.ADMIN_SECRET;
-  if (!secret) {
+  const config = await getAdminConfigUncached();
+  const envSecret = process.env.ADMIN_SECRET?.trim();
+  const hasAuth = config.adminPasswordHash || envSecret;
+  if (!hasAuth) {
     return NextResponse.json(
       { ok: false, error: "Admin non configuré" },
       { status: 501 },
@@ -42,12 +56,27 @@ export async function POST(request: Request) {
   }
   const password =
     typeof body.password === "string" ? body.password.trim() : "";
-  if (password === "" || password !== secret.trim()) {
+  if (password === "") {
     return NextResponse.json(
       { ok: false, error: "Mot de passe incorrect" },
       { status: 401 },
     );
   }
+
+  let valid = false;
+  if (config.adminPasswordHash) {
+    valid = verifyStoredPassword(password, config.adminPasswordHash);
+  } else if (envSecret && password === envSecret) {
+    valid = true;
+  }
+
+  if (!valid) {
+    return NextResponse.json(
+      { ok: false, error: "Mot de passe incorrect" },
+      { status: 401 },
+    );
+  }
+
   const store = await cookies();
   store.set(COOKIE_NAME, "1", COOKIE_OPTIONS);
   return NextResponse.json({ ok: true });
