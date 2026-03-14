@@ -8,7 +8,7 @@ import {
   type ReactNode,
 } from "react";
 import type { VideoItem as ApiVideoItem } from "@/lib/videos";
-import type { VideoItem as ProjectsVideoItem } from "@/app/projects/ProjectsClient";
+import type { VideoItem as ProjectsVideoItem } from "@/app/(site)/projects/ProjectsClient";
 
 type Status = "idle" | "loading" | "ready" | "error";
 

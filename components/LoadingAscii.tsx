@@ -1,8 +1,9 @@
 "use client";
 
 import { useCallback, useEffect, useRef, useState } from "react";
+import { usePathname } from "next/navigation";
 
-const SEEN_KEY = "antn_loader_seen_v2";
+const SEEN_KEY = "antn_loader_seen_v3";
 const ASCII_TTL_KEY = "antn_ascii_loader_last_seen";
 const LOGO_FADE_MS = 1200;
 const HARD_TIMEOUT_MS = 6000;
@@ -29,7 +30,20 @@ const DOTS = "............";
 
 type Stage = "hidden" | "visible" | "fading";
 
+function isLoaderAllowedPath(pathname: string | null): boolean {
+  if (!pathname) return false;
+  if (pathname.startsWith("/invoice")) return false;
+  if (pathname.startsWith("/review")) return false;
+  return (
+    pathname === "/" ||
+    pathname.startsWith("/projects") ||
+    pathname === "/about" ||
+    pathname.startsWith("/admin")
+  );
+}
+
 export default function LoadingAscii({ force = false }: { force?: boolean }) {
+  const pathname = usePathname();
   const [stage, setStage] = useState<Stage>("hidden");
   const [logoVisible, setLogoVisible] = useState(false);
   const [completedLines, setCompletedLines] = useState(0);
@@ -78,6 +92,14 @@ export default function LoadingAscii({ force = false }: { force?: boolean }) {
 
   useEffect(() => {
     if (typeof window === "undefined") return;
+
+    if (!force && !isLoaderAllowedPath(pathname)) {
+      document.documentElement.removeAttribute("data-app-loading");
+      document.documentElement.setAttribute("data-loaded", "true");
+      const boot = document.getElementById("boot");
+      if (boot) boot.remove();
+      return;
+    }
 
     const reduce = window.matchMedia?.(
       "(prefers-reduced-motion: reduce)",
@@ -143,7 +165,7 @@ export default function LoadingAscii({ force = false }: { force?: boolean }) {
       if (hardRef.current) clearTimeout(hardRef.current);
       window.removeEventListener("antn:video-ready", onVideoReady);
     };
-  }, [force, close]);
+  }, [force, close, pathname]);
 
   if (stage === "hidden") return null;
 

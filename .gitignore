@@ -31,6 +31,9 @@ yarn-error.log*
 # admin config (persistance locale en dev)
 .data
 
+# factures (stockage local / VPS)
+data/
+
 # vercel
 .vercel
 

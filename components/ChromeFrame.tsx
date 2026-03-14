@@ -40,8 +40,12 @@ export default function ChromeFrame({ children }: PropsWithChildren) {
         </div>
       )}
 
-      {/* Contenu */}
-      <div className="relative z-10">{children}</div>
+      {/* Contenu (site-content seulement pour public, admin a admin-shell__content) */}
+      <div
+        className={`relative z-10 ${!pathname?.startsWith("/admin") ? "site-content" : ""}`}
+      >
+        {children}
+      </div>
     </div>
   );
 }

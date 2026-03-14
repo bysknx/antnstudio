@@ -2,7 +2,7 @@
 
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
-import type { VideoItem } from "@/app/projects/ProjectsClient";
+import type { VideoItem } from "@/app/(site)/projects/ProjectsClient";
 import styles from "./ProjectsGrid.module.css";
 
 const BASE_WIDTH = 400;
