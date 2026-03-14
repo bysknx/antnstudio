@@ -265,7 +265,7 @@ PHASE 4 — Polish + Fixes publics
 
 ### Phase 2 — Admin pages core — ~50% EN COURS
 
-- ✅ Dashboard `/admin` refait : stats site (placeholder), bloc finances rapide (mock), activité récente (manifest + mock), quick actions ; ancienne vue médias/config supprimée
+- ✅ Dashboard `/admin` refait : quick actions en haut ; stats en une ligne (Vercel bientôt) ; finances 2 colonnes, tendance vert/rouge ; activité récente (manifest uniquement, pas de mock) ; section « Projets récents » (3 derniers, thumb + nom + client, lien vers /admin/projects)
 - ✅ `/admin/projects` : liste complète + menu ⋯ + toggles (étape ⑤)
 - ❌ `/admin/settings` : route existe mais "Coming soon" — pas de sections SEO/réseaux/profil
 - ❌ `/admin/finances` : placeholder uniquement

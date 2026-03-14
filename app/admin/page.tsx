@@ -2,13 +2,7 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
-import {
-  FolderOpen,
-  FileText,
-  TrendingUp,
-  Eye,
-  LayoutGrid,
-} from "lucide-react";
+import { FolderOpen, FileText } from "lucide-react";
 
 const MOCK_FINANCES = {
   revenueMonth: 2400,
@@ -16,72 +10,21 @@ const MOCK_FINANCES = {
   trendPercent: 12,
 };
 
-const MOCK_ACTIVITY_ACTIONS = [
-  { date: "14 mars 2025", label: "Projet ONZE envoyé en review" },
-  { date: "12 mars 2025", label: "Facture #03 payée" },
-  { date: "10 mars 2025", label: "Nouveau projet ajouté — Sceaux rouges" },
-];
-
 type VideoItem = {
   id: string;
   projectTitle?: string;
   title: string;
   client?: string;
   year?: number | null;
+  thumbnail?: string;
   createdAt?: string | null;
 };
 
-function StatCard({
-  label,
-  value,
-  icon: Icon,
-}: {
-  label: string;
-  value: string;
-  icon: React.ComponentType<{ className?: string }>;
-}) {
-  return (
-    <div className="rounded-lg border border-[#222] bg-[#111] p-6 transition-colors duration-200">
-      <div className="flex items-center justify-between gap-2">
-        <span className="text-xs font-mono uppercase tracking-wider text-[#8a8a8a]">
-          {label}
-        </span>
-        <Icon className="h-4 w-4 shrink-0 text-[#666]" />
-      </div>
-      <p className="mt-2 font-mono text-xl text-[#F5F0E8]">{value}</p>
-    </div>
-  );
-}
-
-function FinanceCard({
-  label,
-  value,
-  sub,
-  icon: Icon,
-}: {
-  label: string;
-  value: string;
-  sub?: string;
-  icon: React.ComponentType<{ className?: string }>;
-}) {
-  return (
-    <div className="rounded-lg border border-[#222] bg-[#111] p-6 transition-colors duration-200">
-      <div className="flex items-center justify-between gap-2">
-        <span className="text-xs font-mono uppercase tracking-wider text-[#8a8a8a]">
-          {label}
-        </span>
-        <Icon className="h-4 w-4 shrink-0 text-[#666]" />
-      </div>
-      <p className="mt-2 font-mono text-xl text-[#F5F0E8]">{value}</p>
-      {sub != null && (
-        <p className="mt-1 text-xs font-mono text-[#8a8a8a]">{sub}</p>
-      )}
-    </div>
-  );
-}
+const linkButtonClass =
+  "inline-flex items-center gap-2 rounded-lg border border-[#222] bg-[#161616] px-4 py-3 font-mono text-sm text-[#F5F0E8] transition-colors duration-200 hover:border-[#333] hover:bg-[#1a1a1a]";
 
 export default function AdminPage() {
-  const [recentVideos, setRecentVideos] = useState<VideoItem[]>([]);
+  const [videos, setVideos] = useState<VideoItem[]>([]);
 
   useEffect(() => {
     fetch("/api/videos", { cache: "no-store" })
@@ -96,25 +39,30 @@ export default function AdminPage() {
                 String(a.createdAt ?? ""),
               ),
           )
-          .slice(0, 5)
           .map((v: VideoItem) => ({
             id: v.id,
             projectTitle: v.projectTitle ?? v.title,
             title: v.title,
             client: v.client,
             year: v.year,
+            thumbnail: v.thumbnail,
             createdAt: v.createdAt,
           }));
-        setRecentVideos(sorted);
+        setVideos(sorted);
       })
-      .catch(() => setRecentVideos([]));
+      .catch(() => setVideos([]));
   }, []);
 
   const soldeNet = MOCK_FINANCES.revenueMonth - MOCK_FINANCES.expensesMonth;
-  const trendLabel =
-    MOCK_FINANCES.trendPercent >= 0
-      ? `+${MOCK_FINANCES.trendPercent} % vs mois précédent`
-      : `${MOCK_FINANCES.trendPercent} % vs mois précédent`;
+  const trendPercent = MOCK_FINANCES.trendPercent;
+  const trendPositive = trendPercent >= 0;
+  const trendText =
+    trendPercent >= 0
+      ? `+${trendPercent} % vs mois précédent`
+      : `${trendPercent} % vs mois précédent`;
+
+  const recentThree = videos.slice(0, 3);
+  const recentFive = videos.slice(0, 5);
 
   return (
     <div className="mx-auto max-w-5xl px-4 py-8">
@@ -122,102 +70,139 @@ export default function AdminPage() {
         Dashboard
       </h1>
 
-      <section className="mt-8">
-        <h2 className="mb-4 text-xs font-mono uppercase tracking-wider text-[#8a8a8a]">
-          Stats site
-        </h2>
-        <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
-          <StatCard label="Visites" value="—" icon={Eye} />
-          <StatCard label="Pages vues" value="—" icon={LayoutGrid} />
-        </div>
+      <section className="mt-6 flex flex-wrap gap-4">
+        <Link href="/admin/projects" className={linkButtonClass}>
+          <FolderOpen className="h-4 w-4" />
+          Nouveau projet
+        </Link>
+        <Link href="/admin/invoices" className={linkButtonClass}>
+          <FileText className="h-4 w-4" />
+          Nouvelle facture
+        </Link>
       </section>
 
-      <section className="mt-10">
+      <p className="mt-6 text-xs text-[#666]">
+        Stats site — Vercel Analytics bientôt disponible
+      </p>
+
+      <section className="mt-8">
         <h2 className="mb-4 text-xs font-mono uppercase tracking-wider text-[#8a8a8a]">
           Finances rapides
         </h2>
-        <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-4">
-          <FinanceCard
-            label="Revenu du mois"
-            value={`${MOCK_FINANCES.revenueMonth.toLocaleString("fr-FR")} €`}
-            icon={TrendingUp}
-          />
-          <FinanceCard
-            label="Dépenses du mois"
-            value={`${MOCK_FINANCES.expensesMonth.toLocaleString("fr-FR")} €`}
-            icon={FileText}
-          />
-          <FinanceCard
-            label="Solde net"
-            value={`${soldeNet.toLocaleString("fr-FR")} €`}
-            icon={TrendingUp}
-          />
-          <FinanceCard label="Tendance" value={trendLabel} icon={TrendingUp} />
+        <div className="grid grid-cols-1 gap-6 sm:grid-cols-2">
+          <div className="rounded-lg border border-[#222] bg-[#111] p-6 transition-colors duration-200">
+            <span className="text-xs font-mono uppercase tracking-wider text-[#8a8a8a]">
+              Revenu du mois
+            </span>
+            <p className="mt-2 font-mono text-xl text-[#F5F0E8]">
+              {MOCK_FINANCES.revenueMonth.toLocaleString("fr-FR")} €
+            </p>
+          </div>
+          <div className="rounded-lg border border-[#222] bg-[#111] p-6 transition-colors duration-200">
+            <span className="text-xs font-mono uppercase tracking-wider text-[#8a8a8a]">
+              Dépenses
+            </span>
+            <p className="mt-2 font-mono text-xl text-[#F5F0E8]">
+              {MOCK_FINANCES.expensesMonth.toLocaleString("fr-FR")} €
+            </p>
+          </div>
+          <div className="rounded-lg border border-[#222] bg-[#111] p-6 transition-colors duration-200">
+            <span className="text-xs font-mono uppercase tracking-wider text-[#8a8a8a]">
+              Solde net
+            </span>
+            <p className="mt-2 font-mono text-xl text-[#F5F0E8]">
+              {soldeNet.toLocaleString("fr-FR")} €
+            </p>
+          </div>
+          <div className="rounded-lg border border-[#222] bg-[#111] p-6 transition-colors duration-200">
+            <span className="text-xs font-mono uppercase tracking-wider text-[#8a8a8a]">
+              Tendance
+            </span>
+            <p
+              className={`mt-2 font-mono text-xl ${trendPositive ? "text-[#a8f08a]" : "text-[#f87171]"}`}
+            >
+              {trendText}
+            </p>
+          </div>
         </div>
       </section>
+
+      {recentThree.length > 0 && (
+        <section className="mt-10">
+          <h2 className="mb-4 text-xs font-mono uppercase tracking-wider text-[#8a8a8a]">
+            Projets récents
+          </h2>
+          <Link
+            href="/admin/projects"
+            className="block rounded-lg border border-[#222] bg-[#111] p-4 transition-colors duration-200 hover:bg-[#161616]"
+          >
+            <ul className="space-y-3">
+              {recentThree.map((v) => (
+                <li
+                  key={v.id}
+                  className="flex items-center gap-4 border-b border-[#222] pb-3 last:border-b-0 last:pb-0"
+                >
+                  <div className="h-12 w-20 shrink-0 overflow-hidden border border-[#222] bg-[#0a0a0a]">
+                    {v.thumbnail ? (
+                      <img
+                        src={v.thumbnail}
+                        alt=""
+                        className="h-full w-full object-cover"
+                      />
+                    ) : (
+                      <div className="flex h-full w-full items-center justify-center text-[10px] text-[#666]">
+                        —
+                      </div>
+                    )}
+                  </div>
+                  <div className="min-w-0 flex-1">
+                    <span className="font-mono text-sm text-[#F5F0E8]">
+                      {v.projectTitle ?? v.title}
+                    </span>
+                    {v.client && (
+                      <span className="ml-2 font-mono text-xs text-[#8a8a8a]">
+                        — {v.client}
+                      </span>
+                    )}
+                  </div>
+                </li>
+              ))}
+            </ul>
+          </Link>
+        </section>
+      )}
 
       <section className="mt-10">
         <h2 className="mb-4 text-xs font-mono uppercase tracking-wider text-[#8a8a8a]">
           Activité récente
         </h2>
         <div className="rounded-lg border border-[#222] bg-[#111] p-6">
-          <ul className="space-y-3">
-            {recentVideos.map((v) => (
-              <li
-                key={v.id}
-                className="border-b border-[#222] pb-3 font-mono text-sm last:border-b-0 last:pb-0"
-              >
-                <span className="text-[#8a8a8a]">{v.year ?? "—"}</span>
-                <span className="mx-2 text-[#666]">—</span>
-                <span className="text-[#F5F0E8]">
-                  {v.projectTitle ?? v.title}
-                </span>
-                {v.client && (
-                  <>
-                    <span className="mx-2 text-[#666]">—</span>
-                    <span className="text-[#8a8a8a]">{v.client}</span>
-                  </>
-                )}
-              </li>
-            ))}
-            {MOCK_ACTIVITY_ACTIONS.map((a, i) => (
-              <li
-                key={`action-${i}`}
-                className="border-b border-[#222] pb-3 font-mono text-sm last:border-b-0 last:pb-0"
-              >
-                <span className="text-[#8a8a8a]">{a.date}</span>
-                <span className="mx-2 text-[#666]">—</span>
-                <span className="text-[#F5F0E8]">{a.label}</span>
-              </li>
-            ))}
-          </ul>
-          {recentVideos.length === 0 && MOCK_ACTIVITY_ACTIONS.length === 0 && (
+          {recentFive.length === 0 ? (
             <p className="font-mono text-sm text-[#8a8a8a]">
               Aucune activité récente.
             </p>
+          ) : (
+            <ul className="space-y-3">
+              {recentFive.map((v) => (
+                <li
+                  key={v.id}
+                  className="border-b border-[#222] pb-3 font-mono text-sm last:border-b-0 last:pb-0"
+                >
+                  <span className="text-[#8a8a8a]">{v.year ?? "—"}</span>
+                  <span className="mx-2 text-[#666]">—</span>
+                  <span className="text-[#F5F0E8]">
+                    {v.projectTitle ?? v.title}
+                  </span>
+                  {v.client && (
+                    <>
+                      <span className="mx-2 text-[#666]">—</span>
+                      <span className="text-[#8a8a8a]">{v.client}</span>
+                    </>
+                  )}
+                </li>
+              ))}
+            </ul>
           )}
-        </div>
-      </section>
-
-      <section className="mt-10">
-        <h2 className="mb-4 text-xs font-mono uppercase tracking-wider text-[#8a8a8a]">
-          Quick actions
-        </h2>
-        <div className="flex flex-wrap gap-4">
-          <Link
-            href="/admin/projects"
-            className="inline-flex items-center gap-2 rounded-lg border border-[#222] bg-[#161616] px-4 py-3 font-mono text-sm text-[#F5F0E8] transition-colors duration-200 hover:border-[#333] hover:bg-[#1a1a1a]"
-          >
-            <FolderOpen className="h-4 w-4" />
-            Nouveau projet
-          </Link>
-          <Link
-            href="/admin/invoices"
-            className="inline-flex items-center gap-2 rounded-lg border border-[#222] bg-[#161616] px-4 py-3 font-mono text-sm text-[#F5F0E8] transition-colors duration-200 hover:border-[#333] hover:bg-[#1a1a1a]"
-          >
-            <FileText className="h-4 w-4" />
-            Nouvelle facture
-          </Link>
         </div>
       </section>
     </div>
