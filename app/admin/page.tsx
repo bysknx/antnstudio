@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
-import { FolderOpen, FileText } from "lucide-react";
+import { FolderOpen, FileText, TrendingUp, TrendingDown } from "lucide-react";
 
 const MOCK_FINANCES = {
   revenueMonth: 2400,
@@ -57,9 +57,7 @@ export default function AdminPage() {
   const trendPercent = MOCK_FINANCES.trendPercent;
   const trendPositive = trendPercent >= 0;
   const trendText =
-    trendPercent >= 0
-      ? `+${trendPercent} % vs mois précédent`
-      : `${trendPercent} % vs mois précédent`;
+    trendPercent >= 0 ? `+${trendPercent}%` : `${trendPercent}%`;
 
   const recentThree = videos.slice(0, 3);
   const recentFive = videos.slice(0, 5);
@@ -119,8 +117,13 @@ export default function AdminPage() {
               Tendance
             </span>
             <p
-              className={`mt-2 font-mono text-xl ${trendPositive ? "text-[#a8f08a]" : "text-[#f87171]"}`}
+              className={`mt-2 flex items-center gap-2 font-mono text-xl ${trendPositive ? "text-[#a8f08a]" : "text-[#f87171]"}`}
             >
+              {trendPositive ? (
+                <TrendingUp className="h-5 w-5" />
+              ) : (
+                <TrendingDown className="h-5 w-5" />
+              )}
               {trendText}
             </p>
           </div>

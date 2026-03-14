@@ -232,7 +232,7 @@ PHASE 2 — Admin pages core ← ON EST ICI
   ⑤ Page Projects : liste complète + menu ⋯ + toggles ✅
   ⑥ Upload flow : ajout projet, gestion versions, stockage vidéo
   ⑦ Dashboard : stats Vercel + finances rapides + activité récente ✅
-  ⑧ Page Finances : graphiques revenus/dépenses, inputs manuels
+  ⑧ Page Finances : graphiques revenus/dépenses, inputs manuels ✅
 
 PHASE 3 — Factures + Client
   ⑨ Page Invoices : liste + modale création + template AE + PDF
@@ -263,12 +263,12 @@ PHASE 4 — Polish + Fixes publics
 - ✅ Manifest vidéos + `lib/videos.ts` + API `/api/videos`
 - ✅ `media.antn.studio` opérationnel
 
-### Phase 2 — Admin pages core — ~50% EN COURS
+### Phase 2 — Admin pages core — ~60% EN COURS
 
 - ✅ Dashboard `/admin` refait : quick actions en haut ; stats en une ligne (Vercel bientôt) ; finances 2 colonnes, tendance vert/rouge ; activité récente (manifest uniquement, pas de mock) ; section « Projets récents » (3 derniers, thumb + nom + client, lien vers /admin/projects)
 - ✅ `/admin/projects` : liste complète + menu ⋯ + toggles (étape ⑤)
 - ❌ `/admin/settings` : route existe mais "Coming soon" — pas de sections SEO/réseaux/profil
-- ❌ `/admin/finances` : placeholder uniquement
+- ✅ `/admin/finances` (étape ⑧) : graphique barres recharts (revenus/dépenses 12 mois), solde net, filtres année + vue (mois/trimestre/année), sections Revenus et Dépenses (récurrentes + ponctuelles) — données mock
 
 ### Phase 3 — Factures + Client — ~10%
 
