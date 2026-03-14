@@ -1,6 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useState } from "react";
+import { createPortal } from "react-dom";
 import type { Profile, Preferences, SiteConfig } from "@/lib/admin-config";
 
 type ConfigResponse = {
@@ -455,26 +456,28 @@ export default function AdminSettingsPage() {
         </div>
       </section>
 
-      {hasChanges && (
-        <div
-          className="fixed z-50 transition-opacity duration-200 ease-out"
-          style={{
-            bottom: "24px",
-            right: "24px",
-            animation: "settingsFloatingFadeIn 0.2s ease-out",
-          }}
-        >
-          <button
-            type="button"
-            onClick={save}
-            disabled={saving}
-            className="border-none bg-[#F5F0E8] py-3 font-semibold text-[#0a0a0a] transition-opacity duration-200 ease-out hover:opacity-90 disabled:opacity-50"
-            style={{ padding: "12px 24px", fontWeight: 600 }}
+      {typeof document !== "undefined" &&
+        createPortal(
+          <div
+            className="fixed bottom-8 transition-[opacity] duration-200 ease"
+            style={{
+              right: "max(32px, 10vw)",
+              zIndex: 9999,
+              opacity: hasChanges ? 1 : 0,
+              pointerEvents: hasChanges ? "auto" : "none",
+            }}
           >
-            {saving ? "…" : saveOk ? "Enregistré" : "Enregistrer"}
-          </button>
-        </div>
-      )}
+            <button
+              type="button"
+              onClick={save}
+              disabled={saving}
+              className="rounded-lg border border-[#222] bg-[#161616] px-5 py-2.5 font-mono text-sm text-[#F5F0E8] transition-all duration-200 ease hover:border-[#333] hover:bg-[#1c1c1e] disabled:opacity-50"
+            >
+              {saving ? "…" : saveOk ? "Enregistré" : "Enregistrer"}
+            </button>
+          </div>,
+          document.body,
+        )}
     </main>
   );
 }

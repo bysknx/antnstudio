@@ -3,12 +3,6 @@ import type { Metadata } from "next";
 import "./globals.css";
 import { GeistSans } from "geist/font/sans";
 
-import LoadingAscii from "@/components/LoadingAscii";
-import ClientFade from "@/components/ClientFade";
-import ChromeFrame from "@/components/ChromeFrame";
-import FooterMount from "@/components/FooterMount";
-import { VideoDataProvider } from "@/components/VideoDataProvider";
-import Header from "./header";
 import { getAdminConfig } from "@/lib/admin-config";
 
 export async function generateMetadata(): Promise<Metadata> {
@@ -73,21 +67,7 @@ export default function RootLayout({
         />
       </head>
       <body className={`${GeistSans.className} overflow-x-hidden`}>
-        {/* Fullscreen ASCII loader */}
-        <LoadingAscii />
-
-        {/* Header global (nav) */}
-        <Header />
-
-        {/* Transitions de page + chrome visuel + préchargement global des vidéos */}
-        <VideoDataProvider>
-          <ClientFade>
-            <ChromeFrame>{children}</ChromeFrame>
-          </ClientFade>
-        </VideoDataProvider>
-
-        {/* Footer global issu du pen (fixed via son propre style) */}
-        <FooterMount />
+        {children}
       </body>
     </html>
   );

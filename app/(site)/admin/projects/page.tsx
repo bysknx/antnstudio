@@ -1,6 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useRef, useState } from "react";
+import { createPortal } from "react-dom";
 import {
   MoreVertical,
   Plus,
@@ -543,21 +544,29 @@ export default function AdminProjectsPage() {
             </table>
           </div>
 
-          {hasChanges && loadedSnapshot != null && (
-            <div className="mt-6 flex items-center gap-4">
-              <button
-                type="button"
-                onClick={save}
-                disabled={saving}
-                className="rounded-lg border border-[#222] bg-[#161616] px-4 py-2 text-sm font-mono text-[#F5F0E8] transition-colors duration-200 ease-out hover:border-[#222] hover:bg-[#1a1a1a] disabled:opacity-50"
+          {typeof document !== "undefined" &&
+            createPortal(
+              <div
+                className="fixed bottom-8 transition-[opacity] duration-200 ease"
+                style={{
+                  right: "max(32px, 10vw)",
+                  zIndex: 9999,
+                  opacity: hasChanges && loadedSnapshot != null ? 1 : 0,
+                  pointerEvents:
+                    hasChanges && loadedSnapshot != null ? "auto" : "none",
+                }}
               >
-                {saving ? "…" : saveOk ? "Enregistré" : "Enregistrer"}
-              </button>
-              <span className="text-xs text-[#8a8a8a]">
-                Modifications non enregistrées
-              </span>
-            </div>
-          )}
+                <button
+                  type="button"
+                  onClick={save}
+                  disabled={saving}
+                  className="rounded-lg border border-[#222] bg-[#161616] px-5 py-2.5 font-mono text-sm text-[#F5F0E8] transition-all duration-200 ease hover:border-[#333] hover:bg-[#1c1c1e] disabled:opacity-50"
+                >
+                  {saving ? "…" : saveOk ? "Enregistré" : "Enregistrer"}
+                </button>
+              </div>,
+              document.body,
+            )}
         </>
       )}
     </main>
