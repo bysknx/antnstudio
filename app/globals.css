@@ -370,6 +370,17 @@
 
 /* ===== START PATCH: chrome hidden during ASCII loader & hide canvas on home ===== */
 /* Cache toute l’UI (nav, canvas, contenu) pendant le loader ASCII */
+html:not([data-loaded]) .header,
+html:not([data-loaded]) .footer {
+  opacity: 0;
+  pointer-events: none;
+}
+
+.header,
+.footer {
+  transition: opacity 200ms ease;
+}
+
 html[data-loading="1"] .chrome {
   visibility: hidden;
 }

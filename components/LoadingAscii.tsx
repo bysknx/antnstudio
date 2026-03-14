@@ -70,6 +70,7 @@ export default function LoadingAscii({ force = false }: { force?: boolean }) {
     if (typeof document === "undefined") return;
     if (stage === "hidden") {
       document.documentElement.removeAttribute("data-app-loading");
+      document.documentElement.setAttribute("data-loaded", "true");
     } else {
       document.documentElement.setAttribute("data-app-loading", stage);
     }
@@ -92,6 +93,7 @@ export default function LoadingAscii({ force = false }: { force?: boolean }) {
     }
     if (!show) {
       document.documentElement.removeAttribute("data-app-loading");
+      document.documentElement.setAttribute("data-loaded", "true");
       const boot = document.getElementById("boot");
       if (boot) boot.remove();
       return;

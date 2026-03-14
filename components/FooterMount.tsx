@@ -8,7 +8,7 @@ export default function FooterMount() {
   if (pathname?.startsWith("/admin")) return null;
   return (
     <div
-      className="pointer-events-none fixed inset-x-0 bottom-0 z-[60]"
+      className="footer pointer-events-none fixed inset-x-0 bottom-0 z-[60]"
       aria-hidden
     >
       <FooterFromPen />

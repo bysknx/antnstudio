@@ -25,7 +25,7 @@ export default function Header() {
 
   return (
     // Fixed, translucent header that stays on top of the viewport.
-    <header className="pointer-events-none fixed top-4 inset-x-0 z-50">
+    <header className="header pointer-events-none fixed top-4 inset-x-0 z-50">
       {/* Interactive navbar container with rounded background and blur effect. */}
       <nav className="pointer-events-auto mx-auto max-w-5xl px-3 py-2 rounded-full bg-black/40 ring-1 ring-white/10 backdrop-blur-md flex items-center justify-between">
         {/* Brand link back to the home page. */}

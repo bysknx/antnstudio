@@ -229,9 +229,9 @@ PHASE 1 — Fondations DA + Admin shell ✅
   ④ Layout admin : spacing Claude-style, surfaces étagées
 
 PHASE 2 — Admin pages core ← ON EST ICI
-  ⑤ Page Projects : liste complète + menu ⋯ + toggles
+  ⑤ Page Projects : liste complète + menu ⋯ + toggles ✅
   ⑥ Upload flow : ajout projet, gestion versions, stockage vidéo
-  ⑦ Dashboard : stats Vercel + finances rapides + activité récente
+  ⑦ Dashboard : stats Vercel + finances rapides + activité récente ✅
   ⑧ Page Finances : graphiques revenus/dépenses, inputs manuels
 
 PHASE 3 — Factures + Client
@@ -263,11 +263,10 @@ PHASE 4 — Polish + Fixes publics
 - ✅ Manifest vidéos + `lib/videos.ts` + API `/api/videos`
 - ✅ `media.antn.studio` opérationnel
 
-### Phase 2 — Admin pages core — ~35% EN COURS
+### Phase 2 — Admin pages core — ~50% EN COURS
 
-- ✅ Dashboard `/admin` : vue médias (listing vidéos, upload, featured/visibility, mini review overlay avec commentaires timecodes en mémoire)
-- ⚠️ Dashboard ne reflète pas encore les stats business (revenus, projets actifs, factures, graphique revenus)
-- ❌ `/admin/projects` : route existe mais "Coming soon" — pas de table, pas de CRUD
+- ✅ Dashboard `/admin` refait : stats site (placeholder), bloc finances rapide (mock), activité récente (manifest + mock), quick actions ; ancienne vue médias/config supprimée
+- ✅ `/admin/projects` : liste complète + menu ⋯ + toggles (étape ⑤)
 - ❌ `/admin/settings` : route existe mais "Coming soon" — pas de sections SEO/réseaux/profil
 - ❌ `/admin/finances` : placeholder uniquement
 
@@ -281,7 +280,7 @@ PHASE 4 — Polish + Fixes publics
 
 ### Phase 4 — Review client — ~15%
 
-- ✅ `MediaReviewOverlay` dans admin (player + commentaires timecodes en mémoire)
+- ⚠️ Ancien `MediaReviewOverlay` retiré du dashboard (sera remplacé par page `/review/[token]` étape ⑩)
 - ❌ Pas de route `/review/[token]` publique
 - ❌ Pas de système de tokens clients
 - ❌ Pas de persistance commentaires
