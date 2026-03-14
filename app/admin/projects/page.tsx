@@ -113,7 +113,7 @@ function RowMenuDropdown({
   return (
     <div
       ref={panelRef}
-      className="absolute right-0 top-full z-20 mt-1 min-w-[200px] rounded-lg border border-[#222] bg-[#161616] py-1 shadow-lg transition-opacity duration-200 ease-out"
+      className="absolute right-0 top-full z-20 mt-1 min-w-[200px] rounded-none border border-[#222] bg-[#161616] py-1 shadow-lg transition-opacity duration-200 ease-out"
       role="menu"
     >
       <button
@@ -425,7 +425,7 @@ export default function AdminProjectsPage() {
           type="button"
           disabled
           title="Bientôt"
-          className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg border border-[#222] bg-[#161616] text-[#F5F0E8] transition-colors duration-200 ease-out hover:border-[#333] hover:bg-[#1a1a1a] disabled:cursor-not-allowed disabled:opacity-50"
+          className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg border border-[#222] bg-[#161616] text-[#F5F0E8] transition-colors duration-200 ease-out hover:border-[#222] hover:bg-[#1a1a1a] disabled:cursor-not-allowed disabled:opacity-50"
           aria-label="Ajouter un projet"
         >
           <Plus className="h-5 w-5" />
@@ -515,7 +515,7 @@ export default function AdminProjectsPage() {
                         onClick={() =>
                           setOpenRowId((prev) => (prev === v.id ? null : v.id))
                         }
-                        className="flex h-8 w-8 items-center justify-center rounded-lg border border-[#222] bg-transparent text-[#8a8a8a] transition-colors duration-200 hover:border-[#333] hover:bg-[#161616] hover:text-[#F5F0E8]"
+                        className="flex h-8 w-8 items-center justify-center rounded-lg border border-[#222] bg-transparent text-[#8a8a8a] transition-colors duration-200 hover:border-[#222] hover:bg-[#161616] hover:text-[#F5F0E8]"
                         aria-haspopup="menu"
                         aria-expanded={openRowId === v.id}
                         aria-label="Menu actions"
@@ -549,7 +549,7 @@ export default function AdminProjectsPage() {
                 type="button"
                 onClick={save}
                 disabled={saving}
-                className="rounded-lg border border-[#222] bg-[#161616] px-4 py-2 text-sm font-mono text-[#F5F0E8] transition-colors duration-200 ease-out hover:border-[#333] hover:bg-[#1a1a1a] disabled:opacity-50"
+                className="rounded-lg border border-[#222] bg-[#161616] px-4 py-2 text-sm font-mono text-[#F5F0E8] transition-colors duration-200 ease-out hover:border-[#222] hover:bg-[#1a1a1a] disabled:opacity-50"
               >
                 {saving ? "…" : saveOk ? "Enregistré" : "Enregistrer"}
               </button>

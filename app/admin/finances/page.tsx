@@ -31,7 +31,7 @@ function buildMockMonthlyData(year: number) {
   return MONTHS.map((month, i) => ({
     month,
     revenues: 1500 + Math.round(Math.random() * 1500) + (i % 3) * 100,
-    expenses: 80 + Math.round(Math.random() * 120) + (i % 2) * 30,
+    expenses: 300 + Math.round(Math.random() * 200) + (i % 2) * 50,
   }));
 }
 
@@ -61,7 +61,7 @@ type ViewMode = "mois" | "trimestre" | "annee";
 const tooltipContentStyle = {
   backgroundColor: "#161616",
   border: "1px solid #222",
-  borderRadius: "8px",
+  borderRadius: 0,
   color: "#F5F0E8",
   fontSize: "12px",
   padding: "8px 12px",
@@ -84,7 +84,7 @@ export default function AdminFinancesPage() {
   const soldeNet = totalRevenues - totalExpenses;
 
   const selectClass =
-    "rounded-lg border border-[#222] bg-[#161616] px-3 py-2 font-mono text-sm text-[#F5F0E8] outline-none transition-colors duration-200 focus:border-[#444]";
+    "rounded-lg border border-[#222] bg-[#161616] px-3 py-2 font-mono text-sm text-[#F5F0E8] outline-none transition-colors duration-200 focus:border-[#222]";
 
   return (
     <main className="mx-auto max-w-5xl px-4 py-8">
@@ -126,7 +126,7 @@ export default function AdminFinancesPage() {
       </div>
 
       <section className="mt-8">
-        <div className="rounded-lg border border-[#222] bg-[#111] p-6 transition-colors duration-200">
+        <div className="rounded-none border border-[#222] bg-[#111] p-6 transition-colors duration-200">
           <h2 className="mb-4 text-xs font-mono uppercase tracking-wider text-[#8a8a8a]">
             Revenus et dépenses par mois
           </h2>
@@ -139,12 +139,12 @@ export default function AdminFinancesPage() {
                 <CartesianGrid strokeDasharray="3 3" stroke="#222" />
                 <XAxis
                   dataKey="month"
-                  tick={{ fill: "#8a8a8a", fontSize: 11 }}
+                  tick={{ fill: "#666", fontSize: 11 }}
                   axisLine={{ stroke: "#222" }}
                   tickLine={{ stroke: "#222" }}
                 />
                 <YAxis
-                  tick={{ fill: "#8a8a8a", fontSize: 11 }}
+                  tick={{ fill: "#666", fontSize: 11 }}
                   axisLine={{ stroke: "#222" }}
                   tickLine={{ stroke: "#222" }}
                   tickFormatter={(v) => `${v} €`}
@@ -165,7 +165,7 @@ export default function AdminFinancesPage() {
                 <Bar
                   dataKey="revenues"
                   name="Revenus"
-                  fill="#a8f08a"
+                  fill="#86EFAC"
                   radius={[0, 0, 0, 0]}
                 />
                 <Bar
@@ -181,7 +181,7 @@ export default function AdminFinancesPage() {
       </section>
 
       <section className="mt-6">
-        <div className="rounded-lg border border-[#222] bg-[#111] p-6 transition-colors duration-200">
+        <div className="rounded-none border border-[#222] bg-[#111] p-6 transition-colors duration-200">
           <span className="text-xs font-mono uppercase tracking-wider text-[#8a8a8a]">
             Solde net {year}
           </span>
@@ -194,7 +194,7 @@ export default function AdminFinancesPage() {
       </section>
 
       <section className="mt-10 grid grid-cols-1 gap-6 lg:grid-cols-2">
-        <div className="rounded-lg border border-[#222] bg-[#111] p-6 transition-colors duration-200">
+        <div className="rounded-none border border-[#222] bg-[#111] p-6 transition-colors duration-200">
           <h2 className="mb-4 text-xs font-mono uppercase tracking-wider text-[#8a8a8a]">
             Revenus
           </h2>
@@ -207,14 +207,14 @@ export default function AdminFinancesPage() {
                 <span className="font-mono text-sm text-[#F5F0E8]">
                   {r.label}
                 </span>
-                <span className="font-mono text-sm text-[#a8f08a]">
+                <span className="font-mono text-sm text-[#86EFAC]">
                   +{r.amount.toLocaleString("fr-FR")} €
                 </span>
               </li>
             ))}
           </ul>
         </div>
-        <div className="rounded-lg border border-[#222] bg-[#111] p-6 transition-colors duration-200">
+        <div className="rounded-none border border-[#222] bg-[#111] p-6 transition-colors duration-200">
           <h2 className="mb-4 text-xs font-mono uppercase tracking-wider text-[#8a8a8a]">
             Dépenses
           </h2>

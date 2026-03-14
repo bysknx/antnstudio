@@ -21,7 +21,7 @@ type VideoItem = {
 };
 
 const linkButtonClass =
-  "inline-flex items-center gap-2 rounded-lg border border-[#222] bg-[#161616] px-4 py-3 font-mono text-sm text-[#F5F0E8] transition-colors duration-200 hover:border-[#333] hover:bg-[#1a1a1a]";
+  "inline-flex items-center gap-2 rounded-lg border border-[#222] bg-[#161616] px-4 py-3 font-mono text-sm text-[#F5F0E8] transition-colors duration-200 hover:border-[#222] hover:bg-[#1a1a1a]";
 
 export default function AdminPage() {
   const [videos, setVideos] = useState<VideoItem[]>([]);
@@ -88,7 +88,7 @@ export default function AdminPage() {
           Finances rapides
         </h2>
         <div className="grid grid-cols-1 gap-6 sm:grid-cols-2">
-          <div className="rounded-lg border border-[#222] bg-[#111] p-6 transition-colors duration-200">
+          <div className="rounded-none border border-[#222] bg-[#111] p-6 transition-colors duration-200">
             <span className="text-xs font-mono uppercase tracking-wider text-[#8a8a8a]">
               Revenu du mois
             </span>
@@ -96,7 +96,7 @@ export default function AdminPage() {
               {MOCK_FINANCES.revenueMonth.toLocaleString("fr-FR")} €
             </p>
           </div>
-          <div className="rounded-lg border border-[#222] bg-[#111] p-6 transition-colors duration-200">
+          <div className="rounded-none border border-[#222] bg-[#111] p-6 transition-colors duration-200">
             <span className="text-xs font-mono uppercase tracking-wider text-[#8a8a8a]">
               Dépenses
             </span>
@@ -104,7 +104,7 @@ export default function AdminPage() {
               {MOCK_FINANCES.expensesMonth.toLocaleString("fr-FR")} €
             </p>
           </div>
-          <div className="rounded-lg border border-[#222] bg-[#111] p-6 transition-colors duration-200">
+          <div className="rounded-none border border-[#222] bg-[#111] p-6 transition-colors duration-200">
             <span className="text-xs font-mono uppercase tracking-wider text-[#8a8a8a]">
               Solde net
             </span>
@@ -112,7 +112,7 @@ export default function AdminPage() {
               {soldeNet.toLocaleString("fr-FR")} €
             </p>
           </div>
-          <div className="rounded-lg border border-[#222] bg-[#111] p-6 transition-colors duration-200">
+          <div className="rounded-none border border-[#222] bg-[#111] p-6 transition-colors duration-200">
             <span className="text-xs font-mono uppercase tracking-wider text-[#8a8a8a]">
               Tendance
             </span>
@@ -137,7 +137,7 @@ export default function AdminPage() {
           </h2>
           <Link
             href="/admin/projects"
-            className="block rounded-lg border border-[#222] bg-[#111] p-4 transition-colors duration-200 hover:bg-[#161616]"
+            className="block rounded-none border border-[#222] bg-[#111] p-4 transition-colors duration-200 hover:bg-[#161616]"
           >
             <ul className="space-y-3">
               {recentThree.map((v) => (
@@ -179,7 +179,7 @@ export default function AdminPage() {
         <h2 className="mb-4 text-xs font-mono uppercase tracking-wider text-[#8a8a8a]">
           Activité récente
         </h2>
-        <div className="rounded-lg border border-[#222] bg-[#111] p-6">
+        <div className="rounded-none border border-[#222] bg-[#111] p-6">
           {recentFive.length === 0 ? (
             <p className="font-mono text-sm text-[#8a8a8a]">
               Aucune activité récente.
